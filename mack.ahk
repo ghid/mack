@@ -88,24 +88,38 @@ refine_file_pattern(ByRef file_pattern) {
 	return _log.Exit()
 }
 
-search_for_pattern(file_name) {
+search_for_pattern(file_name, regex_opts = "") {
 	_log := new Logger("app.mack." A_ThisFunc)
 
-	if (_log.Logs(Logger.INPUT))
+	if (_log.Logs(Logger.INPUT)) {
 		_log.Input("file_name", file_name)
-
-	if (_log.Logs(Logger.FINEST))
-		_log.Finest("G_opts[pattern]", G_opts["pattern"])
+		_log.Input("regex_opts", regex_opts)
+		if (_log.Logs(Logger.FINEST)) {
+			_log.Finest("G_opts[pattern]", G_opts["pattern"])
+			_log.Finest("G_opts[g]", G_opts["g"])
+			_log.Finest("G_opts[group]", G_opts["group"])
+			_log.Finest("G_opts[passthru]", G_opts["passthru"])
+		}
+	}
 
 	try {
 		f := FileOpen(file_name, "r-r`r")
 		if (!f)
 			_log.Error("Could not open file " file_name)
 		else {
+			hit_n := 0
 			while (!f.AtEOF) {
 				line := f.ReadLine()
-				if (RegExMatch(line, "S)" G_opts["pattern"]))
-					Console.Write(line)
+				parts := test(line, regex_opts, found := 0)
+				if (found && !G_opts["v"]) {
+					hit_n++
+					if (!output(file_name, A_Index, hit_n, parts))
+						break
+				} else if ((!found && G_opts["v"]) || G_opts["passthru"]) {
+					hit_n++
+					if (!output(file_name, A_Index, hit_n, line))
+						break
+				}
 			}
 		}
 	} finally {
@@ -116,6 +130,53 @@ search_for_pattern(file_name) {
 	return _log.Exit()
 }
 
+test(haystack, regex_opts, ByRef found := 0) {
+	search_at := 1
+	parts := []
+	loop {
+		found_at := RegExMatch(haystack, regex_opts "S)" G_opts["pattern"], $, search_at)
+		if (found_at > 0) {
+			found++
+			if (found_at > 1) {
+				parts.Insert(SubStr(haystack, search_at, found_at - search_at))
+			}
+			if (G_opts["color"])
+				parts.Insert(new Console.Color(G_opts["color_match"], $))
+			else
+				parts.Insert($)
+			search_at := found_at + StrLen($)
+		} else if (found > 0) {
+			parts.Insert(SubStr(haystack, search_at))
+		}
+	} until (found_at = 0)
+
+	return parts
+}
+
+output(file_name, line_no, hit_n, parts*) {
+	_log := new Logger("app.mack." A_ThisFunc)
+
+	if (_log.Logs(Logger.INPUT)) {
+		_log.Input("file_name", file_name)
+		_log.Input("line_no", line_no)
+		_log.Input("line", line)
+		_log.Input("hit_n", hit_n)
+	}
+
+	if (hit_n = 1 && G_opts["g"]) {
+		Console.Write(new Console.Color(G_opts["color_filename"], file_name), "`n")
+		return _log.Exit(false)	
+	} else {
+		if (hit_n = 1 && G_opts["group"])
+			Console.Write("`n", new Console.Color(G_opts["color_filename"], file_name), "`n")
+		else if (!G_opts["group"])
+			Console.Write(new Console.Color(G_opts["color_filename"], file_name), ":")
+		Console.Write(new Console.Color(G_opts["color_lineno"], A_Index), ":", parts)
+		Console.ClearEOL()
+	}
+
+	return _log.Exit(true)
+}
 
 regex_file_pattern_list(file_pattern_string) {
 	_log := new Logger("app.mack." A_ThisFunc)
@@ -339,13 +400,21 @@ main:
 
 	OutputDebug Start...
 	
-	global G_opts := { "h": false
+	global G_opts := { "color": true
+					 , "color_filename": 2
+					 , "color_match": 96
+					 , "color_lineno": 6
+					 , "h": false
 					 , "f": false
 		 			 , "g": false
+					 , "group": true
 					 , "ht": false
+					 , "i": false
 					 , "ignore_dirs": []
 					 , "ignore_files": []
 					 , "k": false
+					 , "passthru": false
+					 , "Q": false
 					 , "r": true
 					 , "types": { "autohotkey" : "*.ahk"
 								, "batch"      : "*.bat *.cmd"
@@ -358,10 +427,13 @@ main:
 								, "python"     : "*.py"
 								, "tex"        : "*.tex *.latex *.cls *.sty"
 								, "text"       : "*.txt *.rtf *.readme"
+								, "vim"        : "*.vim"
 								, "xml"        : "*.xml *.dtd *.xsl *.xslt *.ent"
 								, "yaml"       : "*.yaml *.yml" }
 					 , "type": []
-					 , "version": false }
+					 , "v": false
+					 , "version": false
+					 , "w": false }
 
 	ignore_dir(".svn")
 	ignore_dir(".git")
@@ -375,8 +447,18 @@ main:
 	op := new OptParser(["mack [options] <pattern> [file | directory]..."
 	                   , "mack -f [options] [directory]..."])
 	op.Add(new OptParser.Group("Searching:"))
+	op.Add(new OptParser.Boolean("i", "ignore-case", _i, "Ignore case distinctions in pattern"))
+	op.Add(new OptParser.Boolean("v", "invert-match", _v, "Select non-matching lines"))
+	op.Add(new OptParser.Boolean("w", "word-regexp", _w, "Force pattern to match only whole words"))
+	op.Add(new OptParser.Boolean("Q", "literal", _Q, "Quote all metacharacters; pattern is literal"))
 	op.Add(new OptParser.Group("`nSearch output:"))
+	op.Add(new OptParser.Boolean(0, "passthru", _passthru, "Print all lines, whether matching or not"))
 	op.Add(new OptParser.Group("`nFile presentation:"))
+	op.Add(new OptParser.Boolean(0, "group", _group, "Print a filename heading above each file's results. (default: on when used interactively)", OptParser.OPT_NEG, true))
+	op.Add(new OptParser.Boolean(0, "color", _color, "Highlight the matching text (default: on)", OptParser.OPT_NEG, G_opts["color"]))
+	op.Add(new OptParser.String(0, "color-filename", _color_filename, "color", "", OptParser.OPT_ARG, G_opts["color_filename"], G_opts["color_filename"]))
+	op.Add(new OptParser.String(0, "color-match", _color_match, "color", "", OptParser.OPT_ARG, G_opts["color_match"], G_opts["color_match"]))
+	op.Add(new OptParser.String(0, "color-line_no", _color_line_no, "color", "Set the color for filenames, matches, and line numbers", OptParser.OPT_ARG, G_opts["color_line_no"], G_opts["color_line_no"]))
 	op.Add(new OptParser.Group("`nFile finding:"))
 	op.Add(new OptParser.Boolean("f", "", _f, "Only print the files selected, without searching. The pattern must not be specified"))
 	op.Add(new OptParser.Boolean("g", "", _g, "Same as -f, but only select files matching pattern"))
@@ -392,7 +474,7 @@ main:
 	op.Add(new OptParser.Callback(0, "type-del", _type_del, "del_type", "X", "Remove all filters associated with X", OptParser.OPT_ARG))
 	op.Add(new OptParser.Group("`nMiscellaneous:"))
 	op.Add(new OptParser.Boolean("h", "help", _h, "This help", OptParser.OPT_HIDDEN))
-	op.Add(new OptParser.Boolean(0, "version", _v, "Display version info"))
+	op.Add(new OptParser.Boolean(0, "version", _version, "Display version info"))
 	op.Add(new OptParser.Boolean(0, "help-types", _ht, "Display all knwon types"))
 
 	RC := 0
@@ -401,13 +483,23 @@ main:
 
 	try {
 		args := op.Parse(system.vArgs)
+		G_opts["color"] := _color
+		G_opts["color_filename"] := _color_filename
+		G_opts["color_match"] := _color_match
+		G_opts["color_line_no"] := _color_line_no
 		G_opts["f"] := _f
 		G_opts["g"] := _g
+		G_opts["group"] := _group
 		G_opts["h"] := _h
 		G_opts["ht"] := _ht
+		G_opts["i"] := _i
 		G_opts["k"] := _k
+		G_opts["passthru"] := _passthru
+		G_opts["Q"] := _Q
 		G_opts["r"] := _r
-		G_opts["version"] := _v
+		G_opts["v"] := _v
+		G_opts["version"] := _version
+		G_opts["w"] := _w
 
 		if (G_opts["k"])
 			for filetype, filter in G_opts["types"]
@@ -430,6 +522,12 @@ main:
 				G_opts["pattern"] := Arrays.Shift(args)
 				if (_main.Logs(Logger.FINEST))
 					_main.Finest("G_opts[pattern]", G_opts["pattern"])
+				if (G_opts["pattern"] = "")
+					throw Exception("Provide a search pattern")
+				if (G_opts["Q"])
+					G_opts["pattern"] := "\Q" G_opts["pattern"] "\E"
+				if (G_opts["w"])
+					G_opts["pattern"] := "\b" G_opts["pattern"] "\b"
 			}
 			file_list := determine_files(args)
 			if (G_opts["f"])
@@ -437,7 +535,7 @@ main:
 					Console.Write(file_entry "`n")
 			else {
 				for _i, file_entry in file_list
-					search_for_pattern(file_entry)
+					search_for_pattern(file_entry, G_opts["i"] ? "i" : "")
 			}
 		}
 	} catch _ex {
