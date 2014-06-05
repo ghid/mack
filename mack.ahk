@@ -32,6 +32,14 @@ determine_files(args) {
 		collect_filenames(file_list, file_pattern)
 	}
 
+	if (G_opts["sort_files"] && file_list.MaxIndex() <> "") {
+		file_list_string := ""
+		loop % file_list.MaxIndex()
+			file_list_string .= file_list[A_Index] "`n"
+		Sort file_list_string, C
+		file_list := StrSplit(file_list_string, "`n")
+	}
+
 	if (_log.Logs(Logger.ALL))
 		_log.All("file_list:`n" LoggingHelper.Dump(file_list))
 	
@@ -60,9 +68,11 @@ collect_filenames(fn_list, dirname) {
 				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_dirs"]))
 			fn_list := collect_filenames(fn_list, A_LoopFileFullPath)
 		else if (!InStr(A_LoopFileAttrib, "D")
+				&& (!G_opts["g"] || (G_opts["g"] && RegExMatch(A_LoopFileName, "S)^" G_opts["file_pattern"] "$")))
 				&& (G_opts["match_type"] = "" || RegExMatch(A_LoopFileName, G_opts["match_type"]))
-				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_files"]))
+				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_files"])) {
 			fn_list.Insert(A_LoopFileFullPath)
+		}
 	}
 
 	return _log.Exit(fn_list)
@@ -110,18 +120,20 @@ search_for_pattern(file_name, regex_opts = "") {
 			hit_n := 0
 			while (!f.AtEOF) {
 				line := f.ReadLine()
-				parts := test(line, regex_opts, found := 0)
+				parts := test(line, regex_opts, found := 0, column := 0)
 				if (found && !G_opts["v"]) {
 					hit_n++
-					if (!output(file_name, A_Index, hit_n, parts))
+					if (!output(file_name, A_Index, column, hit_n, parts))
 						break
 				} else if ((!found && G_opts["v"]) || G_opts["passthru"]) {
 					hit_n++
-					if (!output(file_name, A_Index, hit_n, line))
+					if (!output(file_name, A_Index, column, hit_n, line))
 						break
 				}
 			}
 		}
+		if (G_opts["c"])
+			Console.Write(new Console.Color(G_opts["color_filename"], hit_n " match(es)`n"))
 	} finally {
 		if (f)
 			f.Close()
@@ -130,13 +142,15 @@ search_for_pattern(file_name, regex_opts = "") {
 	return _log.Exit()
 }
 
-test(haystack, regex_opts, ByRef found := 0) {
+test(haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0) {
 	search_at := 1
 	parts := []
 	loop {
 		found_at := RegExMatch(haystack, regex_opts "S)" G_opts["pattern"], $, search_at)
 		if (found_at > 0) {
 			found++
+			if (A_Index = 1 && G_opts["column"])
+				first_match_column := found_at
 			if (found_at > 1) {
 				parts.Insert(SubStr(haystack, search_at, found_at - search_at))
 			}
@@ -153,14 +167,15 @@ test(haystack, regex_opts, ByRef found := 0) {
 	return parts
 }
 
-output(file_name, line_no, hit_n, parts*) {
+output(file_name, line_no, column_no, hit_n, parts*) {
 	_log := new Logger("app.mack." A_ThisFunc)
 
 	if (_log.Logs(Logger.INPUT)) {
 		_log.Input("file_name", file_name)
 		_log.Input("line_no", line_no)
-		_log.Input("line", line)
+		_log.Input("column_no", column_no)
 		_log.Input("hit_n", hit_n)
+		_log.Input("parts", parts)
 	}
 
 	if (hit_n = 1 && G_opts["g"]) {
@@ -171,9 +186,15 @@ output(file_name, line_no, hit_n, parts*) {
 			Console.Write("`n", new Console.Color(G_opts["color_filename"], file_name), "`n")
 		else if (!G_opts["group"])
 			Console.Write(new Console.Color(G_opts["color_filename"], file_name), ":")
-		Console.Write(new Console.Color(G_opts["color_lineno"], A_Index), ":", parts)
+		if (column_no = 0)
+			Console.Write(new Console.Color(G_opts["color_lineno"], A_Index), ":", parts)
+		else
+			Console.Write(new Console.Color(G_opts["color_lineno"], A_Index), ":", new Console.Color(G_opts["color_lineno"], column_no), ":", parts)
 		Console.ClearEOL()
 	}
+
+	if (G_opts["1"])
+		exitapp _log.Exit(0)
 
 	return _log.Exit(true)
 }
@@ -243,8 +264,8 @@ regex_of_file_pattern(file_pattern) {
 
 	StringReplace file_pattern, file_pattern, \, \\, All
 	StringReplace file_pattern, file_pattern, ., \., All
-	StringReplace file_pattern, file_pattern, *, .*?, All
 	StringReplace file_pattern, file_pattern, ?, ., All
+	StringReplace file_pattern, file_pattern, *, .*?, All
 	StringReplace file_pattern, file_pattern, [, \[, All
 	StringReplace file_pattern, file_pattern, ], \], All
 	StringReplace file_pattern, file_pattern, {, \{, All
@@ -400,10 +421,12 @@ main:
 
 	OutputDebug Start...
 	
-	global G_opts := { "color": true
-					 , "color_filename": 2
-					 , "color_match": 96
-					 , "color_lineno": 6
+	global G_opts := { "c": false
+					 , "column": false
+					 , "color": true
+					 , "color_filename": 10 | Console.BufferInfo.BackgroundColor()
+					 , "color_match": Console.Color.Reverse(Console.Color.Foreground.YELLOW)
+					 , "color_lineno": 14 | Console.BufferInfo.BackgroundColor()
 					 , "h": false
 					 , "f": false
 		 			 , "g": false
@@ -416,6 +439,7 @@ main:
 					 , "passthru": false
 					 , "Q": false
 					 , "r": true
+					 , "sort_files": false
 					 , "types": { "autohotkey" : "*.ahk"
 								, "batch"      : "*.bat *.cmd"
 								, "html"       : "*.htm *.html"
@@ -433,7 +457,8 @@ main:
 					 , "type": []
 					 , "v": false
 					 , "version": false
-					 , "w": false }
+					 , "w": false
+					 , "1": false }
 
 	ignore_dir(".svn")
 	ignore_dir(".git")
@@ -453,6 +478,9 @@ main:
 	op.Add(new OptParser.Boolean("Q", "literal", _Q, "Quote all metacharacters; pattern is literal"))
 	op.Add(new OptParser.Group("`nSearch output:"))
 	op.Add(new OptParser.Boolean(0, "passthru", _passthru, "Print all lines, whether matching or not"))
+	op.Add(new OptParser.Boolean("1", "", _1, "Stop searching after one match of any kind"))
+	op.Add(new OptParser.Boolean("c", "count", _c, "Show number of lines matching per file"))
+	op.Add(new OptParser.Boolean(0, "column", _column, "Show the column number of the first match", OptParser.OPT_NEG))
 	op.Add(new OptParser.Group("`nFile presentation:"))
 	op.Add(new OptParser.Boolean(0, "group", _group, "Print a filename heading above each file's results. (default: on when used interactively)", OptParser.OPT_NEG, true))
 	op.Add(new OptParser.Boolean(0, "color", _color, "Highlight the matching text (default: on)", OptParser.OPT_NEG, G_opts["color"]))
@@ -462,6 +490,7 @@ main:
 	op.Add(new OptParser.Group("`nFile finding:"))
 	op.Add(new OptParser.Boolean("f", "", _f, "Only print the files selected, without searching. The pattern must not be specified"))
 	op.Add(new OptParser.Boolean("g", "", _g, "Same as -f, but only select files matching pattern"))
+	op.Add(new OptParser.Boolean(0, "sort-files", _sort_files, "Sort the found files lexically"))
 	op.Add(new OptParser.Group("`nFile inclusion/exclusion:"))
 	op.Add(new OptParser.Callback(0, "ignore-dir", _ignore_dir, "ignore_dir", "name", "Add/remove directory from list of ignored dirs", OptParser.OPT_ARG | OptParser.OPT_NEG))
 	op.Add(new OptParser.Callback(0, "ignore-file", _ignore_file, "ignore_file", "filter", "Add filter for ignoring files", OptParser.OPT_ARG | OptParser.OPT_NEG))
@@ -483,6 +512,8 @@ main:
 
 	try {
 		args := op.Parse(system.vArgs)
+		G_opts["c"] := _c
+		G_opts["column"] := _column
 		G_opts["color"] := _color
 		G_opts["color_filename"] := _color_filename
 		G_opts["color_match"] := _color_match
@@ -497,9 +528,11 @@ main:
 		G_opts["passthru"] := _passthru
 		G_opts["Q"] := _Q
 		G_opts["r"] := _r
+		G_opts["sort_files"] := _sort_files
 		G_opts["v"] := _v
 		G_opts["version"] := _version
 		G_opts["w"] := _w
+		G_opts["1"] := _1
 
 		if (G_opts["k"])
 			for filetype, filter in G_opts["types"]
@@ -528,11 +561,16 @@ main:
 					G_opts["pattern"] := "\Q" G_opts["pattern"] "\E"
 				if (G_opts["w"])
 					G_opts["pattern"] := "\b" G_opts["pattern"] "\b"
+				if (G_opts["g"])
+					G_opts["file_pattern"] := regex_of_file_pattern(G_opts["pattern"])
+				if (_main.Logs(Logger.FINEST))
+					_main.Finest("G_opts[file_pattern]", G_opts["file_pattern"])
 			}
 			file_list := determine_files(args)
-			if (G_opts["f"])
-				for _i, file_entry in file_list
+			if (G_opts["f"] || G_opts["g"])
+				for _i, file_entry in file_list {
 					Console.Write(file_entry "`n")
+				}
 			else {
 				for _i, file_entry in file_list
 					search_for_pattern(file_entry, G_opts["i"] ? "i" : "")
@@ -541,7 +579,7 @@ main:
 	} catch _ex {
 		Console.Write(_ex.Message "`n")
 		Console.Write(op.Usage() "`n")
-		RC := 1
+		RC := .
 	}
 
 	OutputDebug Done.
