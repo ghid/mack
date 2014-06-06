@@ -113,13 +113,14 @@ search_for_pattern(file_name, regex_opts = "") {
 	}
 
 	try {
-		f := FileOpen(file_name, "r-r`r")
+		f := FileOpen(file_name, "r-r`n`r")
 		if (!f)
 			_log.Error("Could not open file " file_name)
 		else {
 			hit_n := 0
 			while (!f.AtEOF) {
 				line := f.ReadLine()
+				line := RegExReplace(line, "`n$", "", 1)	
 				parts := test(line, regex_opts, found := 0, column := 0)
 				if (found && !G_opts["v"]) {
 					hit_n++
@@ -170,6 +171,9 @@ test(haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0) {
 output(file_name, line_no, column_no, hit_n, parts*) {
 	_log := new Logger("app.mack." A_ThisFunc)
 
+	static first_call := true
+		 , line_count := 1
+
 	if (_log.Logs(Logger.INPUT)) {
 		_log.Input("file_name", file_name)
 		_log.Input("line_no", line_no)
@@ -182,21 +186,58 @@ output(file_name, line_no, column_no, hit_n, parts*) {
 		Console.Write(new Console.Color(G_opts["color_filename"], file_name), "`n")
 		return _log.Exit(false)	
 	} else {
-		if (hit_n = 1 && G_opts["group"])
+		if (hit_n = 1 && G_opts["group"]) {
+			if (!first_call) {
+				Console.Write(new Console.Color(Console.Color.Reverse(), "<Eof><Press space to continue or q to quit>"))
+				Hotkey, IfWinActive, %G_wt%
+				Hotkey q, __Quit__
+				Hotkey Space, __Space__
+				Pause, On
+				line_count := 1
+			} else
+				first_call := false
 			Console.Write("`n", new Console.Color(G_opts["color_filename"], file_name), "`n")
-		else if (!G_opts["group"])
+			line_count++
+		} else if (!G_opts["group"]) {
 			Console.Write(new Console.Color(G_opts["color_filename"], file_name), ":")
-		if (column_no = 0)
+		}
+		if (column_no = 0) {
 			Console.Write(new Console.Color(G_opts["color_lineno"], A_Index), ":", parts)
-		else
+			Console.ClearEOL()
+			Console.Write("`n")
+			line_count++
+		} else {
 			Console.Write(new Console.Color(G_opts["color_lineno"], A_Index), ":", new Console.Color(G_opts["color_lineno"], column_no), ":", parts)
-		Console.ClearEOL()
+			Console.ClearEOL()
+			Console.Write("`n")
+			line_count++
+		}
+		if (G_opts["group"] && line_count > Console.BufferInfo.srWindow.Bottom - Console.BufferInfo.srWindow.Top) {
+			Console.Write(new Console.Color(Console.Color.Reverse(), "<Press space to continue or q to quit>"))
+			Hotkey, IfWinActive, %G_wt%
+			Hotkey q, __Quit__
+			Hotkey Space, __Space__
+			Pause, On
+			line_count := 1
+		}
 	}
 
 	if (G_opts["1"])
-		exitapp _log.Exit(0)
+		goto __Quit__
 
 	return _log.Exit(true)
+
+	__Space__:
+		Pause, Off
+		Console.SetCursorPos(0)
+		Console.ClearEOL()
+	return
+
+	__Quit__:
+		Console.SetCursorPos(0)
+		Console.ClearEOL()
+		DllCall("FlushConsoleInputBuffer", "Ptr", Console.hStdIn, "Int")
+	exitapp _log.Exit(0)
 }
 
 regex_file_pattern_list(file_pattern_string) {
@@ -421,6 +462,7 @@ main:
 
 	OutputDebug Start...
 	
+	global G_wt
 	global G_opts := { "c": false
 					 , "column": false
 					 , "color": true
@@ -460,6 +502,8 @@ main:
 					 , "w": false
 					 , "1": false }
 
+	WinGetTitle G_wt, A
+
 	ignore_dir(".svn")
 	ignore_dir(".git")
 	ignore_dir("CVS")
@@ -468,6 +512,8 @@ main:
 	ignore_file("*.bak")
 	ignore_file("*.swp")
 	ignore_file("Thumbs.db")
+	ignore_file("*.exe")
+	ignore_file("*.dll")
 
 	op := new OptParser(["mack [options] <pattern> [file | directory]..."
 	                   , "mack -f [options] [directory]..."])
@@ -583,4 +629,5 @@ main:
 	}
 
 	OutputDebug Done.
+	DllCall("FlushConsoleInputBuffer", "Ptr", Console.hStdIn, "Int")
 exitapp _main.Exit(RC)
