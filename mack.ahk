@@ -120,7 +120,6 @@ search_for_pattern(file_name, regex_opts = "") {
 			hit_n := 0
 			while (!f.AtEOF) {
 				line := f.ReadLine()
-				line := RegExReplace(line, "`n$", "", 1)	
 				parts := test(line, regex_opts, found := 0, column := 0)
 				if (found && !G_opts["v"]) {
 					hit_n++
@@ -143,13 +142,15 @@ search_for_pattern(file_name, regex_opts = "") {
 	return _log.Exit()
 }
 
-test(haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0) {
+test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0) {
 	search_at := 1
 	parts := []
 	loop {
 		found_at := RegExMatch(haystack, regex_opts "S)" G_opts["pattern"], $, search_at)
 		if (found_at > 0) {
 			found++
+			if (found = 1)
+				haystack := RegExReplace(haystack, "`n$", "", 1)	
 			if (A_Index = 1 && G_opts["column"])
 				first_match_column := found_at
 			if (found_at > 1) {
@@ -164,7 +165,7 @@ test(haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0) {
 			parts.Insert(SubStr(haystack, search_at))
 		}
 	} until (found_at = 0)
-
+		
 	return parts
 }
 
@@ -202,12 +203,12 @@ output(file_name, line_no, column_no, hit_n, parts*) {
 			Console.Write(new Console.Color(G_opts["color_filename"], file_name), ":")
 		}
 		if (column_no = 0) {
-			Console.Write(new Console.Color(G_opts["color_lineno"], A_Index), ":", parts)
+			Console.Write(new Console.Color(G_opts["color_line_no"], A_Index), ":", parts)
 			Console.ClearEOL()
 			Console.Write("`n")
 			line_count++
 		} else {
-			Console.Write(new Console.Color(G_opts["color_lineno"], A_Index), ":", new Console.Color(G_opts["color_lineno"], column_no), ":", parts)
+			Console.Write(new Console.Color(G_opts["color_line_no"], A_Index), ":", new Console.Color(G_opts["color_line_no"], column_no), ":", parts)
 			Console.ClearEOL()
 			Console.Write("`n")
 			line_count++
@@ -468,7 +469,7 @@ main:
 					 , "color": true
 					 , "color_filename": 10 | Console.BufferInfo.BackgroundColor()
 					 , "color_match": Console.Color.Reverse(Console.Color.Foreground.YELLOW)
-					 , "color_lineno": 14 | Console.BufferInfo.BackgroundColor()
+					 , "color_line_no": 14 | Console.BufferInfo.BackgroundColor()
 					 , "h": false
 					 , "f": false
 		 			 , "g": false
@@ -532,7 +533,7 @@ main:
 	op.Add(new OptParser.Boolean(0, "color", _color, "Highlight the matching text (default: on)", OptParser.OPT_NEG, G_opts["color"]))
 	op.Add(new OptParser.String(0, "color-filename", _color_filename, "color", "", OptParser.OPT_ARG, G_opts["color_filename"], G_opts["color_filename"]))
 	op.Add(new OptParser.String(0, "color-match", _color_match, "color", "", OptParser.OPT_ARG, G_opts["color_match"], G_opts["color_match"]))
-	op.Add(new OptParser.String(0, "color-line_no", _color_line_no, "color", "Set the color for filenames, matches, and line numbers", OptParser.OPT_ARG, G_opts["color_line_no"], G_opts["color_line_no"]))
+	op.Add(new OptParser.String(0, "color-line-no", _color_line_no, "color", "Set the color for filenames, matches, and line numbers", OptParser.OPT_ARG, G_opts["color_line_no"], G_opts["color_line_no"]))
 	op.Add(new OptParser.Group("`nFile finding:"))
 	op.Add(new OptParser.Boolean("f", "", _f, "Only print the files selected, without searching. The pattern must not be specified"))
 	op.Add(new OptParser.Boolean("g", "", _g, "Same as -f, but only select files matching pattern"))
