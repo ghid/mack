@@ -121,7 +121,11 @@ search_for_pattern(file_name, regex_opts = "") {
 			while (!f.AtEOF) {
 				line := f.ReadLine()
 				parts := test(line, regex_opts, found := 0, column := 0)
-				if (found && !G_opts["v"]) {
+
+				if (found && G_opts["files_wo_matches"]) {
+					hit_n++
+					break
+				} else if (found && !G_opts["v"]) {
 					hit_n++
 					if (!output(file_name, A_Index, column, hit_n, parts))
 						break
@@ -134,6 +138,8 @@ search_for_pattern(file_name, regex_opts = "") {
 		}
 		if (G_opts["c"])
 			Console.Write(new Console.Color(G_opts["color_filename"], hit_n " match(es)`n"))
+		if (hit_n = 0 && G_opts["files_wo_matches"])
+			Console.Write(new Console.Color(G_opts["color_filename"], file_name "`n"))
 	} finally {
 		if (f)
 			f.Close()
@@ -145,12 +151,13 @@ search_for_pattern(file_name, regex_opts = "") {
 test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0) {
 	search_at := 1
 	parts := []
+	haystack := RegExReplace(haystack, "`n$", "", 1)
 	loop {
 		found_at := RegExMatch(haystack, regex_opts "S)" G_opts["pattern"], $, search_at)
 		if (found_at > 0) {
 			found++
-			if (found = 1)
-				haystack := RegExReplace(haystack, "`n$", "", 1)	
+			; if (found = 1)
+			; 	haystack := RegExReplace(haystack, "`n$", "", 1)	
 			if (A_Index = 1 && G_opts["column"])
 				first_match_column := found_at
 			if (found_at > 1) {
@@ -183,7 +190,7 @@ output(file_name, line_no, column_no, hit_n, parts*) {
 		_log.Input("parts", parts)
 	}
 
-	if (hit_n = 1 && G_opts["g"]) {
+	if (hit_n = 1 && (G_opts["g"] | G_opts["files_w_matches"])) {
 		Console.Write(new Console.Color(G_opts["color_filename"], file_name), "`n")
 		return _log.Exit(false)	
 	} else {
@@ -472,6 +479,8 @@ main:
 					 , "color_line_no": 14 | Console.BufferInfo.BackgroundColor()
 					 , "h": false
 					 , "f": false
+					 , "files_w_matches": false
+					 , "files_wo_matches": false
 		 			 , "g": false
 					 , "group": true
 					 , "ht": false
@@ -524,6 +533,8 @@ main:
 	op.Add(new OptParser.Boolean("w", "word-regexp", _w, "Force pattern to match only whole words"))
 	op.Add(new OptParser.Boolean("Q", "literal", _Q, "Quote all metacharacters; pattern is literal"))
 	op.Add(new OptParser.Group("`nSearch output:"))
+	op.Add(new OptParser.Boolean("l", "files-with-matches", _files_w_matches, "Only print filenames containing matches"))
+	op.Add(new OptParser.Boolean("L", "files-without-matches", _files_wo_matches, "Only print filenames with no matches"))
 	op.Add(new OptParser.Boolean(0, "passthru", _passthru, "Print all lines, whether matching or not"))
 	op.Add(new OptParser.Boolean("1", "", _1, "Stop searching after one match of any kind"))
 	op.Add(new OptParser.Boolean("c", "count", _c, "Show number of lines matching per file"))
@@ -566,6 +577,8 @@ main:
 		G_opts["color_match"] := _color_match
 		G_opts["color_line_no"] := _color_line_no
 		G_opts["f"] := _f
+		G_opts["files_w_matches"] := _files_w_matches
+		G_opts["files_wo_matches"] := _files_wo_matches
 		G_opts["g"] := _g
 		G_opts["group"] := _group
 		G_opts["h"] := _h
