@@ -8,6 +8,7 @@ SetBatchLines -1
 #Include <string>
 #Include <datatable>
 #Include <arrays>
+#Include <queue>
 
 get_version() {
 	_log := new Logger("app.mack." A_ThisFunc)
@@ -109,8 +110,13 @@ search_for_pattern(file_name, regex_opts = "") {
 			_log.Finest("G_opts[g]", G_opts["g"])
 			_log.Finest("G_opts[group]", G_opts["group"])
 			_log.Finest("G_opts[passthru]", G_opts["passthru"])
+			_log.Finest("G_opts[A]", G_opts["A"])
+			_log.Finest("G_opts[B]", G_opts["B"])
 		}
 	}
+
+	before_context := new Queue(G_opts["B"])
+	after_context := new Queue(G_opts["A"])
 
 	try {
 		f := FileOpen(file_name, "r-r`n`r")
@@ -120,6 +126,7 @@ search_for_pattern(file_name, regex_opts = "") {
 			hit_n := 0
 			while (!f.AtEOF) {
 				line := f.ReadLine()
+
 				parts := test(line, regex_opts, found := 0, column := 0)
 
 				if (found && G_opts["files_wo_matches"]) {
@@ -127,13 +134,22 @@ search_for_pattern(file_name, regex_opts = "") {
 					break
 				} else if (found && !G_opts["v"]) {
 					hit_n++
-					if (!output(file_name, A_Index, column, hit_n, parts))
+					if (G_opts["A"] > 0) {
+						fpos := f.Tell()
+						while (!f.AtEOF && A_Index <= G_opts["A"])
+							after_context.Push(RegExReplace(f.Readline(), "\n$", "", 1))
+						f.Seek(fpos)	
+					}
+					if (!output(file_name, A_Index, column, hit_n, before_context, after_context, parts))
 						break
 				} else if ((!found && G_opts["v"]) || G_opts["passthru"]) {
 					hit_n++
-					if (!output(file_name, A_Index, column, hit_n, line))
+					if (!output(file_name, A_Index, column, hit_n, "", "", line))
 						break
 				}
+
+				if (G_opts["B"] > 0)
+					before_context.Push(line)	
 			}
 		}
 		if (G_opts["c"])
@@ -176,7 +192,8 @@ test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0
 	return parts
 }
 
-output(file_name, line_no, column_no, hit_n, parts*) {
+; Todo: Für's paging muss berücksichtigt werden, falls eine Zeile in der Anzeige umgebrochen werden muss
+output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts*) {
 	_log := new Logger("app.mack." A_ThisFunc)
 
 	static first_call := true
@@ -187,7 +204,13 @@ output(file_name, line_no, column_no, hit_n, parts*) {
 		_log.Input("line_no", line_no)
 		_log.Input("column_no", column_no)
 		_log.Input("hit_n", hit_n)
+		_log.Input("before_ctx", before_ctx)
+		_log.Input("after_ctx", after_ctx)
 		_log.Input("parts", parts)
+		if (_log.Logs(Logger.ALL)) {
+			_log.All("before_ctx:`n" LoggingHelper.Dump(before_ctx))
+			_log.All("after_ctx:`n" LoggingHelper.Dump(after_ctx))
+		}
 	}
 
 	if (hit_n = 1 && (G_opts["g"] | G_opts["files_w_matches"])) {
@@ -209,6 +232,16 @@ output(file_name, line_no, column_no, hit_n, parts*) {
 		} else if (!G_opts["group"]) {
 			Console.Write(new Console.Color(G_opts["color_filename"], file_name), ":")
 		}
+		if (before_ctx.Length() > 0) {
+			_line_no := A_Index
+			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
+			loop % before_ctx.Length() {
+				Console.Write(_line_no - G_opts["B"] + A_Index - 1, ":", before_ctx.Pop())
+				Console.ClearEOL()
+				Console.Write("`n")
+				line_count++
+			}
+		}
 		if (column_no = 0) {
 			Console.Write(new Console.Color(G_opts["color_line_no"], A_Index), ":", parts)
 			Console.ClearEOL()
@@ -219,6 +252,16 @@ output(file_name, line_no, column_no, hit_n, parts*) {
 			Console.ClearEOL()
 			Console.Write("`n")
 			line_count++
+		}
+		if (after_ctx.Length() > 0) {
+			_line_no := A_Index
+			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
+			loop % after_ctx.Length() {
+				Console.Write(_line_no + A_Index, ":", after_ctx.Pop())
+				Console.ClearEOL()
+				Console.Write("`n")
+				line_count++
+			}
 		}
 		if (G_opts["group"] && line_count > Console.BufferInfo.srWindow.Bottom - Console.BufferInfo.srWindow.Top) {
 			Console.Write(new Console.Color(Console.Color.Reverse(), "<Press space to continue or q to quit>"))
@@ -471,12 +514,15 @@ main:
 	OutputDebug Start...
 	
 	global G_wt
-	global G_opts := { "c": false
+	global G_opts := { "A": 0
+					 , "B": 0
+					 , "c": false
 					 , "column": false
 					 , "color": true
 					 , "color_filename": 10 | Console.BufferInfo.BackgroundColor()
 					 , "color_match": Console.Color.Reverse(Console.Color.Foreground.YELLOW)
 					 , "color_line_no": 14 | Console.BufferInfo.BackgroundColor()
+					 , "context": 0
 					 , "h": false
 					 , "f": false
 					 , "files_w_matches": false
@@ -539,8 +585,11 @@ main:
 	op.Add(new OptParser.Boolean("1", "", _1, "Stop searching after one match of any kind"))
 	op.Add(new OptParser.Boolean("c", "count", _c, "Show number of lines matching per file"))
 	op.Add(new OptParser.Boolean(0, "column", _column, "Show the column number of the first match", OptParser.OPT_NEG))
+	op.Add(new OptParser.String("A", "after-context", _n_after_ctx, "NUM", "Print NUM lines of trailing context after matching lines",,, G_opts["A"]))
+	op.Add(new OptParser.String("B", "before-context", _n_before_ctx, "NUM", "Print NUM lines of leading context before matching lines",,, G_opts["B"]))
+	op.Add(new OptParser.String("C", "context", _n_ctx, "NUM", "Print NUM (default 2) lines of output context", OptParser.OPT_OPTARG, 2, G_opts["context"]))
 	op.Add(new OptParser.Group("`nFile presentation:"))
-	op.Add(new OptParser.Boolean(0, "group", _group, "Print a filename heading above each file's results. (default: on when used interactively)", OptParser.OPT_NEG, true))
+	op.Add(new OptParser.Boolean(0, "group", _group, "Print a filename heading above each file's results (default: on when used interactively)", OptParser.OPT_NEG, true))
 	op.Add(new OptParser.Boolean(0, "color", _color, "Highlight the matching text (default: on)", OptParser.OPT_NEG, G_opts["color"]))
 	op.Add(new OptParser.String(0, "color-filename", _color_filename, "color", "", OptParser.OPT_ARG, G_opts["color_filename"], G_opts["color_filename"]))
 	op.Add(new OptParser.String(0, "color-match", _color_match, "color", "", OptParser.OPT_ARG, G_opts["color_match"], G_opts["color_match"]))
@@ -570,12 +619,15 @@ main:
 
 	try {
 		args := op.Parse(system.vArgs)
+		G_opts["A"] := _n_after_ctx
+		G_opts["B"] := _n_before_ctx
 		G_opts["c"] := _c
 		G_opts["column"] := _column
 		G_opts["color"] := _color
 		G_opts["color_filename"] := _color_filename
 		G_opts["color_match"] := _color_match
 		G_opts["color_line_no"] := _color_line_no
+		G_opts["context"] := _n_ctx
 		G_opts["f"] := _f
 		G_opts["files_w_matches"] := _files_w_matches
 		G_opts["files_wo_matches"] := _files_wo_matches
@@ -593,6 +645,8 @@ main:
 		G_opts["version"] := _version
 		G_opts["w"] := _w
 		G_opts["1"] := _1
+		if (_main.Logs(Logger.Finest))
+			_log.Finest("G_opts:`n" LoggingHelper.Dump(G_opts))
 
 		if (G_opts["k"])
 			for filetype, filter in G_opts["types"]
@@ -601,6 +655,12 @@ main:
 		G_opts["match_ignore_dirs"] := regex_match_list(G_opts["ignore_dirs"])
 		G_opts["match_ignore_files"] := regex_match_list(G_opts["ignore_files"])
 		G_opts["match_type"] := regex_match_list(G_opts["type"])
+
+		if (G_opts["context"] && G_opts["A"] = 0)
+			G_opts["A"] := G_opts["context"]
+
+		if (G_opts["context"] && G_opts["B"] = 0)
+			G_opts["B"] := G_opts["context"]
 
 		if (_main.Logs(Logger.FINEST))
 			_main.Finest("G_opts:`n" LoggingHelper.Dump(G_opts))
