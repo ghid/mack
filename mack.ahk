@@ -125,7 +125,7 @@ search_for_pattern(file_name, regex_opts = "") {
 		else {
 			hit_n := 0
 			while (!f.AtEOF) {
-				line := f.ReadLine()
+				line := RegExReplace(f.ReadLine(), "`t", "        ")
 
 				parts := test(line, regex_opts, found := 0, column := 0)
 
@@ -192,7 +192,6 @@ test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0
 	return parts
 }
 
-; Todo: Für's paging muss berücksichtigt werden, falls eine Zeile in der Anzeige umgebrochen werden muss
 output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts*) {
 	_log := new Logger("app.mack." A_ThisFunc)
 
@@ -214,7 +213,7 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts*) {
 	}
 
 	if (hit_n = 1 && (G_opts["g"] | G_opts["files_w_matches"])) {
-		Console.Write(new Console.Color(G_opts["color_filename"], file_name), "`n")
+		line_count += set_line_count(Console.Write(new Console.Color(G_opts["color_filename"], file_name), "`n"))
 		return _log.Exit(false)	
 	} else {
 		if (hit_n = 1 && G_opts["group"]) {
@@ -227,42 +226,40 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts*) {
 				line_count := 1
 			} else
 				first_call := false
-			Console.Write("`n", new Console.Color(G_opts["color_filename"], file_name), "`n")
-			line_count++
+			line_count += set_line_count(Console.Write("`n", new Console.Color(G_opts["color_filename"], file_name), "`n"))
 		} else if (!G_opts["group"]) {
-			Console.Write(new Console.Color(G_opts["color_filename"], file_name), ":")
+			line_count += set_line_count(Console.Write(new Console.Color(G_opts["color_filename"], file_name), ":"))
 		}
 		if (before_ctx.Length() > 0) {
 			_line_no := A_Index
 			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
 			loop % before_ctx.Length() {
-				Console.Write(_line_no - G_opts["B"] + A_Index - 1, ":", before_ctx.Pop())
+				line_count += set_line_count(Console.Write(_line_no - G_opts["B"] + A_Index - 1, ":", before_ctx.Pop()))
 				Console.ClearEOL()
 				Console.Write("`n")
-				line_count++
 			}
 		}
 		if (column_no = 0) {
-			Console.Write(new Console.Color(G_opts["color_line_no"], A_Index), ":", parts)
+			line_count += set_line_count(Console.Write(new Console.Color(G_opts["color_line_no"], A_Index), ":", parts))
 			Console.ClearEOL()
 			Console.Write("`n")
-			line_count++
 		} else {
-			Console.Write(new Console.Color(G_opts["color_line_no"], A_Index), ":", new Console.Color(G_opts["color_line_no"], column_no), ":", parts)
+			line_count += set_line_count(Console.Write(new Console.Color(G_opts["color_line_no"], A_Index), ":", new Console.Color(G_opts["color_line_no"], column_no), ":", parts))
 			Console.ClearEOL()
 			Console.Write("`n")
-			line_count++
 		}
 		if (after_ctx.Length() > 0) {
 			_line_no := A_Index
 			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
 			loop % after_ctx.Length() {
-				Console.Write(_line_no + A_Index, ":", after_ctx.Pop())
+				line_count += set_line_count(Console.Write(_line_no + A_Index, ":", after_ctx.Pop()))
 				Console.ClearEOL()
 				Console.Write("`n")
 				line_count++
 			}
 		}
+		if (_log.Logs(Logger.Finest))
+			_log.Finest("line_count", line_count)
 		if (G_opts["group"] && line_count > Console.BufferInfo.srWindow.Bottom - Console.BufferInfo.srWindow.Top) {
 			Console.Write(new Console.Color(Console.Color.Reverse(), "<Press space to continue or q to quit>"))
 			Hotkey, IfWinActive, %G_wt%
@@ -289,6 +286,15 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts*) {
 		Console.ClearEOL()
 		DllCall("FlushConsoleInputBuffer", "Ptr", Console.hStdIn, "Int")
 	exitapp _log.Exit(0)
+}
+
+set_line_count(length) {
+	_log := new Logger("app.mack." A_ThisFunc)
+
+	if (_log.Logs(Logger.Input))
+		_log.Input("length", length)
+
+	return _log.Exit((length // Console.BufferInfo.dwSize.X) + 1)
 }
 
 regex_file_pattern_list(file_pattern_string) {
