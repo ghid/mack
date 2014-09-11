@@ -9,10 +9,13 @@ SetBatchLines -1
 #Include <datatable>
 #Include <arrays>
 #Include <queue>
+#Include *i %A_ScriptDir%\.versioninfo
 
 get_version() {
+	global G_VERSION_INFO
+
 	_log := new Logger("app.mack." A_ThisFunc)
-	return _log.Exit("mack version " _CFG.CFG_VERSION " " G_CFG.CFG_ARCH " " G_CFG.CFG_BUILD "`n")
+	return _log.Exit("AHK mack version " G_VERSION_INFO.NAME "/" G_VERSION_INFO.ARCH "-b" G_VERSION_INFO.BUILD " Copyright (C) 2014 K.-P. Schreiner`n")
 }
 
 determine_files(args) {
