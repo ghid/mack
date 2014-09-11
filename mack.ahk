@@ -152,7 +152,7 @@ search_for_pattern(file_name, regex_opts = "") {
 					before_context.Push(line)	
 			}
 		}
-		if (G_opts["c"])
+		if (G_opts["c"] && hit_n > 0)
 			Console.Write(new Console.Color(G_opts["color_filename"], hit_n " match(es)`n"))
 		if (hit_n = 0 && G_opts["files_wo_matches"])
 			Console.Write(new Console.Color(G_opts["color_filename"], file_name "`n"))
