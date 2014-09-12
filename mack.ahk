@@ -1,3 +1,4 @@
+; vim: mode=autohotkey:ts=4
 #NoEnv
 SetBatchLines -1
 
@@ -15,7 +16,7 @@ get_version() {
 	global G_VERSION_INFO
 
 	_log := new Logger("app.mack." A_ThisFunc)
-	return _log.Exit("AHK mack version " G_VERSION_INFO.NAME "/" G_VERSION_INFO.ARCH "-b" G_VERSION_INFO.BUILD " Copyright (C) 2014 K.-P. Schreiner`n")
+	return _log.Exit(G_VERSION_INFO.NAME "/" G_VERSION_INFO.ARCH "-b" G_VERSION_INFO.BUILD " Copyright (C) 2014 K.-P. Schreiner`n")
 }
 
 determine_files(args) {
@@ -127,8 +128,9 @@ search_for_pattern(file_name, regex_opts = "") {
 			_log.Error("Could not open file " file_name)
 		else {
 			hit_n := 0
+			tabstops := do_modelines(f)
 			while (!f.AtEOF) {
-				line := RegExReplace(f.ReadLine(), "`t", "        ")
+				line := RegExReplace(f.ReadLine(), "`t", tabstops)
 
 				parts := test(line, regex_opts, found := 0, column := 0)
 
@@ -517,6 +519,73 @@ help_types() {
 	return _log.Exit(dt.GetTableAsString())
 }
 
+do_modelines(file) {
+	_log := new Logger("app.mack." A_ThisFunc)
+
+	if (_log.Logs(Logger.Input)) {
+		_log.Input("file", file)
+		if (_log.Logs(Logger.Finest)) {
+			_log.Finest("G_opts[tabstop]", G_opts["tabstop"])
+			_log.Finest("G_opts[modelines]", G_opts["modelines"])
+			_log.Finest("G_opts[modeline_pattern]", G_opts["modeline_pattern"])
+			if (_log.Logs(Logger.All)) {
+				_log.All("G_opts[modeline_pattern]:`n" LoggingHelper.Dump(G_opts["modeline_pattern"]))
+			}
+			_log.Finest("G_opts[modeline_expr]", G_opts["modeline_expr"])
+		}
+	}
+
+	modeline_found := false
+	if (G_opts["modelines"]) {
+		loop % G_opts["modelines"] {
+			line := file.ReadLine()
+			if (RegExMatch(line, G_opts["modeline_expr"], $)) {
+				tabsize := ""
+				loop % G_opts["modeline_pattern"].MaxIndex()
+					tabsize .= $tabstop%A_Index%
+				if (_log.Logs(Logger.Detail)) {
+					_log.Detail("Header modeline found: ", line ": " tabsize)
+				}
+				modeline_found := true
+				break
+			}
+		}
+		if (!modeline_found) {
+			search_size := G_opts["modelines"] * 100
+			if (file.Length > search_size) {
+				file.Seek(-search_size, 2)
+				tail_content := file.Read(search_size)
+			} else {
+				file.Seek(0)
+				tail_content := file.Read(search_size := file.Length)
+			}
+			lines := StrSplit(tail_content, "`n", "`r")
+			if (_log.Logs(Logger.Finest)) {
+				_log.Finest("search_size", search_size)
+				_log.Finest("lines:`n" LoggingHelper.Dump(lines))
+			}
+			loop % G_opts["modelines"] {
+				if (RegExMatch(lines[lines.MaxIndex() - A_Index + 1], G_opts["modeline_expr"], $)) {
+					tabsize := $tabstop
+					loop % G_opts["modeline_pattern"].MaxIndex()
+						tabsize .= $tabstop%A_Index%
+					if (_log.Logs(Logger.Detail)) {
+						_log.Detail("Trailer modeline found: ", lines[lines.MaxIndex() - A_Index + 1] ": " tabsize)
+					}
+					modeline_found := true
+					break
+				}
+			}
+		}
+		file.Seek(0)
+	}
+
+	if (!modeline_found)
+		tabsize := G_opts["tabstop"]
+
+	return _log.Exit(SubStr("         ", 1, tabsize))
+}
+
 main:
 	_main := new Logger("app.mack.main")
 
@@ -544,9 +613,13 @@ main:
 					 , "ignore_files": []
 					 , "k": false
 					 , "passthru": false
+					 , "modelines": 5
+					 , "modeline_pattern": [ "^.*?\s+(vi:|vim:|ex:)\s*.*?((ts|tabstop)=(?P<tabstop1>\d))"
+										   , "^.*?:.*?tabSize=(?P<tabstop2>\d):.*?:" ]
 					 , "Q": false
 					 , "r": true
 					 , "sort_files": false
+					 , "tabstop": 4
 					 , "types": { "autohotkey" : "*.ahk"
 								, "batch"      : "*.bat *.cmd"
 								, "html"       : "*.htm *.html"
@@ -597,6 +670,8 @@ main:
 	op.Add(new OptParser.String("A", "after-context", _n_after_ctx, "NUM", "Print NUM lines of trailing context after matching lines",,, G_opts["A"]))
 	op.Add(new OptParser.String("B", "before-context", _n_before_ctx, "NUM", "Print NUM lines of leading context before matching lines",,, G_opts["B"]))
 	op.Add(new OptParser.String("C", "context", _n_ctx, "NUM", "Print NUM (default 2) lines of output context", OptParser.OPT_OPTARG, 2, G_opts["context"]))
+	op.Add(new OptParser.String(0, "tabstop", _tabstop, "size", "Calculate tabstops with width of size (default 8)",,, G_opts["tabstop"]))
+	op.Add(new OptParser.String(0, "modelines", _modelines, "lines", "Search modelines (default 5) for tabstop info. Set to 0 to ignore modelines", OptParser.OPT_OPTARG,, 5, G_opts["modelines"]))
 	op.Add(new OptParser.Group("`nFile presentation:"))
 	op.Add(new OptParser.Boolean(0, "group", _group, "Print a filename heading above each file's results (default: on when used interactively)", OptParser.OPT_NEG, true))
 	op.Add(new OptParser.Boolean(0, "color", _color, "Highlight the matching text (default: on)", OptParser.OPT_NEG, G_opts["color"]))
@@ -646,10 +721,13 @@ main:
 		G_opts["ht"] := _ht
 		G_opts["i"] := _i
 		G_opts["k"] := _k
+		G_opts["modelines"] := OptParser.TrimArg(_modelines)
+		G_opts["modeline_expr"] := Arrays.ToString(G_opts["modeline_pattern"], "|")
 		G_opts["passthru"] := _passthru
 		G_opts["Q"] := _Q
 		G_opts["r"] := _r
 		G_opts["sort_files"] := _sort_files
+		G_opts["tabstop"] := OptParser.TrimArg(_tabstop)
 		G_opts["v"] := _v
 		G_opts["version"] := _version
 		G_opts["w"] := _w
@@ -708,7 +786,7 @@ main:
 	} catch _ex {
 		Console.Write(_ex.Message "`n")
 		Console.Write(op.Usage() "`n")
-		RC := .
+		RC := _ex.Extra
 	}
 
 	OutputDebug Done.

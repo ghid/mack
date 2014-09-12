@@ -3,4 +3,5 @@
 trace.log
 .*.marks
 .*.swp
+.*.swo
 
