@@ -1,4 +1,3 @@
-; vim: mode=autohotkey:ts=4
 #NoEnv
 SetBatchLines -1
 
@@ -614,8 +613,8 @@ main:
 					 , "k": false
 					 , "passthru": false
 					 , "modelines": 5
-					 , "modeline_pattern": [ "^.*?\s+(vi:|vim:|ex:)\s*.*?((ts|tabstop)=(?P<tabstop1>\d))"
-										   , "^.*?:.*?tabSize=(?P<tabstop2>\d):.*?:" ]
+					 , "modeline_pattern": [ "^.*?\s+(vi:|vim:|ex:)\s*.*?((ts|tabstop)=(?P<tabstop>\d))"
+										   , "^.*?:.*?tabSize=(?P<tabstop>\d):.*?:" ]
 					 , "Q": false
 					 , "r": true
 					 , "sort_files": false
@@ -722,7 +721,7 @@ main:
 		G_opts["i"] := _i
 		G_opts["k"] := _k
 		G_opts["modelines"] := OptParser.TrimArg(_modelines)
-		G_opts["modeline_expr"] := Arrays.ToString(G_opts["modeline_pattern"], "|")
+		G_opts["modeline_expr"] := "J)" Arrays.ToString(G_opts["modeline_pattern"], "|")
 		G_opts["passthru"] := _passthru
 		G_opts["Q"] := _Q
 		G_opts["r"] := _r
@@ -792,3 +791,4 @@ main:
 	OutputDebug Done.
 	DllCall("FlushConsoleInputBuffer", "Ptr", Console.hStdIn, "Int")
 exitapp _main.Exit(RC)
+; vim: ts=4:sts=4:sw=4:tw=0:noet
