@@ -3,7 +3,7 @@
 SetBatchLines -1
 
 #Include <logging>
-#Include d:\work\ahk\projects\lib2\ansi.ahk
+#Include <ansi>
 #Include <optparser>
 #Include <system>
 #Include <string>
@@ -219,7 +219,10 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 	}
 	
 	if (hit_n = 1 && (G_opts["g"] | G_opts["files_w_matches"])) {
-		line_count += set_line_count(Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset()))
+		if (G_opts["color"])
+			line_count += set_line_count(Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset()))
+		else
+			line_count += set_line_count(Ansi.WriteLine(file_name))
 		return _log.Exit(false)	
 	} else {
 		if (hit_n = 1 && G_opts["group"]) {
@@ -233,31 +236,50 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 				line_count := 1
 			} else
 				first_call := false
-			line_count += set_line_count(Ansi.WriteLine("`n" Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset()))
+			if (G_opts["color"])
+				line_count += set_line_count(Ansi.WriteLine("`n" Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset()))
+			else
+				line_count += set_line_count(Ansi.WriteLine("`n" file_name))
 		} else if (!G_opts["group"]) {
-			line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_filename"]) file_name ":" Ansi.Reset()))
+			if (G_opts["color"])
+				line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_filename"]) file_name ":" Ansi.Reset()))
+			else
+				line_count += set_line_count(Ansi.Write(file_name ":"))
 		}
 		if (before_ctx.Length() > 0) {
 			_line_no := A_Index
 			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
 			loop % before_ctx.Length() {
 				line_count += set_line_count(Ansi.Write(_line_no - G_opts["B"] + A_Index - 1 ":" before_ctx.Pop()))
-				Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+				if (G_opts["color"])
+					Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
 			}
 		}
 		if (column_no = 0) {
-			line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" array_to_string(parts)))
-			Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+			if (G_opts["color"]) {
+				line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" array_to_string(parts)))
+				Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+			} else {
+				line_count += set_line_count(Ansi.Write(A_Index ":" array_to_string(parts)))
+			}
 		} else {
-			line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts)))
-			Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+			if (G_opts["color"]) {
+				line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts)))
+				Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+			} else {
+				line_count += set_line_count(Ansi.Write(A_Index ":" column_no ":" array_to_string(parts)))
+				Ansi.WriteLine()
+			}
 		}
 		if (after_ctx.Length() > 0) {
 			_line_no := A_Index
 			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
 			loop % after_ctx.Length() {
 				line_count += set_line_count(Ansi.Write(_line_no + A_Index ":" after_ctx.Pop()))
-				Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+				if (G_opts["color"])
+					Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+				else
+					Ansi.WriteLine()
 				line_count++
 			}
 		}
@@ -643,6 +665,7 @@ main:
 					 , "v": false
 					 , "version": false
 					 , "w": false
+					 , "x": ""
 					 , "1": false }
 
 	WinGetTitle G_wt, A
@@ -687,6 +710,7 @@ main:
 	op.Add(new OptParser.Boolean("f", "", _f, "Only print the files selected, without searching. The pattern must not be specified"))
 	op.Add(new OptParser.Boolean("g", "", _g, "Same as -f, but only select files matching pattern"))
 	op.Add(new OptParser.Boolean(0, "sort-files", _sort_files, "Sort the found files lexically"))
+	op.Add(new OptParser.Boolean("x", "", _x, "Read the list of files to search from STDIN"))
 	op.Add(new OptParser.Group("`nFile inclusion/exclusion:"))
 	op.Add(new OptParser.Callback(0, "ignore-dir", _ignore_dir, "ignore_dir", "name", "Add/remove directory from list of ignored dirs", OptParser.OPT_ARG | OptParser.OPT_NEG))
 	op.Add(new OptParser.Callback(0, "ignore-file", _ignore_file, "ignore_file", "filter", "Add filter for ignoring files", OptParser.OPT_ARG | OptParser.OPT_NEG))
@@ -736,6 +760,7 @@ main:
 		G_opts["v"] := _v
 		G_opts["version"] := _version
 		G_opts["w"] := _w
+		G_opts["x"] := _x
 		G_opts["1"] := _1
 		if (_main.Logs(Logger.Finest))
 			_log.Finest("G_opts:`n" LoggingHelper.Dump(G_opts))
