@@ -261,6 +261,7 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 				Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
 			} else {
 				line_count += set_line_count(Ansi.Write(A_Index ":" array_to_string(parts)))
+				Ansi.WriteLine()
 			}
 		} else {
 			if (G_opts["color"]) {
