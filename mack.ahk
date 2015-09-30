@@ -730,6 +730,7 @@ main:
 	op.Add(new OptParser.Callback(0, "type-add", _type_add, "add_type", "X:FILTER[+FILTER...]", "Files with given FILTER are recognized of type X", OptParser.OPT_ARG))
 	op.Add(new OptParser.Callback(0, "type-del", _type_del, "del_type", "X", "Remove all filters associated with X", OptParser.OPT_ARG))
 	op.Add(new OptParser.Group("`nMiscellaneous:"))
+	op.Add(new OptParser.Boolean(0, "env", __env_dummy, "Ignore environment variable MACK_OPTIONS", OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
 	op.Add(new OptParser.Boolean("h", "help", _h, "This help", OptParser.OPT_HIDDEN))
 	op.Add(new OptParser.Boolean(0, "version", _version, "Display version info"))
 	op.Add(new OptParser.Boolean(0, "help-types", _ht, "Display all knwon types"))
