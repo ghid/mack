@@ -227,12 +227,14 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 	} else {
 		if (hit_n = 1 && G_opts["group"]) {
 			if (!first_call) {
-				Ansi.Write(Ansi.SaveCursorPosition() Ansi.SetGraphic(Ansi.ATTR_REVERSE) "<Eof><Press space to continue or q to quit>" Ansi.Reset())
-				Hotkey, IfWinActive, %G_wt%
-				Hotkey q, __Quit__
-				Hotkey Space, __Space__
-				Ansi.Flush()
-				Pause, On
+				if (G_opts["pager"]) {
+					Ansi.Write(Ansi.SaveCursorPosition() Ansi.SetGraphic(Ansi.ATTR_REVERSE) "<Eof><Press space to continue or q to quit>" Ansi.Reset())
+					Hotkey, IfWinActive, %G_wt%
+					Hotkey q, __Quit__
+					Hotkey Space, __Space__
+					Ansi.Flush()
+					Pause, On
+				}
 				line_count := 1
 			} else
 				first_call := false
@@ -287,12 +289,14 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 		if (_log.Logs(Logger.Finest))
 			_log.Finest("line_count", line_count)
 		if (G_opts["group"] && line_count > Console.BufferInfo.srWindow.Bottom - Console.BufferInfo.srWindow.Top) {
-			Ansi.Write(Ansi.SaveCursorPosition() Ansi.SetGraphic(Ansi.ATTR_REVERSE) "<Press space to continue or q to quit>" Ansi.Reset())
-			Hotkey, IfWinActive, %G_wt%
-			Hotkey q, __Quit__
-			Hotkey Space, __Space__
-			Ansi.Flush()
-			Pause, On
+			if (G_opts["pager"]) {
+				Ansi.Write(Ansi.SaveCursorPosition() Ansi.SetGraphic(Ansi.ATTR_REVERSE) "<Press space to continue or q to quit>" Ansi.Reset())
+				Hotkey, IfWinActive, %G_wt%
+				Hotkey q, __Quit__
+				Hotkey Space, __Space__
+				Ansi.Flush()
+				Pause, On
+			}
 			line_count := 1
 		}
 	}
@@ -640,6 +644,7 @@ main:
 					 , "ignore_dirs": []
 					 , "ignore_files": []
 					 , "k": false
+					 , "pager": true
 					 , "passthru": false
 					 , "modelines": 5
 					 , "modeline_pattern": [ "^.*?\s+(vi:|vim:|ex:)\s*.*?((ts|tabstop)=(?P<tabstop>\d))"
@@ -683,7 +688,8 @@ main:
 	ignore_file("*.dll")
 
 	op := new OptParser(["mack [options] <pattern> [file | directory]..."
-	                   , "mack -f [options] [directory]..."])
+	                   , "mack -f [options] [directory]..."]
+					   ,, "MACK_OPTIONS")
 	op.Add(new OptParser.Group("Searching:"))
 	op.Add(new OptParser.Boolean("i", "ignore-case", _i, "Ignore case distinctions in pattern"))
 	op.Add(new OptParser.Boolean("v", "invert-match", _v, "Select non-matching lines"))
@@ -702,6 +708,7 @@ main:
 	op.Add(new OptParser.String(0, "tabstop", _tabstop, "size", "Calculate tabstops with width of size (default 8)",,, G_opts["tabstop"]))
 	op.Add(new OptParser.String(0, "modelines", _modelines, "lines", "Search modelines (default 5) for tabstop info. Set to 0 to ignore modelines", OptParser.OPT_OPTARG,, 5, G_opts["modelines"]))
 	op.Add(new OptParser.Group("`nFile presentation:"))
+	op.Add(new OptParser.Boolean(0, "pager", _pager, "Send output trough a pager (default)", OptParser.OPT_NEG, G_opts["pager"]))
 	op.Add(new OptParser.Boolean(0, "group", _group, "Print a filename heading above each file's results (default: on when used interactively)", OptParser.OPT_NEG, true))
 	op.Add(new OptParser.Boolean(0, "color", _color, "Highlight the matching text (default: on)", OptParser.OPT_NEG, G_opts["color"]))
 	op.Add(new OptParser.String(0, "color-filename", _color_filename, "color", "", OptParser.OPT_ARG, G_opts["color_filename"], G_opts["color_filename"]))
@@ -753,6 +760,7 @@ main:
 		G_opts["k"] := _k
 		G_opts["modelines"] := OptParser.TrimArg(_modelines)
 		G_opts["modeline_expr"] := "J)" Arrays.ToString(G_opts["modeline_pattern"], "|")
+		G_opts["pager"] := _pager
 		G_opts["passthru"] := _passthru
 		G_opts["Q"] := _Q
 		G_opts["r"] := _r
