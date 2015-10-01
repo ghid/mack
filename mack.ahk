@@ -179,7 +179,7 @@ search_for_pattern(file_name, regex_opts = "") {
 		if (G_opts["c"] && hit_n > 0)
 			Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) hit_n " match(es)" Ansi.Reset())
 		if (hit_n = 0 && G_opts["files_wo_matches"])
-			Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) file_name "`n" Ansi.Reset())
+			Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset())
 	} finally {
 		if (f)
 			f.Close()
