@@ -242,7 +242,8 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 			line_count += set_line_count(Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset()))
 		else
 			line_count += set_line_count(Ansi.WriteLine(file_name))
-		return _log.Exit(false)	
+		if (!G_opts["c"])
+			return _log.Exit(false)	
 	} else {
 		if (hit_n = 1 && G_opts["group"]) {
 			if (!first_call) {
@@ -277,20 +278,24 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 			}
 		}
 		if (column_no = 0) {
-			if (G_opts["color"]) {
-				line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" array_to_string(parts)))
-				Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
-			} else {
-				line_count += set_line_count(Ansi.Write(A_Index ":" array_to_string(parts)))
-				Ansi.WriteLine()
+			if (!G_opts["files_w_matches"]) {
+				if (G_opts["color"]) {
+					line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" array_to_string(parts)))
+					Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+				} else {
+					line_count += set_line_count(Ansi.Write(A_Index ":" array_to_string(parts)))
+					Ansi.WriteLine()
+				}
 			}
 		} else {
-			if (G_opts["color"]) {
-				line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts)))
-				Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
-			} else {
-				line_count += set_line_count(Ansi.Write(A_Index ":" column_no ":" array_to_string(parts)))
-				Ansi.WriteLine()
+			if (!G_opts["files_w_matches"]) {
+				if (G_opts["color"]) {
+					line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts)))
+					Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+				} else {
+					line_count += set_line_count(Ansi.Write(A_Index ":" column_no ":" array_to_string(parts)))
+					Ansi.WriteLine()
+				}
 			}
 		}
 		if (after_ctx.Length() > 0) {
