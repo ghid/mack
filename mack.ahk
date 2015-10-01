@@ -691,15 +691,15 @@ main:
 	OutputDebug Start...
 	
 	global G_wt
-	global G_opts := { "A": 0
-					 , "B": 0
+	global G_opts := { "A": 2
+					 , "B": 2
 					 , "c": false
 					 , "column": false
 					 , "color": true
 					 , "color_filename": Ansi.FOREGROUND_GREEN ";" Ansi.ATTR_BOLD
 					 , "color_match": Ansi.FOREGROUND_YELLOW ";" Ansi.ATTR_BOLD ";" Ansi.ATTR_REVERSE
 					 , "color_line_no": Ansi.FOREGROUND_YELLOW ";" Ansi.ATTR_BOLD
-					 , "context": 0
+					 , "context": 2
 					 , "h": false
 					 , "f": false
 					 , "files_w_matches": false
@@ -794,7 +794,7 @@ main:
 	op.Add(new OptParser.Callback(0, "ignore-file", _ignore_file, "ignore_file", "filter", "Add filter for ignoring files", OptParser.OPT_ARG | OptParser.OPT_NEG))
 	op.Add(new OptParser.Boolean("r", "recurse", _r, "Recurse into subdirectories (default: on)", OptParser.OPT_NEG, true))
 	op.Add(new OptParser.Boolean("k", "known-types", _k, "Include only files of types that are recognized"))
-	op.Add(new OptParser.Callback(0, "type", _type, "type_list", "X", "Include/exclude X files", OptParser.OPT_ARG | OptParser.OPT_NEG))
+	op.Add(new OptParser.Callback(0, "type", _type, "type_list", "X", "Include/exclude X files", OptParser.OPT_ARG | OptParser.OPT_OPTARG | OptParser.OPT_NEG))
 	op.Add(new OptParser.Group("`nFile type specification:"))
 	op.Add(new OptParser.Callback(0, "type-set", _type_set, "set_type", "X:FILTER[+FILTER...]", "Files with given FILTER are recognized of type X. This replaces an existing defintion.", OptParser.OPT_ARG))
 	op.Add(new OptParser.Callback(0, "type-add", _type_add, "add_type", "X:FILTER[+FILTER...]", "Files with given FILTER are recognized of type X", OptParser.OPT_ARG))
