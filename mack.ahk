@@ -39,8 +39,9 @@ determine_files(args) {
 
 	if (G_opts["sort_files"] && file_list.MaxIndex() <> "") {
 		file_list_string := ""
-		loop % file_list.MaxIndex()
+		loop % (file_list.MaxIndex()-1)
 			file_list_string .= file_list[A_Index] "`n"
+		file_list_string .= file_list[file_list.MaxIndex()]
 		Sort file_list_string, C
 		file_list := StrSplit(file_list_string, "`n")
 	}
@@ -68,15 +69,33 @@ collect_filenames(fn_list, dirname) {
 			_log.Finest("A_LoopFileAttrib", A_LoopFileAttrib)
 			_log.Finest("A_LoopFileFullPath", A_LoopFileFullPath)
 			_log.Finest("A_LoopFileName", A_LoopFileName)
+			_log.Finest("G_opts[""g""]", G_opts["g"])
+			_log.Finest("G_opts[""r""]", G_opts["r"])
+			_log.Finest("G_opts[""file_pattern""]", G_opts["file_pattern"])
+			_log.Finest("G_opts[""match_type""]", G_opts["match_type"])
+			_log.Finest("G_opts[""match_type_ignore""]", G_opts["match_type_ignore"])
+			_log.Finest("G_opts[""match_ignore_dirs""]", G_opts["match_ignore_dirs"])
+			_log.Finest("G_opts[""match_ignore_files""]", G_opts["match_ignore_files"])
 		}
-		if (G_opts["r"] && InStr(A_LoopFileAttrib, "D")
-				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_dirs"]))
+		if (G_opts["r"] && InStr(A_LoopFileAttrib, "D") 
+				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_dirs"])) {
 			fn_list := collect_filenames(fn_list, A_LoopFileFullPath)
-		else if (!InStr(A_LoopFileAttrib, "D")
+			if (_log.Logs(Logger.Info)) {
+				_log.Info("Search in " A_LoopFileName)
+			}
+		} else if (!InStr(A_LoopFileAttrib, "D")
 				&& (!G_opts["g"] || (G_opts["g"] && RegExMatch(A_LoopFileName, "S)^" G_opts["file_pattern"] "$")))
 				&& (G_opts["match_type"] = "" || RegExMatch(A_LoopFileName, G_opts["match_type"]))
+				&& (G_opts["match_type_ignore"] == "" || !RegExMatch(A_LoopFileName, G_opts["match_type_ignore"]))
 				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_files"])) {
 			fn_list.Insert(A_LoopFileFullPath)
+			if (_log.Logs(Logger.Info)) {
+				_log.Info("Search in " A_LoopFileName)
+			}
+		} else {
+			if (_log.Logs(Logger.Detail)) {
+				_log.Detail("Discard " A_LoopFileName)
+			}
 		}
 	}
 
@@ -125,7 +144,7 @@ search_for_pattern(file_name, regex_opts = "") {
 	try {
 		f := FileOpen(file_name, "r `n`r")
 		if (!f)
-			_log.Error("Could not open file " file_name)
+			_log.Severe("Could not open file " file_name)
 		else {
 			hit_n := 0
 			tabstops := do_modelines(f)
@@ -417,23 +436,54 @@ regex_of_file_pattern(file_pattern) {
 }
 
 add_to_list(list_name, name) {
+	_log := new Logger("app.mack." A_ThisFunc)
+	
+	if (_log.Logs(Logger.Input)) {
+		_log.Input("list_name", list_name)
+		_log.Input("name", name)
+	}
+	
 	pattern := regex_of_file_pattern(name)
+	if (_log.Logs(Logger.Finest)) {
+		_log.Finest("pattern", pattern)
+	}
 
 	for _i, entry in G_opts[list_name]
 		if (entry = pattern)
-			return
+			return _log.Exit()
 
 	G_opts[list_name].Insert(pattern)	
+
+	if (_log.Logs(Logger.All)) {
+		_log.All("G_opts[" list_name "]:`n" LoggingHelper.Dump(G_opts[list_name]))
+	}
+
+	return _log.Exit()
 }
 
 remove_from_list(list_name, name) {
+	_log := new Logger("app.mack." A_ThisFunc)
+	
+	if (_log.Logs(Logger.Input)) {
+		_log.Input("list_name", list_name)
+		_log.Input("name", name)
+	}
+	
 	pattern := regex_of_file_pattern(name)
+	if (_log.Logs(Logger.Finest)) {
+		_log.Finest("pattern", pattern)
+	}
 
 	for _i, entry in G_opts[list_name]
 		if (entry = pattern) {
 			G_opts[list_name].Remove(_i)
-			return
+			return _log.Exit()
 		}
+
+	if (_log.Logs(Logger.All)) {
+		_log.All("G_opts[" list_name "]:`n" LoggingHelper.Dump(G_opts[list_name]))
+	}
+	return _log.Exit()
 }
 
 ignore_dir(name, no_opt = "") {
@@ -479,10 +529,17 @@ type_list(filetype, no_opt = "") {
 	if (G_opts["types"][filetype] = "")
 		throw _log.Exit(Exception("Unknown filetype: " filetype))
 
-	if (no_opt = "")
+	if (no_opt = "") {
 		add_to_list("type", G_opts["types"][filetype])
-	else
-		remove_from_list("type", G_opts["types"][filetype])
+		if (_log.Logs(Logger.All)) {
+			_log.All("G_opts[type]:`n" LoggingHelper.Dump(G_opts["type"]))
+		}
+	} else {
+		add_to_list("type_ignore", G_opts["types"][filetype])
+		if (_log.Logs(Logger.All)) {
+			_log.All("G_opts[type_ignore]:`n" LoggingHelper.Dump(G_opts["type_ignore"]))
+		}
+	}
 
 	return _log.Exit()
 }
@@ -571,15 +628,20 @@ do_modelines(file) {
 	if (G_opts["modelines"]) {
 		loop % G_opts["modelines"] {
 			line := file.ReadLine()
-			if (RegExMatch(line, G_opts["modeline_expr"], $)) {
-				tabsize := ""
-				loop % G_opts["modeline_pattern"].MaxIndex()
-					tabsize .= $tabstop%A_Index%
-				if (_log.Logs(Logger.Detail)) {
-					_log.Detail("Header modeline found: ", line ": " tabsize)
+			try {
+				if (RegExMatch(line, G_opts["modeline_expr"], $)) {
+					tabsize := ""
+					loop % G_opts["modeline_pattern"].MaxIndex()
+						tabsize .= $tabstop%A_Index%
+					if (_log.Logs(Logger.Detail)) {
+						_log.Detail("Header modeline found: ", line ": " tabsize)
+					}
+					modeline_found := true
+					break
 				}
-				modeline_found := true
-				break
+			} catch _ex {
+				
+				_log.Severe(LoggingHelper.Dump(_ex))
 			}
 		}
 		if (!modeline_found) {
@@ -655,6 +717,7 @@ main:
 					 , "tabstop": 4
 					 , "types": { "autohotkey" : "*.ahk"
 								, "batch"      : "*.bat *.cmd"
+								, "css"        : "*.css"
 								, "html"       : "*.htm *.html"
 								, "java"       : "*.java *.properties"
 								, "js"         : "*.js"
@@ -662,12 +725,14 @@ main:
 								, "log"        : "*.log"
 								, "md"         : "*.md *.mkd *.markdown"
 								, "python"     : "*.py"
+								, "shell"      : "*.sh"
 								, "tex"        : "*.tex *.latex *.cls *.sty"
 								, "text"       : "*.txt *.rtf *.readme"
 								, "vim"        : "*.vim"
 								, "xml"        : "*.xml *.dtd *.xsl *.xslt *.ent"
 								, "yaml"       : "*.yaml *.yml" }
 					 , "type": []
+					 , "type_ignore": []
 					 , "v": false
 					 , "version": false
 					 , "w": false
@@ -782,6 +847,7 @@ main:
 		G_opts["match_ignore_dirs"] := regex_match_list(G_opts["ignore_dirs"])
 		G_opts["match_ignore_files"] := regex_match_list(G_opts["ignore_files"])
 		G_opts["match_type"] := regex_match_list(G_opts["type"])
+		G_opts["match_type_ignore"] := regex_match_list(G_opts["type_ignore"])
 
 		if (G_opts["context"] && G_opts["A"] = 0)
 			G_opts["A"] := G_opts["context"]
