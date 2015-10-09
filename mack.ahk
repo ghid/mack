@@ -149,7 +149,7 @@ search_for_pattern(file_name, regex_opts = "") {
 			hit_n := 0
 			tabstops := do_modelines(f)
 			while (!f.AtEOF) {
-				line := RegExReplace(f.ReadLine(), "`t", tabstops)
+				line := RegExReplace(f.ReadLine(), "\t", tabstops)
 
 				parts := test(line, regex_opts, found := 0, column := 0)
 
@@ -160,8 +160,10 @@ search_for_pattern(file_name, regex_opts = "") {
 					hit_n++
 					if (G_opts["A"] > 0) {
 						fpos := f.Tell()
-						while (!f.AtEOF && A_Index <= G_opts["A"])
-							after_context.Push(RegExReplace(f.Readline(), "\n$", "", 1))
+						while (!f.AtEOF && A_Index <= G_opts["A"]) {
+							after_ctx_line := RegExReplace(f.ReadLine(), "\t", tabstops)
+							after_context.Push(RegExReplace(after_ctx_line, "\n$", "", 1))
+						}
 						f.Seek(fpos)	
 					}
 					if (!output(file_name, A_Index, column, hit_n, before_context, after_context, parts))
@@ -172,8 +174,12 @@ search_for_pattern(file_name, regex_opts = "") {
 						break
 				}
 
-				if (G_opts["B"] > 0)
+				if (G_opts["B"] > 0) {
 					before_context.Push(line)	
+					if (_log.Logs(Logger.All)) {
+						_log.All("before_context:`n" LoggingHelper.Dump(before_context))
+					}
+				}
 			}
 		}
 		if (G_opts["c"] && hit_n > 0)
@@ -239,62 +245,59 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 	
 	if (hit_n = 1 && (G_opts["g"] | G_opts["files_w_matches"])) {
 		if (G_opts["color"])
-			line_count += set_line_count(Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset()))
+			process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset(), line_count)
 		else
-			line_count += set_line_count(Ansi.WriteLine(file_name))
+			process_line(file_name, line_count)
 		if (!G_opts["c"])
 			return _log.Exit(false)	
 	} else {
 		if (hit_n = 1 && G_opts["group"]) {
 			if (!first_call) {
 				if (G_opts["pager"]) {
-					Ansi.Write(Ansi.SaveCursorPosition() Ansi.SetGraphic(Ansi.ATTR_REVERSE) "<Eof><Press space to continue or q to quit>" Ansi.Reset())
-					Hotkey, IfWinActive, %G_wt%
-					Hotkey q, __Quit__
-					Hotkey Space, __Space__
-					Ansi.Flush()
-					Pause, On
+					pager("<Eof>")
 				}
 				line_count := 1
 			} else
 				first_call := false
 			if (G_opts["color"])
-				line_count += set_line_count(Ansi.WriteLine("`n" Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset()))
+				process_line("`n" Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset(), line_count, false)
 			else
-				line_count += set_line_count(Ansi.WriteLine("`n" file_name))
+				process_line("`n" file_name, line_count, false)
 		} else if (!G_opts["group"]) {
 			if (G_opts["color"])
-				line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_filename"]) file_name ":" Ansi.Reset()))
+				process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name ":" Ansi.Reset(), line_count, false, false)
 			else
-				line_count += set_line_count(Ansi.Write(file_name ":"))
+				process_line(file_name ":", line_count, false, false)
 		}
 		if (before_ctx.Length() > 0) {
 			_line_no := A_Index
 			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
 			loop % before_ctx.Length() {
-				line_count += set_line_count(Ansi.Write(_line_no - G_opts["B"] + A_Index - 1 ":" before_ctx.Pop()))
+				process_line(_line_no - G_opts["B"] + A_Index - 1 ":" before_ctx.Pop(), line_count, false, false)
 				if (G_opts["color"])
-					Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+					process_line(Ansi.Reset() Ansi.EraseLine(), line_count)
+				else
+					process_line("", line_count)
 			}
 		}
 		if (column_no = 0) {
 			if (!G_opts["files_w_matches"]) {
 				if (G_opts["color"]) {
-					line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" array_to_string(parts)))
-					Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+					process_line(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" array_to_string(parts), line_count, false, false)
+					process_line(Ansi.Reset() Ansi.EraseLine(), line_count)
 				} else {
-					line_count += set_line_count(Ansi.Write(A_Index ":" array_to_string(parts)))
-					Ansi.WriteLine()
+					process_line(A_Index ":" array_to_string(parts), line_count, false, false)
+					process_line("`n", line_count)
 				}
 			}
 		} else {
 			if (!G_opts["files_w_matches"]) {
 				if (G_opts["color"]) {
-					line_count += set_line_count(Ansi.Write(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts)))
-					Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+					process_line(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts), line_count, false, false)
+					process_line(Ansi.Reset() Ansi.EraseLine(), line_count)
 				} else {
-					line_count += set_line_count(Ansi.Write(A_Index ":" column_no ":" array_to_string(parts)))
-					Ansi.WriteLine()
+					process_line(A_Index ":" column_no ":" array_to_string(parts), line_count, false, false)
+					process_line("", line_count)
 				}
 			}
 		}
@@ -302,26 +305,12 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 			_line_no := A_Index
 			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
 			loop % after_ctx.Length() {
-				line_count += set_line_count(Ansi.Write(_line_no + A_Index ":" after_ctx.Pop()))
+				process_line(_line_no + A_Index ":" after_ctx.Pop(), line_count, false, false)
 				if (G_opts["color"])
-					Ansi.WriteLine(Ansi.Reset() Ansi.EraseLine())
+					process_line(Ansi.Reset() Ansi.EraseLine(), line_count)
 				else
-					Ansi.WriteLine()
-				line_count++
+					process_line("", line_count)
 			}
-		}
-		if (_log.Logs(Logger.Finest))
-			_log.Finest("line_count", line_count)
-		if (G_opts["group"] && line_count > Console.BufferInfo.srWindow.Bottom - Console.BufferInfo.srWindow.Top) {
-			if (G_opts["pager"]) {
-				Ansi.Write(Ansi.SaveCursorPosition() Ansi.SetGraphic(Ansi.ATTR_REVERSE) "<Press space to continue or q to quit>" Ansi.Reset())
-				Hotkey, IfWinActive, %G_wt%
-				Hotkey q, __Quit__
-				Hotkey Space, __Space__
-				Ansi.Flush()
-				Pause, On
-			}
-			line_count := 1
 		}
 	}
 
@@ -334,6 +323,7 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 		Pause, Off
 		Ansi.Write(Ansi.RestoreCursorPosition() Ansi.Reset() Ansi.EraseLine())
 		Ansi.Flush()
+		Console.RefreshBufferInfo()
 	return
 
 	__Quit__:
@@ -343,19 +333,75 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 	exitapp _log.Exit(0)
 }
 
+pager(msg="") {
+	_log := new Logger("app.mack." A_ThisFunc)
+	
+	if (_log.Logs(Logger.Input)) {
+		_log.Input("msg", msg)
+	}
+	
+	Ansi.Write(Ansi.SaveCursorPosition() Ansi.SetGraphic(Ansi.ATTR_REVERSE) msg "<Press space to continue or q to quit>" Ansi.Reset())
+	Hotkey, IfWinActive, %G_wt%
+	Hotkey q, __Quit__
+	Hotkey Space, __Space__
+	Ansi.Flush()
+	Console.RefreshBufferInfo()
+	Pause, On
+
+	return _log.Exit()
+}
+
 array_to_string(a) {
 	if (a.MaxIndex())
 		return Arrays.ToString(a, "")
 	return a
 }
 
-set_line_count(length) {
+process_line(line, ByRef line_count, paging=true, newline=true) {
 	_log := new Logger("app.mack." A_ThisFunc)
+	
+	if (_log.Logs(Logger.Input)) {
+		_log.Input("line", line)
+		_log.Input("line_count", line_count)
+		_log.Input("paging", paging)
+	}
 
-	if (_log.Logs(Logger.Input))
-		_log.Input("length", length)
+	lines := ((Ansi.PlainStrLen(line) // Console.BufferInfo.dwSize.X) + 1)
 
-	return _log.Exit((length // Console.BufferInfo.dwSize.X) + 1)
+	height := Console.BufferInfo.srWindow.Bottom - Console.BufferInfo.srWindow.Top
+	if (_log.Logs(Logger.Finest)) {
+		_log.Finest("height", height)
+		_log.Finest("lines", lines)
+	}
+
+	if (newline)
+		Ansi.WriteLine(line)
+	else
+		Ansi.Write(line)
+	if (!paging)
+		line_count += lines
+
+	if (paging && G_opts["pager"] && G_opts["group"] && line_count > height) {
+		if (lines = 1) {
+			Ansi.Write(line)
+			pager()
+			line_count := 1
+		} else {
+			; TODO: Das muss noch getestet werden... Was passiert, wenn am Ende des Fenters ein Zeile angezeigt wird, die mehr als eine Zeile zur Darstellung benötigt?
+			Ansi.Write(SubStr(line, 1, (height - lines) * Console.BufferInfo.dwSize.X))
+			pager()
+			line_count := 1
+			process_line(SubStr(line, (height - lines) * Console.BufferInfo.dwSize.X + 1), line_count)
+			line_count := 1
+		}
+	}
+
+
+	if (_log.Logs(Logger.Finest)) {
+		_log.Finest("line_count", line_count)
+	}
+	
+	return _log.Exit()
 }
 
 regex_file_pattern_list(file_pattern_string) {
@@ -691,8 +737,8 @@ main:
 	OutputDebug Start...
 	
 	global G_wt
-	global G_opts := { "A": 2
-					 , "B": 2
+	global G_opts := { "A": 0
+					 , "B": 0
 					 , "c": false
 					 , "column": false
 					 , "color": true
@@ -757,8 +803,8 @@ main:
 	ignore_file("*.exe")
 	ignore_file("*.dll")
 
-	op := new OptParser(["mack [options] <pattern> [file | directory]..."
-	                   , "mack -f [options] [directory]..."]
+	op := new OptParser(["mack [options] [--] <pattern> [file | directory]..."
+	                   , "mack -f [options] [--] [directory]..."]
 					   ,, "MACK_OPTIONS")
 	op.Add(new OptParser.Group("Searching:"))
 	op.Add(new OptParser.Boolean("i", "ignore-case", _i, "Ignore case distinctions in pattern"))
@@ -774,7 +820,7 @@ main:
 	op.Add(new OptParser.Boolean(0, "column", _column, "Show the column number of the first match", OptParser.OPT_NEG))
 	op.Add(new OptParser.String("A", "after-context", _n_after_ctx, "NUM", "Print NUM lines of trailing context after matching lines",,, G_opts["A"]))
 	op.Add(new OptParser.String("B", "before-context", _n_before_ctx, "NUM", "Print NUM lines of leading context before matching lines",,, G_opts["B"]))
-	op.Add(new OptParser.String("C", "context", _n_ctx, "NUM", "Print NUM (default 2) lines of output context", OptParser.OPT_OPTARG, 2, G_opts["context"]))
+	op.Add(new OptParser.String("C", "context", _n_ctx, "NUM", "Print NUM (default 2) lines of output context", OptParser.OPT_OPTARG, G_opts["context"]))
 	op.Add(new OptParser.String(0, "tabstop", _tabstop, "size", "Calculate tabstops with width of size (default 8)",,, G_opts["tabstop"]))
 	op.Add(new OptParser.String(0, "modelines", _modelines, "lines", "Search modelines (default 5) for tabstop info. Set to 0 to ignore modelines", OptParser.OPT_OPTARG,, 5, G_opts["modelines"]))
 	op.Add(new OptParser.Group("`nFile presentation:"))
@@ -843,7 +889,7 @@ main:
 		G_opts["x"] := _x
 		G_opts["1"] := _1
 		if (_main.Logs(Logger.Finest))
-			_log.Finest("G_opts:`n" LoggingHelper.Dump(G_opts))
+			_main.Finest("G_opts:`n" LoggingHelper.Dump(G_opts))
 
 		if (G_opts["k"])
 			for filetype, filter in G_opts["types"]
@@ -854,10 +900,10 @@ main:
 		G_opts["match_type"] := regex_match_list(G_opts["type"])
 		G_opts["match_type_ignore"] := regex_match_list(G_opts["type_ignore"])
 
-		if (G_opts["context"] && G_opts["A"] = 0)
+		if (G_opts["context"] > 0 && G_opts["A"] = 0)
 			G_opts["A"] := G_opts["context"]
 
-		if (G_opts["context"] && G_opts["B"] = 0)
+		if (G_opts["context"] > 0 && G_opts["B"] = 0)
 			G_opts["B"] := G_opts["context"]
 
 		if (_main.Logs(Logger.FINEST))
@@ -890,6 +936,7 @@ main:
 					Ansi.WriteLine(file_entry)
 				}
 			else {
+				Console.RefreshBufferInfo()
 				for _i, file_entry in file_list
 					search_for_pattern(file_entry, G_opts["i"] ? "i" : "")
 			}
