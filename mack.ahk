@@ -182,10 +182,21 @@ search_for_pattern(file_name, regex_opts = "") {
 				}
 			}
 		}
-		if (G_opts["c"] && hit_n > 0)
-			Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) hit_n " match(es)" Ansi.Reset())
-		if (hit_n = 0 && G_opts["files_wo_matches"])
-			Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset())
+		if (G_opts["c"] && hit_n > 0) {
+			if (G_opts["color"])
+				Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) hit_n " match(es)" Ansi.Reset())
+			else
+				Ansi.WriteLine(hit_n " match(es)")
+			G_file_count++
+			G_hit_count += hit_n
+		}
+		if (hit_n = 0 && G_opts["files_wo_matches"]) {
+			if (G_opts["color"])
+				Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset())
+			else
+				Ansi.WriteLine(file_name)
+			G_file_count++
+		}
 	} finally {
 		if (f)
 			f.Close()
@@ -195,11 +206,27 @@ search_for_pattern(file_name, regex_opts = "") {
 }
 
 test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0) {
+	_log := new Logger("app.mack." A_ThisFunc)
+	
+	if (_log.Logs(Logger.Input)) {
+		_log.Input("haystack", haystack)
+		_log.Input("regex_opts", regex_opts)
+		_log.Input("found", found)
+		_log.Input("first_match_column", first_match_column)
+		_log.Input("G_opts[pattern]", G_opts["pattern"])
+		_log.Input("G_opts[column]", G_opts["column"])
+		_log.Input("G_opts[color_match]", G_opts["color_match"])
+	}
+	
 	search_at := 1
 	parts := []
 	haystack := RegExReplace(haystack, "`n$", "", 1)
 	loop {
 		found_at := RegExMatch(haystack, regex_opts "S)" G_opts["pattern"], $, search_at)
+		if (_log.Logs(Logger.Finest)) {
+			_log.Finest("found_at", found_at)
+			_log.Finest("$", $)
+		}
 		if (found_at > 0) {
 			found++
 			; if (found = 1)
@@ -218,8 +245,12 @@ test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0
 			parts.Insert(SubStr(haystack, search_at))
 		}
 	} until (found_at = 0)
+
+	if (_log.Logs(Logger.ALL)) {
+		_log.ALL("parts:`n" LoggingHelper.Dump(parts))
+	}
 		
-	return parts
+	return _log.Exit(parts)
 }
 
 output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
@@ -486,6 +517,17 @@ regex_of_file_pattern(file_pattern) {
 	return _log.Exit(file_pattern)
 }
 
+regex_of_types() {
+	_log := new Logger("app.mack." A_ThisFunc)
+	
+	expr := "("
+	for _type, _file_pattern in G_opts["types"] 
+		expr .= (A_Index = 1 ? "" : "|") _type
+	expr .= ")"
+
+	return _log.Exit(expr)
+}
+
 add_to_list(list_name, name) {
 	_log := new Logger("app.mack." A_ThisFunc)
 	
@@ -605,6 +647,9 @@ del_type(filetype) {
 	if (G_opts["types"].Remove(filetype) = "")
 		throw _log.Exit(Exception("Unkwonw filetype: " filetype))
 
+	G_opts["regex_of_types"] := regex_of_types()
+	G_sel_types.stExpr := G_opts["regex_of_types"]
+
 	return _log.Exit()
 }
 
@@ -641,7 +686,10 @@ set_type(filetype_filter) {
 	if (G_opts["types"][$1] <> "")
 		throw _log.Exit(Exception("Filetype already defined: " $1))
 
-	G_opts["types"][$1] := " " filter
+	G_opts["types"][$1] := filter
+
+	G_opts["regex_of_types"] := regex_of_types()
+	G_sel_types.stExpr := G_opts["regex_of_types"]
 
 	return _log.Exit()
 }
@@ -651,7 +699,7 @@ help_types() {
 	
 	dt := new DataTable()
 	dt.DefineColumn(new DataTable.Column(, DataTable.COL_RESIZE_USE_LARGEST_DATA))
-	dt.DefineColumn(new DataTable.Column())
+	dt.DefineColumn(new DataTable.Column.Wrapped(50))
 
 	for filetype, filter in G_opts["types"]
 		dt.AddData([filetype, filter])
@@ -737,6 +785,7 @@ main:
 	OutputDebug Start...
 	
 	global G_wt
+	global G_sel_types
 	global G_opts := { "A": 0
 					 , "B": 0
 					 , "c": false
@@ -776,12 +825,14 @@ main:
 								, "log"        : "*.log"
 								, "md"         : "*.md *.mkd *.markdown"
 								, "python"     : "*.py"
+								, "ruby"       : "*.rb *.rhtml *.rjs *.rxml *.erb *.rake *.spec"
 								, "shell"      : "*.sh"
 								, "tex"        : "*.tex *.latex *.cls *.sty"
 								, "text"       : "*.txt *.rtf *.readme"
 								, "vim"        : "*.vim"
 								, "xml"        : "*.xml *.dtd *.xsl *.xslt *.ent"
 								, "yaml"       : "*.yaml *.yml" }
+					 , "types_expr": ""
 					 , "type": []
 					 , "type_ignore": []
 					 , "v": false
@@ -789,6 +840,10 @@ main:
 					 , "w": false
 					 , "x": ""
 					 , "1": false }
+
+	global G_file_count := 0, G_hit_count := 0
+
+	G_opts["types_expr"] := regex_of_types()
 
 	WinGetTitle G_wt, A
 
@@ -850,10 +905,9 @@ main:
 	op.Add(new OptParser.Boolean("h", "help", _h, "This help", OptParser.OPT_HIDDEN))
 	op.Add(new OptParser.Boolean(0, "version", _version, "Display version info"))
 	op.Add(new OptParser.Boolean(0, "help-types", _ht, "Display all knwon types"))
+	op.Add(G_sel_types := new OptParser.Generic(G_opts["types_expr"], sel_types, OptParser.OPT_MULTIPLE|OptParser.OPT_NEG))
 
 	RC := 0
-
-	#Include *i %A_ScriptDir%/.version-info
 
 	try {
 		args := op.Parse(system.vArgs)
@@ -862,9 +916,9 @@ main:
 		G_opts["c"] := _c
 		G_opts["column"] := _column
 		G_opts["color"] := _color
-		G_opts["color_filename"] := _color_filename
-		G_opts["color_match"] := _color_match
-		G_opts["color_line_no"] := _color_line_no
+		G_opts["color_filename"] := OptParser.TrimArg(_color_filename)
+		G_opts["color_match"] := OptParser.TrimArg(_color_match)
+		G_opts["color_line_no"] := OptParser.TrimArg(_color_line_no)
 		G_opts["context"] := _n_ctx
 		G_opts["f"] := _f
 		G_opts["files_w_matches"] := _files_w_matches
@@ -875,6 +929,7 @@ main:
 		G_opts["ht"] := _ht
 		G_opts["i"] := _i
 		G_opts["k"] := _k
+		G_opts["sel_types"] := OptParser.TrimArg(sel_types).ToArray("`n",, false)
 		G_opts["modelines"] := OptParser.TrimArg(_modelines)
 		G_opts["modeline_expr"] := "J)" Arrays.ToString(G_opts["modeline_pattern"], "|")
 		G_opts["pager"] := _pager
@@ -894,7 +949,14 @@ main:
 		if (G_opts["k"])
 			for filetype, filter in G_opts["types"]
 				type_list(filetype)	
-			
+
+		if (G_opts["sel_types"])
+			for i, filetype in G_opts["sel_types"]
+				if (SubStr(filetype, 1, 1) = "!")
+					type_list(SubStr(filetype, 2), true)
+				else
+					type_list(filetype)
+
 		G_opts["match_ignore_dirs"] := regex_match_list(G_opts["ignore_dirs"])
 		G_opts["match_ignore_files"] := regex_match_list(G_opts["ignore_files"])
 		G_opts["match_type"] := regex_match_list(G_opts["type"])
@@ -947,7 +1009,7 @@ main:
 		RC := _ex.Extra
 	}
 
-	OutputDebug Done.
+	OutputDebug Done. Files = %G_file_count%  Hits = %G_hit_count%
 	Ansi.FlushInput()
 exitapp _main.Exit(RC)
 ; vim: ts=4:sts=4:sw=4:tw=0:noet
