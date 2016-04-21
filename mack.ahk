@@ -10,6 +10,7 @@ SetBatchLines -1
 #Include <datatable>
 #Include <arrays>
 #Include <queue>
+#include <pager>
 #Include *i %A_ScriptDir%\.versioninfo
 
 get_version() {
@@ -142,7 +143,7 @@ search_for_pattern(file_name, regex_opts = "") {
 	after_context := new Queue(G_opts["A"])
 
 	try {
-		f := FileOpen(file_name, "r `n`r")
+		f := FileOpen(file_name, "r `n")
 		if (!f)
 			_log.Severe("Could not open file " file_name)
 		else {
@@ -172,28 +173,35 @@ search_for_pattern(file_name, regex_opts = "") {
 					hit_n++
 					if (!output(file_name, A_Index, column, hit_n, "", "", line))
 						break
-				}
-
-				if (G_opts["B"] > 0) {
-					before_context.Push(line)	
-					if (_log.Logs(Logger.All)) {
-						_log.All("before_context:`n" LoggingHelper.Dump(before_context))
+				} else {
+					if (G_opts["B"] > 0) {
+						before_context.Push(line := A_Index ":" Ansi.SetGraphic(G_opts["color_context"]) line Ansi.Reset())	
+						if (_log.Logs(Logger.Finest)) {
+							_log.Finest("Pushing line", Pushing line)
+							if (_log.Logs(Logger.All)) {
+								_log.All("before_context:`n" LoggingHelper.Dump(before_context))
+							}
+						}
 					}
 				}
 			}
 		}
 		if (G_opts["c"] && hit_n > 0) {
-			if (G_opts["color"])
-				Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) hit_n " match(es)" Ansi.Reset())
-			else
-				Ansi.WriteLine(hit_n " match(es)")
+			if (!G_opts["files_w_matches"]) {
+				if (G_opts["color"])
+					process_line(Ansi.SetGraphic(G_opts["color_filename"]) hit_n " match(es)" Ansi.Reset())
+				else
+					process_line(hit_n " match(es)")
+			} else {
+				process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name ":" hit_n Ansi.Reset())	
+			}
 			G_file_count++
 			G_hit_count += hit_n
 		}
 		if (hit_n = 0 && G_opts["files_wo_matches"]) {
 			if (G_opts["color"])
 				Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset())
-			else
+			else if (!G_opts["c"])
 				Ansi.WriteLine(file_name)
 			G_file_count++
 		}
@@ -257,7 +265,6 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 	_log := new Logger("app.mack." A_ThisFunc)
 
 	static first_call := true
-		 , line_count := 1
 
 	if (_log.Logs(Logger.INPUT)) {
 		_log.Input("file_name", file_name)
@@ -273,113 +280,88 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 			_log.All("parts:`n" LoggingHelper.Dump(parts))
 		}
 	}
+
 	
-	if (hit_n = 1 && (G_opts["g"] | G_opts["files_w_matches"])) {
-		if (G_opts["color"])
-			process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset(), line_count)
-		else
-			process_line(file_name, line_count)
-		if (!G_opts["c"])
+	if (hit_n = 1 && (G_opts["g"] || G_opts["files_w_matches"])) {
+		if (!G_opts["c"]) {
+			if (G_opts["color"])
+				process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset())
+			else
+				process_line(file_name)
 			return _log.Exit(false)	
+		}
 	} else {
 		if (hit_n = 1 && G_opts["group"]) {
 			if (!first_call) {
-				if (G_opts["pager"]) {
-					pager("<Eof>")
-				}
-				line_count := 1
+				; if (G_opts["pager"]) {
+				; 	Pager.Break("<Eof>", true)
+				; }
+				process_line(" ")
 			} else
 				first_call := false
 			if (G_opts["color"])
-				process_line("`n" Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset(), line_count, false)
+				process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset())
 			else
-				process_line("`n" file_name, line_count, false)
+				process_line(file_name)
 		} else if (!G_opts["group"]) {
 			if (G_opts["color"])
-				process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name ":" Ansi.Reset(), line_count, false, false)
+				line_file_name := Ansi.SetGraphic(G_opts["color_filename"]) file_name ":" Ansi.Reset()
 			else
-				process_line(file_name ":", line_count, false, false)
-		}
+				line_file_name := file_name ":"
+		} else
+			line_file_name := ""
+
 		if (before_ctx.Length() > 0) {
 			_line_no := A_Index
 			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
 			loop % before_ctx.Length() {
-				process_line(_line_no - G_opts["B"] + A_Index - 1 ":" before_ctx.Pop(), line_count, false, false)
-				if (G_opts["color"])
-					process_line(Ansi.Reset() Ansi.EraseLine(), line_count)
-				else
-					process_line("", line_count)
+				process_line(before_ctx.Pop())
+				; process_line(_line_no - G_opts["B"] + A_Index - 1 ":" before_ctx.Pop())
+				; if (G_opts["color"])
+					; process_line(Ansi.Reset() Ansi.EraseLine())
 			}
 		}
+
 		if (column_no = 0) {
 			if (!G_opts["files_w_matches"]) {
 				if (G_opts["color"]) {
-					process_line(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" array_to_string(parts), line_count, false, false)
-					process_line(Ansi.Reset() Ansi.EraseLine(), line_count)
+					process_line(line_file_name Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
 				} else {
-					process_line(A_Index ":" array_to_string(parts), line_count, false, false)
-					process_line("`n", line_count)
+					process_line(line_file_name A_Index ":" array_to_string(parts))
 				}
 			}
 		} else {
 			if (!G_opts["files_w_matches"]) {
 				if (G_opts["color"]) {
-					process_line(Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts), line_count, false, false)
-					process_line(Ansi.Reset() Ansi.EraseLine(), line_count)
+					process_line(line_file_name Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
 				} else {
-					process_line(A_Index ":" column_no ":" array_to_string(parts), line_count, false, false)
-					process_line("", line_count)
+					process_line(line_file_name A_Index ":" column_no ":" array_to_string(parts))
 				}
 			}
 		}
+
 		if (after_ctx.Length() > 0) {
 			_line_no := A_Index
 			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
 			loop % after_ctx.Length() {
-				process_line(_line_no + A_Index ":" after_ctx.Pop(), line_count, false, false)
-				if (G_opts["color"])
-					process_line(Ansi.Reset() Ansi.EraseLine(), line_count)
-				else
-					process_line("", line_count)
+				process_line(_line_no + A_Index ":" after_ctx.Pop())
+				; if (G_opts["color"])
+					; process_line(Ansi.Reset() Ansi.EraseLine())
 			}
 		}
 	}
 
-	if (G_opts["1"])
-		goto __Quit__
-
-	return _log.Exit(true)
-
-	__Space__:
-		Pause, Off
-		Ansi.Write(Ansi.RestoreCursorPosition() Ansi.Reset() Ansi.EraseLine())
-		Ansi.Flush()
-		Console.RefreshBufferInfo()
-	return
-
-	__Quit__:
-		Ansi.Write(Ansi.RestoreCursorPosition() Ansi.Reset() Ansi.EraseLine())
+	if (G_opts["1"]) {
+		if (G_opts["color"])
+			process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset())
+		else
+			process_line(file_name)
 		Ansi.Flush()
 		Ansi.FlushInput()
-	exitapp _log.Exit(0)
-}
-
-pager(msg="") {
-	_log := new Logger("app.mack." A_ThisFunc)
-	
-	if (_log.Logs(Logger.Input)) {
-		_log.Input("msg", msg)
+		exitapp _log.Exit(0)
 	}
-	
-	Ansi.Write(Ansi.SaveCursorPosition() Ansi.SetGraphic(Ansi.ATTR_REVERSE) msg "<Press space to continue or q to quit>" Ansi.Reset())
-	Hotkey, IfWinActive, %G_wt%
-	Hotkey q, __Quit__
-	Hotkey Space, __Space__
-	Ansi.Flush()
-	Console.RefreshBufferInfo()
-	Pause, On
 
-	return _log.Exit()
+	return _log.Exit(true)
 }
 
 array_to_string(a) {
@@ -388,51 +370,14 @@ array_to_string(a) {
 	return a
 }
 
-process_line(line, ByRef line_count, paging=true, newline=true) {
+process_line(line) {
 	_log := new Logger("app.mack." A_ThisFunc)
 	
 	if (_log.Logs(Logger.Input)) {
 		_log.Input("line", line)
-		_log.Input("line_count", line_count)
-		_log.Input("paging", paging)
 	}
 
-	lines := ((Ansi.PlainStrLen(line) // Console.BufferInfo.dwSize.X) + 1)
-
-	height := Console.BufferInfo.srWindow.Bottom - Console.BufferInfo.srWindow.Top
-	if (_log.Logs(Logger.Finest)) {
-		_log.Finest("height", height)
-		_log.Finest("lines", lines)
-	}
-
-	if (newline)
-		Ansi.WriteLine(line)
-	else
-		Ansi.Write(line)
-	if (!paging)
-		line_count += lines
-
-	if (paging && G_opts["pager"] && G_opts["group"] && line_count > height) {
-		if (lines = 1) {
-			Ansi.Write(line)
-			pager()
-			line_count := 1
-		} else {
-			; TODO: Das muss noch getestet werden... Was passiert, wenn am Ende des Fenters ein Zeile angezeigt wird, die mehr als eine Zeile zur Darstellung benötigt?
-			Ansi.Write(SubStr(line, 1, (height - lines) * Console.BufferInfo.dwSize.X))
-			pager()
-			line_count := 1
-			process_line(SubStr(line, (height - lines) * Console.BufferInfo.dwSize.X + 1), line_count)
-			line_count := 1
-		}
-	}
-
-
-	if (_log.Logs(Logger.Finest)) {
-		_log.Finest("line_count", line_count)
-	}
-	
-	return _log.Exit()
+	return _log.Exit(Pager.Write(line, false))
 }
 
 regex_file_pattern_list(file_pattern_string) {
@@ -794,6 +739,7 @@ main:
 					 , "color_filename": Ansi.FOREGROUND_GREEN ";" Ansi.ATTR_BOLD
 					 , "color_match": Ansi.FOREGROUND_YELLOW ";" Ansi.ATTR_BOLD ";" Ansi.ATTR_REVERSE
 					 , "color_line_no": Ansi.FOREGROUND_YELLOW ";" Ansi.ATTR_BOLD
+					 , "color_context": Ansi.FOREGROUND_BLUE ";" Ansi.ATTR_BOLD
 					 , "context": 2
 					 , "h": false
 					 , "f": false
@@ -883,7 +829,7 @@ main:
 	op.Add(new OptParser.Boolean(0, "group", _group, "Print a filename heading above each file's results (default: on when used interactively)", OptParser.OPT_NEG, true))
 	op.Add(new OptParser.Boolean(0, "color", _color, "Highlight the matching text (default: on)", OptParser.OPT_NEG, G_opts["color"]))
 	op.Add(new OptParser.String(0, "color-filename", _color_filename, "color", "", OptParser.OPT_ARG, G_opts["color_filename"], G_opts["color_filename"]))
-	op.Add(new OptParser.String(0, "color-match", _color_match, "color", "", OptParser.OPT_ARG, G_opts["color_match"], G_opts["color_match"]))
+	op.Add(new OptParser.String(0, "color-match", _color_match,  "color", "", OptParser.OPT_ARG, G_opts["color_match"], G_opts["color_match"]))
 	op.Add(new OptParser.String(0, "color-line-no", _color_line_no, "color", "Set the color for filenames, matches, and line numbers as ANSI color attributes (e.g. ""7;37"")", OptParser.OPT_ARG, G_opts["color_line_no"], G_opts["color_line_no"]))
 	op.Add(new OptParser.Group("`nFile finding:"))
 	op.Add(new OptParser.Boolean("f", "", _f, "Only print the files selected, without searching. The pattern must not be specified"))
@@ -968,6 +914,8 @@ main:
 		if (G_opts["context"] > 0 && G_opts["B"] = 0)
 			G_opts["B"] := G_opts["context"]
 
+		Pager.bEnablePager := G_opts["pager"]
+
 		if (_main.Logs(Logger.FINEST))
 			_main.Finest("G_opts:`n" LoggingHelper.Dump(G_opts))
 		if (G_opts["version"])
@@ -995,7 +943,7 @@ main:
 			file_list := determine_files(args)
 			if (G_opts["f"] || G_opts["g"])
 				for _i, file_entry in file_list {
-					Ansi.WriteLine(file_entry)
+					Pager.Write(file_entry)
 				}
 			else {
 				Console.RefreshBufferInfo()
@@ -1009,7 +957,9 @@ main:
 		RC := _ex.Extra
 	}
 
-	OutputDebug Done. Files = %G_file_count%  Hits = %G_hit_count%
+	; if (G_opts["c"])
+		; Ansi.WriteLine("`n" G_hit_count " hit(s) in " G_file_count " file(s)")
+
 	Ansi.FlushInput()
 exitapp _main.Exit(RC)
 ; vim: ts=4:sts=4:sw=4:tw=0:noet
