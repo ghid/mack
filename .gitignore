@@ -1,8 +1,10 @@
 *~
+*.exe
 \#*\#
 trace.log
 .*.marks
 .*.swp
 .*.swo
 .*.swn
+.*.exe
 
