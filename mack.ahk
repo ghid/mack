@@ -126,6 +126,8 @@ refine_file_pattern(ByRef file_pattern) {
 search_for_pattern(file_name, regex_opts = "") {
 	_log := new Logger("app.mack." A_ThisFunc)
 
+	static last_col := 0
+
 	if (_log.Logs(Logger.INPUT)) {
 		_log.Input("file_name", file_name)
 		_log.Input("regex_opts", regex_opts)
@@ -153,12 +155,19 @@ search_for_pattern(file_name, regex_opts = "") {
 				line := RegExReplace(f.ReadLine(), "\t", tabstops)
 
 				parts := test(line, regex_opts, found := 0, column := 0)
+				last_col := (column = 0 ? last_col : column)
+
+				if (found && _log.Logs(Logger.Finest)) {
+					_log.Finest("Found pattern: " line)
+					_log.Finest("last_col", last_col)
+				}
 
 				if (found && G_opts["files_wo_matches"]) {
 					hit_n++
 					break
 				} else if (found && !G_opts["v"]) {
 					hit_n++
+					/*
 					if (G_opts["A"] > 0) {
 						fpos := f.Tell()
 						while (!f.AtEOF && A_Index <= G_opts["A"]) {
@@ -167,6 +176,7 @@ search_for_pattern(file_name, regex_opts = "") {
 						}
 						f.Seek(fpos)	
 					}
+					*/
 					if (!output(file_name, A_Index, column, hit_n, before_context, after_context, parts))
 						break
 				} else if ((!found && G_opts["v"]) || G_opts["passthru"]) {
@@ -174,10 +184,24 @@ search_for_pattern(file_name, regex_opts = "") {
 					if (!output(file_name, A_Index, column, hit_n, "", "", line))
 						break
 				} else {
-					if (G_opts["B"] > 0) {
-						before_context.Push(line := A_Index ":" Ansi.SetGraphic(G_opts["color_context"]) line Ansi.Reset())	
+					if (G_opts["A"] > 0 && after_context.Length() < G_opts["A"] && hit_n) {
+						if (G_opts["color"])
+							after_context.Push(a_line := Ansi.SetGraphic(G_opts["color_context"]) A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col)) " ") Aline Ansi.Reset())
+						else
+							after_context.Push(a_line := "+" A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col))) line)
 						if (_log.Logs(Logger.Finest)) {
-							_log.Finest("Pushing line", Pushing line)
+							_log.Finest("Pushing line to after-context: ", a_line)
+							if (_log.Logs(Logger.All)) {
+								_log.All("after_context:`n" LoggingHelper.Dump(after_context))
+							}
+						}
+					} else if (G_opts["B"] > 0) {
+						if (G_opts["color"])
+							before_context.Push(b_line := Ansi.SetGraphic(G_opts["color_context"]) A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col)) " ") line Ansi.Reset())	
+						else
+							before_context.Push(b_line := "-" A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col))) line)	
+						if (_log.Logs(Logger.Finest)) {
+							_log.Finest("Pushing line to before-context: ", b_line)
 							if (_log.Logs(Logger.All)) {
 								_log.All("before_context:`n" LoggingHelper.Dump(before_context))
 							}
@@ -208,6 +232,12 @@ search_for_pattern(file_name, regex_opts = "") {
 	} finally {
 		if (f)
 			f.Close()
+		; Are there after-context-lines to print?
+		if (after_context.Length() > 0) {
+			loop % after_context.Length() {
+				process_line(after_context.Pop())
+			}
+		}
 	}
 
 	return _log.Exit()
@@ -220,7 +250,6 @@ test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0
 		_log.Input("haystack", haystack)
 		_log.Input("regex_opts", regex_opts)
 		_log.Input("found", found)
-		_log.Input("first_match_column", first_match_column)
 		_log.Input("G_opts[pattern]", G_opts["pattern"])
 		_log.Input("G_opts[column]", G_opts["column"])
 		_log.Input("G_opts[color_match]", G_opts["color_match"])
@@ -254,8 +283,12 @@ test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0
 		}
 	} until (found_at = 0)
 
-	if (_log.Logs(Logger.ALL)) {
-		_log.ALL("parts:`n" LoggingHelper.Dump(parts))
+	if (_log.Logs(Logger.Output)) {
+		_log.Output("found", found)
+		_log.Output("first_match_column", first_match_column)
+		if (_log.Logs(Logger.ALL)) {
+			_log.ALL("parts:`n" LoggingHelper.Dump(parts))
+		}
 	}
 		
 	return _log.Exit(parts)
@@ -293,9 +326,6 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 	} else {
 		if (hit_n = 1 && G_opts["group"]) {
 			if (!first_call) {
-				; if (G_opts["pager"]) {
-				; 	Pager.Break("<Eof>", true)
-				; }
 				process_line(" ")
 			} else
 				first_call := false
@@ -311,14 +341,15 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 		} else
 			line_file_name := ""
 
+		if (after_ctx.Length() > 0) {
+			loop % after_ctx.Length() {
+				process_line(after_ctx.Pop())
+			}
+		}
+
 		if (before_ctx.Length() > 0) {
-			_line_no := A_Index
-			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
 			loop % before_ctx.Length() {
 				process_line(before_ctx.Pop())
-				; process_line(_line_no - G_opts["B"] + A_Index - 1 ":" before_ctx.Pop())
-				; if (G_opts["color"])
-					; process_line(Ansi.Reset() Ansi.EraseLine())
 			}
 		}
 
@@ -337,16 +368,6 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 				} else {
 					process_line(line_file_name A_Index ":" column_no ":" array_to_string(parts))
 				}
-			}
-		}
-
-		if (after_ctx.Length() > 0) {
-			_line_no := A_Index
-			_col_no := (column_no = 0 ? "" : " ".Repeat(StrLen(column_no)) " ")
-			loop % after_ctx.Length() {
-				process_line(_line_no + A_Index ":" after_ctx.Pop())
-				; if (G_opts["color"])
-					; process_line(Ansi.Reset() Ansi.EraseLine())
 			}
 		}
 	}
