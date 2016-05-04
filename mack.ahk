@@ -10,8 +10,7 @@ SetBatchLines -1
 #Include <datatable>
 #Include <arrays>
 #Include <queue>
-; #include <pager>
-#Include ..\lib2\pager.ahk
+#include <pager>
 #Include *i %A_ScriptDir%\.versioninfo
 
 get_version() {
@@ -225,9 +224,9 @@ search_for_pattern(file_name, regex_opts = "") {
 		}
 		if (hit_n = 0 && G_opts["files_wo_matches"]) {
 			if (G_opts["color"])
-				Ansi.WriteLine(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset())
+				process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset())
 			else if (!G_opts["c"])
-				Ansi.WriteLine(file_name)
+				process_line(file_name)
 			G_file_count++
 		}
 	} finally {
