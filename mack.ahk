@@ -10,7 +10,8 @@ SetBatchLines -1
 #Include <datatable>
 #Include <arrays>
 #Include <queue>
-#include <pager>
+; #include <pager>
+#include ..\lib2\pager.ahk
 #Include *i %A_ScriptDir%\.versioninfo
 
 get_version() {
@@ -393,9 +394,18 @@ array_to_string(a) {
 
 process_line(line) {
 	_log := new Logger("app.mack." A_ThisFunc)
+
+	static last_line_no := 0
 	
 	if (_log.Logs(Logger.Input)) {
 		_log.Input("line", line)
+	}
+	if (G_opts["A"] || G_opts["B"]) {
+		if (RegExMatch(Ansi.PlainStr(line), "^(?P<line_no>\d+)", $)) {
+			if ($line_no - last_line_no > 1)
+				Pager.Write("...", false)
+		}
+		last_line_no := $line_no
 	}
 
 	return _log.Exit(Pager.Write(line, false))
