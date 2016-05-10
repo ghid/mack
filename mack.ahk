@@ -268,6 +268,9 @@ test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0
 			_log.Finest("$", $)
 		}
 		if (found_at > 0) {
+			if (A_Index = 1 && G_opts["column"])
+				first_match_column := found_at
+
 			if (G_opts["output"]) {
 				pattern := G_opts["output"]
 				while (RegExMatch(pattern, "\$(\d+)", arg_no)) {
@@ -280,8 +283,6 @@ test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0
 				break
 			} else {
 				found++
-				if (A_Index = 1 && G_opts["column"])
-					first_match_column := found_at
 				if (found_at > 1) {
 					parts.Insert(SubStr(haystack, search_at, found_at - search_at))
 				}
