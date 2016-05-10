@@ -774,6 +774,7 @@ main:
 					 , "context": 2
 					 , "h": false
 					 , "f": false
+					 , "files_from": ""
 					 , "files_w_matches": false
 					 , "files_wo_matches": false
 		 			 , "g": false
@@ -783,6 +784,8 @@ main:
 					 , "ignore_dirs": []
 					 , "ignore_files": []
 					 , "k": false
+					 , "o": false
+					 , "output": ""
 					 , "pager": true
 					 , "passthru": false
 					 , "modelines": 5
@@ -846,6 +849,8 @@ main:
 	op.Add(new OptParser.Group("`nSearch output:"))
 	op.Add(new OptParser.Boolean("l", "files-with-matches", _files_w_matches, "Only print filenames containing matches"))
 	op.Add(new OptParser.Boolean("L", "files-without-matches", _files_wo_matches, "Only print filenames with no matches"))
+	op.Add(new OptParser.String(0, "output", _output, "EXPR", "Output the evaluation of EXPR for each line (turns of text highlighting)", OptParser.OPT_ARG)) ; TODO: Implement --output option
+	op.Add(new OptParser.Boolean("o", "", _o, "Show only the part of a line matching PATTERN. Same as --output $0")) ; TODO: Implement -o option
 	op.Add(new OptParser.Boolean(0, "passthru", _passthru, "Print all lines, whether matching or not"))
 	op.Add(new OptParser.Boolean("1", "", _1, "Stop searching after one match of any kind"))
 	op.Add(new OptParser.Boolean("c", "count", _c, "Show number of lines matching per file"))
@@ -866,7 +871,8 @@ main:
 	op.Add(new OptParser.Boolean("f", "", _f, "Only print the files selected, without searching. The pattern must not be specified"))
 	op.Add(new OptParser.Boolean("g", "", _g, "Same as -f, but only select files matching pattern"))
 	op.Add(new OptParser.Boolean(0, "sort-files", _sort_files, "Sort the found files lexically"))
-	op.Add(new OptParser.Boolean("x", "", _x, "Read the list of files to search from STDIN"))
+	op.Add(new OptParser.String(0, "files-from", _files_from, "FILE", "Read the list of files to search from FILE", OptParser.OPT_ARG)) ; TODO: Implement --files-from option
+	op.Add(new OptParser.Boolean("x", "", _x, "Read the list of files to search from STDIN")) ; TODO: Implement -x option
 	op.Add(new OptParser.Group("`nFile inclusion/exclusion:"))
 	op.Add(new OptParser.Callback(0, "ignore-dir", _ignore_dir, "ignore_dir", "name", "Add/remove directory from list of ignored dirs", OptParser.OPT_ARG | OptParser.OPT_NEG))
 	op.Add(new OptParser.Callback(0, "ignore-file", _ignore_file, "ignore_file", "filter", "Add filter for ignoring files", OptParser.OPT_ARG | OptParser.OPT_NEG))
@@ -898,6 +904,7 @@ main:
 		G_opts["color_line_no"] := OptParser.TrimArg(_color_line_no)
 		G_opts["context"] := _n_ctx
 		G_opts["f"] := _f
+		G_opts["files_from"] := _files_from
 		G_opts["files_w_matches"] := _files_w_matches
 		G_opts["files_wo_matches"] := _files_wo_matches
 		G_opts["g"] := _g
@@ -909,6 +916,8 @@ main:
 		G_opts["sel_types"] := OptParser.TrimArg(sel_types).ToArray("`n",, false)
 		G_opts["modelines"] := OptParser.TrimArg(_modelines)
 		G_opts["modeline_expr"] := "J)" Arrays.ToString(G_opts["modeline_pattern"], "|")
+		G_opts["o"] := _o
+		G_opts["output"] := _output
 		G_opts["pager"] := _pager
 		G_opts["passthru"] := _passthru
 		G_opts["Q"] := _Q
@@ -946,6 +955,9 @@ main:
 			G_opts["B"] := G_opts["context"]
 
 		Pager.bEnablePager := G_opts["pager"]
+
+		if (G_opts["o"])
+			G_opts["color_match"] := Ansi.Reset()
 
 		if (_main.Logs(Logger.FINEST))
 			_main.Finest("G_opts:`n" LoggingHelper.Dump(G_opts))
