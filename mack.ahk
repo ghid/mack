@@ -161,6 +161,7 @@ search_for_pattern(file_name, regex_opts = "") {
 				if (found && _log.Logs(Logger.Finest)) {
 					_log.Finest("Found pattern: " line)
 					_log.Finest("last_col", last_col)
+					_log.Finest("parts:`n" LoggingHelper.Dump(parts))
 				}
 
 				if (found && G_opts["files_wo_matches"]) {
@@ -254,6 +255,7 @@ test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0
 		_log.Input("G_opts[pattern]", G_opts["pattern"])
 		_log.Input("G_opts[column]", G_opts["column"])
 		_log.Input("G_opts[color_match]", G_opts["color_match"])
+		_log.Finest("G_opts[output]", G_opts["output"])
 	}
 	
 	search_at := 1
@@ -266,19 +268,29 @@ test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0
 			_log.Finest("$", $)
 		}
 		if (found_at > 0) {
-			found++
-			; if (found = 1)
-			; 	haystack := RegExReplace(haystack, "`n$", "", 1)	
-			if (A_Index = 1 && G_opts["column"])
-				first_match_column := found_at
-			if (found_at > 1) {
-				parts.Insert(SubStr(haystack, search_at, found_at - search_at))
+			if (G_opts["output"]) {
+				pattern := G_opts["output"]
+				while (RegExMatch(pattern, "\$(\d+)", arg_no)) {
+					if (arg_no1 = 0)
+						arg_no1 := ""
+					pattern := RegExReplace(pattern, "\Q" arg_no "\E", $%arg_no1%)
+				}
+				found := true
+				parts.Insert(pattern)
+				break
+			} else {
+				found++
+				if (A_Index = 1 && G_opts["column"])
+					first_match_column := found_at
+				if (found_at > 1) {
+					parts.Insert(SubStr(haystack, search_at, found_at - search_at))
+				}
+				if (G_opts["color"])
+					parts.Insert(Ansi.SetGraphic(G_opts["color_match"]) $ Ansi.Reset())
+				else
+					parts.Insert($)
+				search_at := found_at + StrLen($)
 			}
-			if (G_opts["color"])
-				parts.Insert(Ansi.SetGraphic(G_opts["color_match"]) $ Ansi.Reset())
-			else
-				parts.Insert($)
-			search_at := found_at + StrLen($)
 		} else if (found > 0) {
 			parts.Insert(SubStr(haystack, search_at))
 		}
@@ -849,8 +861,8 @@ main:
 	op.Add(new OptParser.Group("`nSearch output:"))
 	op.Add(new OptParser.Boolean("l", "files-with-matches", _files_w_matches, "Only print filenames containing matches"))
 	op.Add(new OptParser.Boolean("L", "files-without-matches", _files_wo_matches, "Only print filenames with no matches"))
-	op.Add(new OptParser.String(0, "output", _output, "EXPR", "Output the evaluation of EXPR for each line (turns of text highlighting)", OptParser.OPT_ARG)) ; TODO: Implement --output option
-	op.Add(new OptParser.Boolean("o", "", _o, "Show only the part of a line matching PATTERN. Same as --output $0")) ; TODO: Implement -o option
+	op.Add(new OptParser.String(0, "output", _output, "EXPR", "Output the evaluation of EXPR for each line (turns of text highlighting)", OptParser.OPT_ARG))
+	op.Add(new OptParser.Boolean("o", "", _o, "Show only the part of a line matching PATTERN. Same as --output $0"))
 	op.Add(new OptParser.Boolean(0, "passthru", _passthru, "Print all lines, whether matching or not"))
 	op.Add(new OptParser.Boolean("1", "", _1, "Stop searching after one match of any kind"))
 	op.Add(new OptParser.Boolean("c", "count", _c, "Show number of lines matching per file"))
@@ -917,7 +929,7 @@ main:
 		G_opts["modelines"] := OptParser.TrimArg(_modelines)
 		G_opts["modeline_expr"] := "J)" Arrays.ToString(G_opts["modeline_pattern"], "|")
 		G_opts["o"] := _o
-		G_opts["output"] := _output
+		G_opts["output"] := OptParser.TrimArg(_output)
 		G_opts["pager"] := _pager
 		G_opts["passthru"] := _passthru
 		G_opts["Q"] := _Q
@@ -956,8 +968,10 @@ main:
 
 		Pager.bEnablePager := G_opts["pager"]
 
-		if (G_opts["o"])
+		if (G_opts["o"]) {
 			G_opts["color_match"] := Ansi.Reset()
+			G_opts["output"] := "$0"
+		}
 
 		if (_main.Logs(Logger.FINEST))
 			_main.Finest("G_opts:`n" LoggingHelper.Dump(G_opts))
