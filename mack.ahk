@@ -340,7 +340,7 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 	} else {
 		if (hit_n = 1 && G_opts["group"]) {
 			if (!first_call) {
-				process_line(" ")
+				process_line("@")
 			} else
 				first_call := false
 			if (G_opts["color"])
@@ -413,6 +413,7 @@ process_line(line) {
 	if (_log.Logs(Logger.Input)) {
 		_log.Input("line", line)
 	}
+
 	if (G_opts["A"] || G_opts["B"]) {
 		if (RegExMatch(Ansi.PlainStr(line), "^(?P<line_no>\d+)", $)) {
 			if ($line_no - last_line_no > 1)
