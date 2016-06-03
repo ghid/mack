@@ -10,8 +10,8 @@ SetBatchLines -1
 #Include <datatable>
 #Include <arrays>
 #Include <queue>
-; #include <pager>
-#include ..\lib2\pager.ahk
+#include <pager>
+; #include ..\lib2\pager.ahk
 #Include *i %A_ScriptDir%\.versioninfo
 
 get_version() {
@@ -340,7 +340,7 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 	} else {
 		if (hit_n = 1 && G_opts["group"]) {
 			if (!first_call) {
-				process_line("@")
+				process_line(" ")
 			} else
 				first_call := false
 			if (G_opts["color"])
@@ -422,7 +422,7 @@ process_line(line) {
 		last_line_no := $line_no
 	}
 
-	return _log.Exit(Pager.Write(line, false))
+	return _log.Exit(Pager.Write(Ansi.Readable(line, G_opts["color"]), false))
 }
 
 regex_file_pattern_list(file_pattern_string) {
@@ -886,7 +886,7 @@ main:
 	op.Add(new OptParser.Boolean("g", "", _g, "Same as -f, but only select files matching pattern"))
 	op.Add(new OptParser.Boolean(0, "sort-files", _sort_files, "Sort the found files lexically"))
 	op.Add(new OptParser.String(0, "files-from", _files_from, "FILE", "Read the list of files to search from FILE", OptParser.OPT_ARG)) ; TODO: Implement --files-from option
-	op.Add(new OptParser.Boolean("x", "", _x, "Read the list of files to search from STDIN")) ; TODO: Implement -x option
+	op.Add(new OptParser.Boolean("x", "", _x, "Read the list of files to search from STDIN")) ; TODO Implement -x option
 	op.Add(new OptParser.Group("`nFile inclusion/exclusion:"))
 	op.Add(new OptParser.Callback(0, "ignore-dir", _ignore_dir, "ignore_dir", "name", "Add/remove directory from list of ignored dirs", OptParser.OPT_ARG | OptParser.OPT_NEG))
 	op.Add(new OptParser.Callback(0, "ignore-file", _ignore_file, "ignore_file", "filter", "Add filter for ignoring files", OptParser.OPT_ARG | OptParser.OPT_NEG))
