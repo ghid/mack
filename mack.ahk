@@ -854,7 +854,7 @@ main:
 
 	op := new OptParser(["mack [options] [--] <pattern> [file | directory]..."
 	                   , "mack -f [options] [--] [directory]..."]
-					   ,, "MACK_OPTIONS")
+					   , OptParser.PARSER_ALLOW_DASHED_ARGS, "MACK_OPTIONS")
 	op.Add(new OptParser.Group("Searching:"))
 	op.Add(new OptParser.Boolean("i", "ignore-case", _i, "Ignore case distinctions in pattern"))
 	op.Add(new OptParser.Boolean("v", "invert-match", _v, "Select non-matching lines"))

@@ -1,1 +1,1 @@
-G_VERSION_INFO := {NAME: "AHK mack version 2.0rc2", ARCH: "x64", BUILD: "20160511_162931"}
+G_VERSION_INFO := {NAME: "AHK mack version 2.0rc4", ARCH: "x64", BUILD: "20170408_192401"}
