@@ -370,17 +370,17 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 		if (column_no = 0) {
 			if (!G_opts["files_w_matches"]) {
 				if (G_opts["color"]) {
-					process_line(line_file_name Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
+					process_line((G_opts["output"] <> "" ? "" : line_file_name Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":") array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
 				} else {
-					process_line(line_file_name A_Index ":" array_to_string(parts))
+					process_line(line_file_name (G_opts["output"] <> "" ? "" : (A_Index ":")) array_to_string(parts))
 				}
 			}
 		} else {
 			if (!G_opts["files_w_matches"]) {
 				if (G_opts["color"]) {
-					process_line(line_file_name Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
+					process_line((G_opts["output"] <> "" ? "" : line_file_name Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":") Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
 				} else {
-					process_line(line_file_name A_Index ":" column_no ":" array_to_string(parts))
+					process_line(line_file_name (G_opts["output"] <> "" ? "" : (A_Index ":")) column_no ":" array_to_string(parts))
 				}
 			}
 		}
