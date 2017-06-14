@@ -188,9 +188,9 @@ search_for_pattern(file_name, regex_opts = "") {
 				} else {
 					if (G_opts["A"] > 0 && after_context.Length() < G_opts["A"] && hit_n) {
 						if (G_opts["color"])
-							after_context.Push(a_line := Ansi.SetGraphic(G_opts["color_context"]) A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col)) " ") line Ansi.Reset())
+							after_context.Push(a_line := Ansi.SetGraphic(G_opts["color_context"]) (G_opts["filename"] ? file_name ":" : "") A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col)) " ") line Ansi.Reset())
 						else
-							after_context.Push(a_line := "+" A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col))) line)
+							after_context.Push(a_line := "+" (G_opts["filename"] ? file_name ":" : "") A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col))) line)
 						if (_log.Logs(Logger.Finest)) {
 							_log.Finest("Pushing line to after-context: ", a_line)
 							if (_log.Logs(Logger.All)) {
@@ -199,9 +199,9 @@ search_for_pattern(file_name, regex_opts = "") {
 						}
 					} else if (G_opts["B"] > 0) {
 						if (G_opts["color"])
-							before_context.Push(b_line := Ansi.SetGraphic(G_opts["color_context"]) A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col)) " ") line Ansi.Reset())	
+							before_context.Push(b_line := Ansi.SetGraphic(G_opts["color_context"]) (G_opts["filename"] ? file_name ":" : "") A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col)) " ") line Ansi.Reset())	
 						else
-							before_context.Push(b_line := "-" A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col))) line)	
+							before_context.Push(b_line := "-" (G_opts["filename"] ? file_name ":" : "") A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col))) line)	
 						if (_log.Logs(Logger.Finest)) {
 							_log.Finest("Pushing line to before-context: ", b_line)
 							if (_log.Logs(Logger.All)) {
@@ -347,13 +347,11 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 				process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset())
 			else
 				process_line(file_name)
-		} else if (!G_opts["group"]) {
-			if (G_opts["color"])
-				line_file_name := Ansi.SetGraphic(G_opts["color_filename"]) file_name ":" Ansi.Reset()
-			else
-				line_file_name := file_name ":"
-		} else
-			line_file_name := ""
+		}
+		if (G_opts["color"])
+			line_file_name := Ansi.SetGraphic(G_opts["color_filename"]) file_name ":" Ansi.Reset()
+		else
+			line_file_name := file_name ":"
 
 		if (after_ctx.Length() > 0) {
 			loop % after_ctx.Length() {
@@ -370,17 +368,17 @@ output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 		if (column_no = 0) {
 			if (!G_opts["files_w_matches"]) {
 				if (G_opts["color"]) {
-					process_line((G_opts["output"] <> "" ? "" : line_file_name Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":") array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
+					process_line((G_opts["filename"] ? line_file_name : "") (G_opts["line"] ? Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" : "") array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
 				} else {
-					process_line(line_file_name (G_opts["output"] <> "" ? "" : (A_Index ":")) array_to_string(parts))
+					process_line((G_opts["filename"] ? line_file_name : "") (G_opts["line"] ? A_Index ":" : "") array_to_string(parts))
 				}
 			}
 		} else {
 			if (!G_opts["files_w_matches"]) {
 				if (G_opts["color"]) {
-					process_line((G_opts["output"] <> "" ? "" : line_file_name Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":") Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
+					process_line((G_opts["filename"] ? line_file_name : "") (G_opts["line"] ? Ansi.SetGraphic(G_opts["color_line_no"]) A_Index Ansi.Reset() ":" : "") Ansi.SetGraphic(G_opts["color_line_no"]) column_no Ansi.Reset() ":" array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
 				} else {
-					process_line(line_file_name (G_opts["output"] <> "" ? "" : (A_Index ":")) column_no ":" array_to_string(parts))
+					process_line((G_opts["filename"] ? line_file_name : "") (G_opts["line"] ? A_Index ":" : "") column_no ":" array_to_string(parts))
 				}
 			}
 		}
@@ -788,6 +786,7 @@ main:
 					 , "context": 2
 					 , "h": false
 					 , "f": false
+					 , "filename": true
 					 , "files_from": ""
 					 , "files_w_matches": false
 					 , "files_wo_matches": false
@@ -797,6 +796,7 @@ main:
 					 , "i": false
 					 , "ignore_dirs": []
 					 , "ignore_files": []
+					 , "line": true
 					 , "k": false
 					 , "o": false
 					 , "output": ""
@@ -868,6 +868,8 @@ main:
 	op.Add(new OptParser.Boolean(0, "passthru", _passthru, "Print all lines, whether matching or not"))
 	op.Add(new OptParser.Boolean("1", "", _1, "Stop searching after one match of any kind"))
 	op.Add(new OptParser.Boolean("c", "count", _c, "Show number of lines matching per file"))
+	op.Add(new OptParser.Boolean(0, "filename", _filename, "Suppress prefixing filename on output (default)", OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
+	op.Add(new OptParser.Boolean(0, "line", _line, "Show the line number of the match", OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE, G_opts["line"]))
 	op.Add(new OptParser.Boolean(0, "column", _column, "Show the column number of the first match", OptParser.OPT_NEG))
 	op.Add(new OptParser.String("A", "after-context", _n_after_ctx, "NUM", "Print NUM lines of trailing context after matching lines",,, G_opts["A"]))
 	op.Add(new OptParser.String("B", "before-context", _n_before_ctx, "NUM", "Print NUM lines of leading context before matching lines",,, G_opts["B"]))
@@ -918,6 +920,7 @@ main:
 		G_opts["color_line_no"] := OptParser.TrimArg(_color_line_no)
 		G_opts["context"] := _n_ctx
 		G_opts["f"] := _f
+		G_opts["filename"] := _filename
 		G_opts["files_from"] := _files_from
 		G_opts["files_w_matches"] := _files_w_matches
 		G_opts["files_wo_matches"] := _files_wo_matches
@@ -926,6 +929,7 @@ main:
 		G_opts["h"] := _h
 		G_opts["ht"] := _ht
 		G_opts["i"] := _i
+		G_opts["line"] := _line
 		G_opts["k"] := _k
 		G_opts["sel_types"] := OptParser.TrimArg(sel_types).ToArray("`n",, false)
 		G_opts["modelines"] := OptParser.TrimArg(_modelines)
