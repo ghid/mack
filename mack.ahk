@@ -18,7 +18,7 @@ get_version() {
 	global G_VERSION_INFO
 
 	_log := new Logger("app.mack." A_ThisFunc)
-	return _log.Exit(G_VERSION_INFO.NAME "/" G_VERSION_INFO.ARCH "-b" G_VERSION_INFO.BUILD " Copyright (C) 2014 K.-P. Schreiner`n")
+	return _log.Exit(G_VERSION_INFO.NAME "/" G_VERSION_INFO.ARCH "-b" G_VERSION_INFO.BUILD " Copyright (C) 2014-2017 K.-P. Schreiner`n")
 }
 
 determine_files(args) {
@@ -81,18 +81,18 @@ collect_filenames(fn_list, dirname) {
 		}
 		if (G_opts["r"] && InStr(A_LoopFileAttrib, "D") 
 				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_dirs"])) {
-			fn_list := collect_filenames(fn_list, A_LoopFileFullPath)
 			if (_log.Logs(Logger.Info)) {
 				_log.Info("Search in " A_LoopFileName)
 			}
+			fn_list := collect_filenames(fn_list, A_LoopFileFullPath)
 		} else if (!InStr(A_LoopFileAttrib, "D")
-				&& (!G_opts["g"] || (G_opts["g"] && RegExMatch(A_LoopFileName, "S)^" G_opts["file_pattern"] "$")))
+				&& (!G_opts["g"] || (G_opts["g"] && RegExMatch(A_LoopFileName, G_opts["file_pattern"])))
 				&& (G_opts["match_type"] = "" || RegExMatch(A_LoopFileName, G_opts["match_type"]))
 				&& (G_opts["match_type_ignore"] == "" || !RegExMatch(A_LoopFileName, G_opts["match_type_ignore"]))
 				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_files"])) {
 			fn_list.Insert(A_LoopFileFullPath)
 			if (_log.Logs(Logger.Info)) {
-				_log.Info("Search in " A_LoopFileName)
+				_log.Info("Add " A_LoopFileName)
 			}
 		} else {
 			if (_log.Logs(Logger.Detail)) {
@@ -999,7 +999,7 @@ main:
 				if (G_opts["w"])
 					G_opts["pattern"] := "\b" G_opts["pattern"] "\b"
 				if (G_opts["g"])
-					G_opts["file_pattern"] := regex_of_file_pattern(G_opts["pattern"])
+					G_opts["file_pattern"] := G_opts["pattern"]
 				if (_main.Logs(Logger.FINEST))
 					_main.Finest("G_opts[file_pattern]", G_opts["file_pattern"])
 			}
