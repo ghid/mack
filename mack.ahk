@@ -11,7 +11,6 @@ SetBatchLines -1
 #Include <arrays>
 #Include <queue>
 #include <pager>
-; #include ..\lib2\pager.ahk
 #Include *i %A_ScriptDir%\.versioninfo
 
 get_version() {
@@ -832,7 +831,7 @@ main:
 					 , "v": false
 					 , "version": false
 					 , "w": false
-					 , "x": ""
+					 , "x": false
 					 , "1": false }
 
 	global G_file_count := 0, G_hit_count := 0
