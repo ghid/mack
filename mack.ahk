@@ -1,3 +1,4 @@
+; ahk: console
 #NoEnv
 #NoTrayIcon
 SetBatchLines -1
@@ -211,18 +212,6 @@ search_for_pattern(file_name, regex_opts = "") {
 				}
 			}
 		}
-		if (G_opts["c"] && hit_n > 0) {
-			if (!G_opts["files_w_matches"]) {
-				if (G_opts["color"])
-					process_line(Ansi.SetGraphic(G_opts["color_filename"]) hit_n " match(es)" Ansi.Reset())
-				else
-					process_line(hit_n " match(es)")
-			} else {
-				process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name ":" hit_n Ansi.Reset())	
-			}
-			G_file_count++
-			G_hit_count += hit_n
-		}
 		if (hit_n = 0 && G_opts["files_wo_matches"]) {
 			if (G_opts["color"])
 				process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name Ansi.Reset())
@@ -238,6 +227,19 @@ search_for_pattern(file_name, regex_opts = "") {
 			loop % after_context.Length() {
 				process_line(after_context.Pop())
 			}
+		}
+		; Print hit count?
+		if (G_opts["c"] && hit_n > 0) {
+			if (!G_opts["files_w_matches"]) {
+				if (G_opts["color"])
+					process_line(Ansi.SetGraphic(G_opts["color_filename"]) hit_n " match(es)" Ansi.Reset())
+				else
+					process_line(hit_n " match(es)")
+			} else {
+				process_line(Ansi.SetGraphic(G_opts["color_filename"]) file_name ":" hit_n Ansi.Reset())
+			}
+			G_file_count++
+			G_hit_count += hit_n
 		}
 	}
 
