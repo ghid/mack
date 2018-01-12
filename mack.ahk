@@ -92,40 +92,6 @@ collect_filenames(fn_list, dirname) {
 				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_files"])) {
 			fn_list.Insert(A_LoopFileFullPath)
 			if (_log.Logs(Logger.Info)) {
-				_log.Info("Add " A_LoopFileName)
-			}
-		} else {
-			if (_log.Logs(Logger.Detail)) {
-				_log.Detail("Discard " A_LoopFileName)
-			}
-		}
-	}
-
-	return _log.Exit(fn_list)
-}
-
-refine_file_pattern(ByRef file_pattern) {
-	_log := new Logger("app.mack." A_ThisFunc)
-	
-	if (_log.Logs(Logger.INPUT)) {
-		_log.Input("file_pattern", file_pattern)
-	}
-	
-	file_attrs := FileExist(file_pattern)
-	if (InStr(file_attrs, "D")) {
-		SplitPath file_pattern, name
-		if (name = "" || !RegExMatch(name, "\*\.?\*?$"))
-			file_pattern .= (SubStr(file_pattern, 0) = "\" ? "" : "\") "*.*"
-	}
-	if (_log.Logs(Logger.OUTPUT)) {
-		_log.Output("file_pattern", file_pattern)
-	}
-
-	return _log.Exit()
-}
-
-search_for_pattern(file_name, regex_opts = "") {
-	_log := new Logger("app.mack." A_ThisFunc)
 
 	static last_col := 0
 
