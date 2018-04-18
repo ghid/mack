@@ -1,6 +1,7 @@
 ; ahk: console
 #NoEnv
 #NoTrayIcon
+#SingleInstance off
 SetBatchLines -1
 
 #Include <logging>
