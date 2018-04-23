@@ -80,8 +80,7 @@ collect_filenames(fn_list, dirname) {
 			_log.Finest("G_opts[""match_ignore_dirs""]", G_opts["match_ignore_dirs"])
 			_log.Finest("G_opts[""match_ignore_files""]", G_opts["match_ignore_files"])
 		}
-		if (G_opts["r"] && InStr(A_LoopFileAttrib, "D") 
-				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_dirs"])) {
+		if (G_opts["r"] && InStr(A_LoopFileAttrib, "D") && !RegExMatch(A_LoopFileName, G_opts["match_ignore_dirs"])) {
 			if (_log.Logs(Logger.Info)) {
 				_log.Info("Search in " A_LoopFileName)
 			}
@@ -93,9 +92,40 @@ collect_filenames(fn_list, dirname) {
 				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_files"])) {
 			fn_list.Insert(A_LoopFileFullPath)
 			if (_log.Logs(Logger.Info)) {
+				log.Info("Search in " A_LoopFileName)
+			}
+		} else {
+			if (_log.Logs(Logger.Detail)) {
+				_log.Detail("Discard " A_LoopFileName)
+			}
+		}
+	}
 
-	static last_col := 0
+	; static last_col := 0
+	return _log.Exit()
+}
 
+refine_file_pattern(ByRef file_pattern) {
+	_log := new Logger("app.mack." A_ThisFunc)
+
+	if (_log.Logs(Logger.INPUT)) {
+		_log.INPUT("file_pattern", file_pattern)
+	}
+
+	file_atts := FileExist(file_pattern)
+	if (InStr(file_attrs, "D")) {
+		SplitPath file_pattern, name
+		if (name = "" || !RegExMatch(name, "\*\.?\*?$"))
+			file_pattern .= (SubStr(file_pattern, 0) = "\" ? "" : "\") "*.*"
+	}
+	if (_log.Logs(Logger.Output)) {
+		_log.Output("file_pattern", file_pattern)
+	}
+	
+	return _log.Exit()
+}
+
+search_for_pattern(file_name, regex_opts = "") {
 	if (_log.Logs(Logger.INPUT)) {
 		_log.Input("file_name", file_name)
 		_log.Input("regex_opts", regex_opts)
