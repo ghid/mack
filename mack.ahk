@@ -15,11 +15,57 @@ SetBatchLines -1
 #include <pager>
 #Include *i %A_ScriptDir%\.versioninfo
 
-get_version() {
-	global G_VERSION_INFO
+class Mack {
 
-	_log := new Logger("app.mack." A_ThisFunc)
-	return _log.Exit(G_VERSION_INFO.NAME "/" G_VERSION_INFO.ARCH "-b" G_VERSION_INFO.BUILD " Copyright (C) 2014-2017 K.-P. Schreiner`n")
+	class Option {
+		static Types := { "autohotkey" : "*.ahk"
+						, "batch"      : "*.bat *.cmd"
+						, "css"        : "*.css"
+						, "html"       : "*.htm *.html"
+						, "java"       : "*.java *.properties"
+						, "js"         : "*.js"
+						, "json"       : "*.json"
+						, "log"        : "*.log"
+						, "md"         : "*.md *.mkd *.markdown"
+						, "python"     : "*.py"
+						, "ruby"       : "*.rb *.rhtml *.rjs *.rxml *.erb *.rake *.spec"
+						, "shell"      : "*.sh"
+						, "tex"        : "*.tex *.latex *.cls *.sty"
+						, "text"       : "*.txt *.rtf *.readme"
+						, "vim"        : "*.vim"
+						, "xml"        : "*.xml *.dtd *.xsl *.xslt *.ent"
+						, "yaml"       : "*.yaml *.yml" }
+	}
+
+	/*
+	 * Get version info.
+	 */
+	get_version_info() {
+		global G_VERSION_INFO
+
+		_log := new Logger("app.mack." A_ThisFunc)
+		return _log.Exit(G_VERSION_INFO.NAME "/" G_VERSION_INFO.ARCH "-b" G_VERSION_INFO.BUILD " Copyright (C) 2014-2018 K.-P. Schreiner`n")
+	}
+
+	/*
+	 * Help about types.
+	 */
+	help_types() {
+		_log := new Logger("app.mack." A_ThisFunc)
+
+		if (_log.Logs(Logger.Finest)) {
+			_log.Finest(LoggingHelper.Dump(Mack.Option))
+		}
+		
+		dt := new DataTable()
+		dt.DefineColumn(new DataTable.Column(, DataTable.COL_RESIZE_USE_LARGEST_DATA))
+		dt.DefineColumn(new DataTable.Column.Wrapped(50))
+
+		for filetype, filter in Mack.Option.Types
+			dt.AddData([filetype, filter])
+
+		return _log.Exit(dt.GetTableAsString())
+	}
 }
 
 determine_files(args) {
@@ -680,19 +726,6 @@ set_type(filetype_filter) {
 	return _log.Exit()
 }
 
-help_types() {
-	_log := new Logger("app.mack." A_ThisFunc)
-	
-	dt := new DataTable()
-	dt.DefineColumn(new DataTable.Column(, DataTable.COL_RESIZE_USE_LARGEST_DATA))
-	dt.DefineColumn(new DataTable.Column.Wrapped(50))
-
-	for filetype, filter in G_opts["types"]
-		dt.AddData([filetype, filter])
-
-	return _log.Exit(dt.GetTableAsString())
-}
-
 do_modelines(file) {
 	_log := new Logger("app.mack." A_ThisFunc)
 
@@ -980,11 +1013,11 @@ main:
 		if (_main.Logs(Logger.FINEST))
 			_main.Finest("G_opts:`n" LoggingHelper.Dump(G_opts))
 		if (G_opts["version"])
-			Ansi.WriteLine(get_version())
+			Ansi.WriteLine(Mack.get_version_info())
 		else if (G_opts["h"])
 			Ansi.WriteLine(op.Usage())
 		else if (G_opts["ht"])
-			Ansi.Write(help_types())
+			Ansi.Write(Mack.help_types())
 		else {
 			if (!G_opts["f"]) {
 				G_opts["pattern"] := Arrays.Shift(args)
