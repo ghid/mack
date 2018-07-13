@@ -7,4 +7,5 @@ trace.log
 .*.swo
 .*.swn
 .*.exe
+/test/Testdata/**
 

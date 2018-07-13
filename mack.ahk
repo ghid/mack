@@ -17,25 +17,30 @@ SetBatchLines -1
 
 class Mack {
 
-	class Option {
-		static Types := { "autohotkey" : "*.ahk"
-						, "batch"      : "*.bat *.cmd"
-						, "css"        : "*.css"
-						, "html"       : "*.htm *.html"
-						, "java"       : "*.java *.properties"
-						, "js"         : "*.js"
-						, "json"       : "*.json"
-						, "log"        : "*.log"
-						, "md"         : "*.md *.mkd *.markdown"
-						, "python"     : "*.py"
-						, "ruby"       : "*.rb *.rhtml *.rjs *.rxml *.erb *.rake *.spec"
-						, "shell"      : "*.sh"
-						, "tex"        : "*.tex *.latex *.cls *.sty"
-						, "text"       : "*.txt *.rtf *.readme"
-						, "vim"        : "*.vim"
-						, "xml"        : "*.xml *.dtd *.xsl *.xslt *.ent"
-						, "yaml"       : "*.yaml *.yml" }
-	}
+	static Option := {types: { "autohotkey": "*.ahk"
+							 , "batch"     : "*.bat *.cmd"
+							 , "css"       : "*.css"
+							 , "html"      : "*.htm *.html"
+							 , "java"      : "*.java *.properties"
+							 , "js"        : "*.js"
+							 , "json"      : "*.json"
+							 , "log"       : "*.log"
+							 , "md"        : "*.md *.mkd *.markdown"
+							 , "python"    : "*.py"
+							 , "ruby"      : "*.rb *.rhtml *.rjs *.rxml *.erb *.rake *.spec"
+							 , "shell"     : "*.sh"
+							 , "tex"       : "*.tex *.latex *.cls *.sty"
+							 , "text"      : "*.txt *.rtf *.readme"
+							 , "vim"       : "*.vim"
+							 , "xml"       : "*.xml *.dtd *.xsl *.xslt *.ent"
+							 , "yaml"      : "*.yaml *.yml" }
+					, file_pattern       : ""
+					, g                  : false
+					, match_ignore_dirs  : ""
+					, match_ignore_files : "" 
+					, match_type         : ""
+					, match_type_ignore  : ""
+					, r                  : true }
 
 	/*
 	 * Get version info.
@@ -66,109 +71,129 @@ class Mack {
 
 		return _log.Exit(dt.GetTableAsString())
 	}
-}
 
-determine_files(args) {
-	_log := new Logger("app.mack." A_ThisFunc)
-	
-	if (_log.Logs(Logger.INPUT)) {
-		_log.Input("args", args)
-		if (_log.Logs(Logger.ALL))
-			_log.All("args:`n" LoggingHelper.Dump(args))
-	}
-
-	if (args.MaxIndex() = "")
-		args := ["."]
-
-	file_list := []
-	for _i, file_pattern in args {
-		refine_file_pattern(file_pattern)
-		collect_filenames(file_list, file_pattern)
-	}
-
-	if (G_opts["sort_files"] && file_list.MaxIndex() <> "") {
-		file_list_string := ""
-		loop % (file_list.MaxIndex()-1)
-			file_list_string .= file_list[A_Index] "`n"
-		file_list_string .= file_list[file_list.MaxIndex()]
-		Sort file_list_string, C
-		file_list := StrSplit(file_list_string, "`n")
-	}
-
-	if (_log.Logs(Logger.ALL))
-		_log.All("file_list:`n" LoggingHelper.Dump(file_list))
-	
-	return _log.Exit(file_list)
-}
-
-collect_filenames(fn_list, dirname) {
-	_log := new Logger("app.mack." A_ThisFunc)
-
-	if (_log.Logs(Logger.INPUT)) {
-		_log.Input("fn_list", fn_list)
-		_log.Input("dirname", dirname)
-		if (_log.Logs(Logger.ALL))
-			_log.All("fn_list:`n" LoggingHelper.Dump(fn_list))
-	}
-
-	refine_file_pattern(dirname)
-	loop %dirname%, 1, 0
-	{
-		if (_log.Logs(Logger.FINEST)) {
-			_log.Finest("A_LoopFileAttrib", A_LoopFileAttrib)
-			_log.Finest("A_LoopFileFullPath", A_LoopFileFullPath)
-			_log.Finest("A_LoopFileName", A_LoopFileName)
-			_log.Finest("G_opts[""g""]", G_opts["g"])
-			_log.Finest("G_opts[""r""]", G_opts["r"])
-			_log.Finest("G_opts[""file_pattern""]", G_opts["file_pattern"])
-			_log.Finest("G_opts[""match_type""]", G_opts["match_type"])
-			_log.Finest("G_opts[""match_type_ignore""]", G_opts["match_type_ignore"])
-			_log.Finest("G_opts[""match_ignore_dirs""]", G_opts["match_ignore_dirs"])
-			_log.Finest("G_opts[""match_ignore_files""]", G_opts["match_ignore_files"])
+	/*
+	 * Find all matching files.
+	 */
+	determine_files(args) {
+		_log := new Logger("app.mack." A_ThisFunc)
+		
+		if (_log.Logs(Logger.INPUT)) {
+			_log.Input("args", args)
+			if (_log.Logs(Logger.ALL))
+				_log.All("args:`n" LoggingHelper.Dump(args))
 		}
-		if (G_opts["r"] && InStr(A_LoopFileAttrib, "D") && !RegExMatch(A_LoopFileName, G_opts["match_ignore_dirs"])) {
-			if (_log.Logs(Logger.Info)) {
-				_log.Info("Search in " A_LoopFileName)
+
+		if (args.MaxIndex() = "")
+			args := ["."]
+
+		file_list := []
+		for _i, file_pattern in args {
+			Mack.refine_file_pattern(file_pattern)
+			Mack.collect_filenames(file_list, file_pattern)
+		}
+
+		if (G_opts["sort_files"] && file_list.MaxIndex() <> "") {
+			file_list_string := ""
+			loop % (file_list.MaxIndex()-1)
+				file_list_string .= file_list[A_Index] "`n"
+			file_list_string .= file_list[file_list.MaxIndex()]
+			Sort file_list_string, C
+			file_list := StrSplit(file_list_string, "`n")
+		}
+
+		if (_log.Logs(Logger.ALL))
+			_log.All("file_list:`n" LoggingHelper.Dump(file_list))
+		
+		return _log.Exit(file_list)
+	}
+
+	/*
+	 * Refine given file pattern so that all files will be found, if only a path is given.
+	 *
+	 * Params:
+	 *		ByRef file_pattern - The file pattern to refine
+	 *
+	 * See also:
+	 *		@Test_RefineFilePattern
+	 */
+	refine_file_pattern(ByRef file_pattern) {
+		_log := new Logger("app.mack." A_ThisFunc)
+
+		if (_log.Logs(Logger.INPUT)) {
+			_log.INPUT("file_pattern", file_pattern)
+		}
+
+		file_attrs := FileExist(file_pattern)
+		if (InStr(file_attrs, "D")) {
+			SplitPath file_pattern, name
+			if (name = "" || !RegExMatch(name, "\*\.?\*?$"))
+				file_pattern .= (SubStr(file_pattern, 0) = "\" ? "" : "\") "*.*"
+		}
+		if (_log.Logs(Logger.Output)) {
+			_log.Output("file_pattern", file_pattern)
+		}
+		
+		return _log.Exit()
+	}
+
+	/*
+	 * TODO: Add a description
+	 */
+	collect_filenames(fn_list, dirname) {
+		_log := new Logger("app.mack." A_ThisFunc)
+
+		if (_log.Logs(Logger.INPUT)) {
+			_log.Input("fn_list", fn_list)
+			_log.Input("dirname", dirname)
+			if (_log.Logs(Logger.ALL))
+				_log.All("fn_list:`n" LoggingHelper.Dump(fn_list))
+		}
+
+		Mack.refine_file_pattern(dirname)
+		loop %dirname%, 1, 0
+		{
+			if (_log.Logs(Logger.FINEST)) {
+				_log.Finest("A_LoopFileAttrib", A_LoopFileAttrib)
+				_log.Finest("A_LoopFileFullPath", A_LoopFileFullPath)
+				_log.Finest("A_LoopFileName", A_LoopFileName)
+				_log.Finest("Mack.Option.g", Mack.Option.g)
+				_log.Finest("Mack.Option.r", Mack.Option.r)
+				_log.Finest("Mack.Option.file_pattern", Mack.Option.file_pattern)
+				_log.Finest("Mack.Option.match_type", Mack.Option.match_type)
+				_log.Finest("Mack.Option.match_type_ignore", Mack.Option.match_type_ignore)
+				_log.Finest("Mack.Option.match_ignore_dirs", Mack.Option.match_ignore_dirs)
+				_log.Finest("Mack.Option.match_ignore_files", Mack.Option.match_ignore_files)
 			}
-			fn_list := collect_filenames(fn_list, A_LoopFileFullPath)
-		} else if (!InStr(A_LoopFileAttrib, "D")
-				&& (!G_opts["g"] || (G_opts["g"] && RegExMatch(A_LoopFileName, G_opts["file_pattern"])))
-				&& (G_opts["match_type"] = "" || RegExMatch(A_LoopFileName, G_opts["match_type"]))
-				&& (G_opts["match_type_ignore"] == "" || !RegExMatch(A_LoopFileName, G_opts["match_type_ignore"]))
-				&& !RegExMatch(A_LoopFileName, G_opts["match_ignore_files"])) {
-			fn_list.Insert(A_LoopFileFullPath)
-			if (_log.Logs(Logger.Info)) {
-				log.Info("Search in " A_LoopFileName)
-			}
-		} else {
-			if (_log.Logs(Logger.Detail)) {
-				_log.Detail("Discard " A_LoopFileName)
+			if (Mack.Option.r && InStr(A_LoopFileAttrib, "D") && !RegExMatch(A_LoopFileName, Mack.Option.match_ignore_dirs)) {
+				if (_log.Logs(Logger.Info)) {
+					_log.Info("Search in " A_LoopFileName)
+				}
+				fn_list := Mack.collect_filenames(fn_list, A_LoopFileFullPath)
+			} else if (!InStr(A_LoopFileAttrib, "D")
+					&& (!Mack.Option.g || (Mack.Option.g && RegExMatch(A_LoopFileName, Mack.Option.file_pattern)))
+					&& (Mack.Option.match_type = "" || RegExMatch(A_LoopFileName, Mack.Option.match_type))
+					&& (Mack.Option.match_type_ignore == "" || !RegExMatch(A_LoopFileName, Mack.Option.match_type_ignore))
+					&& !RegExMatch(A_LoopFileName, Mack.Option.match_ignore_files)) {
+				fn_list.Insert(A_LoopFileFullPath)
+				if (_log.Logs(Logger.Info)) {
+					log.Info("Search in " A_LoopFileName)
+				}
+			} else {
+				if (_log.Logs(Logger.Detail)) {
+					_log.Detail("Discard " A_LoopFileName)
+				}
 			}
 		}
-	}
 
-	; static last_col := 0
-	return _log.Exit()
-}
+		if (_log.Logs(Logger.Output)) {
+			_log.Output("fn_list: Collected " fn_list.MaxIndex() " file(s)")
+			_log.All("fn_list:`n", LoggingHelper.Dump(fn_list))
+		}
 
-refine_file_pattern(ByRef file_pattern) {
-	_log := new Logger("app.mack." A_ThisFunc)
-
-	if (_log.Logs(Logger.INPUT)) {
-		_log.INPUT("file_pattern", file_pattern)
+		; static last_col := 0 ; QUESTION: What's this? Where does it come from? Makes no sense here.
+		return _log.Exit()
 	}
-
-	file_atts := FileExist(file_pattern)
-	if (InStr(file_attrs, "D")) {
-		SplitPath file_pattern, name
-		if (name = "" || !RegExMatch(name, "\*\.?\*?$"))
-			file_pattern .= (SubStr(file_pattern, 0) = "\" ? "" : "\") "*.*"
-	}
-	if (_log.Logs(Logger.Output)) {
-		_log.Output("file_pattern", file_pattern)
-	}
-	
-	return _log.Exit()
 }
 
 search_for_pattern(file_name, regex_opts = "") {
@@ -1034,7 +1059,7 @@ main:
 				if (_main.Logs(Logger.FINEST))
 					_main.Finest("G_opts[file_pattern]", G_opts["file_pattern"])
 			}
-			file_list := determine_files(args)
+			file_list := Mack.determine_files(args)
 			if (G_opts["f"] || G_opts["g"])
 				for _i, file_entry in file_list {
 					Pager.Write(file_entry)
