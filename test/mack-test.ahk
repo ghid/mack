@@ -50,6 +50,16 @@ class MackTest extends TestCase {
         Mack.set_defaults()
     }
 
+	@BeforeRedirStdOut() {
+		Ansi.StdOut := FileOpen(A_Temp "\mack-test.txt", "w `n")
+	}
+
+	@AfterRedirStdOut() {
+		Ansi.StdOut.Close()
+		Ansi.StdOut := Ansi.__InitStdOut()
+		FileDelete %A_Temp%\mack-test.txt
+	}
+
 	@Test_GetVersionInfo() {
 		this.AssertTrue(IsFunc("Mack.get_version_info"))
 		this.AssertTrue(InStr(Mack.get_version_info(), " Copyright (C) "))
@@ -154,6 +164,12 @@ class MackTest extends TestCase {
         this.AssertEquals(Mack.Option.ignore_dirs[1], "\.git")
         this.AssertEquals(Mack.Option.ignore_dirs[2], "\.svn")
         this.AssertEquals(Mack.Option.ignore_dirs[3], "CVS")
+
+        Mack.add_to_list("ignore_dirs", ".git")
+        this.AssertEquals(Mack.Option.ignore_dirs.MaxIndex(), 3)
+        this.AssertEquals(Mack.Option.ignore_dirs[1], "\.git")
+        this.AssertEquals(Mack.Option.ignore_dirs[2], "\.svn")
+        this.AssertEquals(Mack.Option.ignore_dirs[3], "CVS")
     }
 
     @Test_Remove_From_List() {
@@ -245,91 +261,122 @@ class MackTest extends TestCase {
         this.AssertEquals(list[1], "Plan\Autograph.png")
         this.AssertEquals(list[2], "Plan\Bericht.pdf")
         this.AssertEquals(list[3], "Plan\Bulletin.ahk")
-        this.AssertEquals(list[4], "Plan\Communiqué.mp3")
+        this.AssertEquals(list[4], "Plan\Communiquee.mp3")
         this.AssertEquals(list[5], "Plan\L-Schein.pdf")
         this.AssertEquals(list[6], "Plan\Nachlassdokument.rtf")
-        this.AssertEquals(list[7], "Plan\Presseerklärung.ahk")
-        this.AssertEquals(list[8], "Plan\Presseerklärung.txt")
+        this.AssertEquals(list[7], "Plan\Presseerklaerung.ahk")
+        this.AssertEquals(list[8], "Plan\Presseerklaerung.txt")
 
         Mack.Option.r := true
         list := Mack.collect_filenames("Plan")
         this.AssertEquals(list.MaxIndex(), 24)
         this.AssertEquals(list[1],  "Plan\Autograph.png")
         this.AssertEquals(list[2], "Plan\Bekanntmachung\Adelsdiplom.png")
-        this.AssertEquals(list[3], "Plan\Bekanntmachung\Anfügung.rtf")
+        this.AssertEquals(list[3], "Plan\Bekanntmachung\Anfuegung.rtf")
         this.AssertEquals(list[4], "Plan\Bekanntmachung\Archivale.mp3")
-        this.AssertEquals(list[5], "Plan\Bekanntmachung\Waffenpass.html")
-        this.AssertEquals(list[6], "Plan\Bekanntmachung\Überweisungsschein.ahk")
+        this.AssertEquals(list[5], "Plan\Bekanntmachung\Ueberweisungsschein.ahk")
+        this.AssertEquals(list[6], "Plan\Bekanntmachung\Waffenpass.html")
         this.AssertEquals(list[7], "Plan\Bericht\Anlage.mp3")
         this.AssertEquals(list[8], "Plan\Bericht\Aussendung.png")
         this.AssertEquals(list[9], "Plan\Bericht\Fakten\Bemerkung.html")
-        this.AssertEquals(list[10], "Plan\Bericht\Fakten\Communiqué.pdf")
+        this.AssertEquals(list[10], "Plan\Bericht\Fakten\Communiquee.pdf")
         this.AssertEquals(list[11], "Plan\Bericht\Fakten\Konnossement.mp3")
         this.AssertEquals(list[12], "Plan\Bericht\Fakten\Kurrende.ahk")
         this.AssertEquals(list[13], "Plan\Bericht\Fakten\Rundbrief.rtf")
         this.AssertEquals(list[14], "Plan\Bericht\Fakten\Schlussformel.exe")
-        this.AssertEquals(list[15], "Plan\Bericht\Fakten\Schriftstück.ahk")
-        this.AssertEquals(list[16], "Plan\Bericht\Nichtveranlagungsbescheinigung.jpeg")
-        this.AssertEquals(list[17], "Plan\Bericht\Wille.rtf")
+        this.AssertEquals(list[15], "Plan\Bericht\Fakten\Schriftstueck.ahk")
+        this.AssertEquals(list[16], "Plan\Bericht\Letzter_Wille.rtf")
+        this.AssertEquals(list[17], "Plan\Bericht\Nichtveranlagungsbescheinigung.jpeg")
         this.AssertEquals(list[18], "Plan\Bericht.pdf")
         this.AssertEquals(list[19], "Plan\Bulletin.ahk")
-        this.AssertEquals(list[20], "Plan\Communiqué.mp3")
+        this.AssertEquals(list[20], "Plan\Communiquee.mp3")
         this.AssertEquals(list[21], "Plan\L-Schein.pdf")
         this.AssertEquals(list[22], "Plan\Nachlassdokument.rtf")
-        this.AssertEquals(list[23], "Plan\Presseerklärung.ahk")
-        this.AssertEquals(list[24], "Plan\Presseerklärung.txt")
+        this.AssertEquals(list[23], "Plan\Presseerklaerung.ahk")
+        this.AssertEquals(list[24], "Plan\Presseerklaerung.txt")
     }
 
     @Test_Determine_Files() {
         SetWorkingDir %A_ScriptDir%\Testdata
         Mack.Option.sort_files := true
-        list := Mack.determine_files(["Plan", "Ammenmärchen"])
+        list := Mack.determine_files(["Plan", "Ammenmaerchen"])
         this.AssertEquals(list.MaxIndex(), 45)
-        this.AssertEquals(list[1], "Ammenmärchen\Adelsdiplom.mp3")
-        this.AssertEquals(list[2], "Ammenmärchen\Anlage.pdf")
-        this.AssertEquals(list[3], "Ammenmärchen\Auskunftsschalter\Aktienurkunde.rtf")
-        this.AssertEquals(list[4], "Ammenmärchen\Auskunftsschalter\Arztbrief.html")
-        this.AssertEquals(list[5], "Ammenmärchen\Auskunftsschalter\Rundschreiben.pdf")
-        this.AssertEquals(list[6], "Ammenmärchen\Auskunftsschalter\Schema\Anfügung.html")
-        this.AssertEquals(list[7], "Ammenmärchen\Auskunftsschalter\Schema\Bericht.pdf")
-        this.AssertEquals(list[8], "Ammenmärchen\Auskunftsschalter\Schema\Bescheid.txt")
-        this.AssertEquals(list[9], "Ammenmärchen\Auskunftsschalter\Schema\Geograph.md")
-        this.AssertEquals(list[10], "Ammenmärchen\Auskunftsschalter\Schema\Geograph.mp3")
-        this.AssertEquals(list[11], "Ammenmärchen\Auskunftsschalter\Schema\Geschichte.md")
-        this.AssertEquals(list[12], "Ammenmärchen\Auskunftsschalter\Schema\Schlussformel.rtf")
-        this.AssertEquals(list[13], "Ammenmärchen\Auskunftsschalter\Schema\Wertpapier.jpeg")
-        this.AssertEquals(list[14], "Ammenmärchen\Auskunftsschalter\unbelebtes.pdf")
-        this.AssertEquals(list[15], "Ammenmärchen\Befundbericht.pdf")
-        this.AssertEquals(list[16], "Ammenmärchen\Buchung.md")
-        this.AssertEquals(list[17], "Ammenmärchen\L-Schein.txt")
-        this.AssertEquals(list[18], "Ammenmärchen\Nachlassdokument.exe")
-        this.AssertEquals(list[19], "Ammenmärchen\Strafzettel.html")
-        this.AssertEquals(list[20], "Ammenmärchen\Wertpapier.doc")
-        this.AssertEquals(list[21], "Ammenmärchen\nicht.doc")
+        this.AssertEquals(list[1], "Ammenmaerchen\Adelsdiplom.mp3")
+        this.AssertEquals(list[2], "Ammenmaerchen\Anlage.pdf")
+        this.AssertEquals(list[3], "Ammenmaerchen\Auskunftsschalter\Aktienurkunde.rtf")
+        this.AssertEquals(list[4], "Ammenmaerchen\Auskunftsschalter\Arztbrief.html")
+        this.AssertEquals(list[5], "Ammenmaerchen\Auskunftsschalter\Rundschreiben.pdf")
+        this.AssertEquals(list[6], "Ammenmaerchen\Auskunftsschalter\Schema\Anfuegung.html")
+        this.AssertEquals(list[7], "Ammenmaerchen\Auskunftsschalter\Schema\Bericht.pdf")
+        this.AssertEquals(list[8], "Ammenmaerchen\Auskunftsschalter\Schema\Bescheid.txt")
+        this.AssertEquals(list[9], "Ammenmaerchen\Auskunftsschalter\Schema\Geograph.md")
+        this.AssertEquals(list[10], "Ammenmaerchen\Auskunftsschalter\Schema\Geograph.mp3")
+        this.AssertEquals(list[11], "Ammenmaerchen\Auskunftsschalter\Schema\Geschichte.md")
+        this.AssertEquals(list[12], "Ammenmaerchen\Auskunftsschalter\Schema\Schlussformel.rtf")
+        this.AssertEquals(list[13], "Ammenmaerchen\Auskunftsschalter\Schema\Wertpapier.jpeg")
+        this.AssertEquals(list[14], "Ammenmaerchen\Auskunftsschalter\unbelebtes.pdf")
+        this.AssertEquals(list[15], "Ammenmaerchen\Befundbericht.pdf")
+        this.AssertEquals(list[16], "Ammenmaerchen\Buchung.md")
+        this.AssertEquals(list[17], "Ammenmaerchen\L-Schein.txt")
+        this.AssertEquals(list[18], "Ammenmaerchen\Nachlassdokument.exe")
+        this.AssertEquals(list[19], "Ammenmaerchen\Strafzettel.html")
+        this.AssertEquals(list[20], "Ammenmaerchen\Wertpapier.doc")
+        this.AssertEquals(list[21], "Ammenmaerchen\nicht.doc")
         this.AssertEquals(list[22], "Plan\Autograph.png")
         this.AssertEquals(list[23], "Plan\Bekanntmachung\Adelsdiplom.png")
-        this.AssertEquals(list[24], "Plan\Bekanntmachung\Anfügung.rtf")
+        this.AssertEquals(list[24], "Plan\Bekanntmachung\Anfuegung.rtf")
         this.AssertEquals(list[25], "Plan\Bekanntmachung\Archivale.mp3")
-        this.AssertEquals(list[26], "Plan\Bekanntmachung\Waffenpass.html")
-        this.AssertEquals(list[27], "Plan\Bekanntmachung\Überweisungsschein.ahk")
+        this.AssertEquals(list[26], "Plan\Bekanntmachung\Ueberweisungsschein.ahk")
+        this.AssertEquals(list[27], "Plan\Bekanntmachung\Waffenpass.html")
         this.AssertEquals(list[28], "Plan\Bericht.pdf")
         this.AssertEquals(list[29], "Plan\Bericht\Anlage.mp3")
         this.AssertEquals(list[30], "Plan\Bericht\Aussendung.png")
         this.AssertEquals(list[31], "Plan\Bericht\Fakten\Bemerkung.html")
-        this.AssertEquals(list[32], "Plan\Bericht\Fakten\Communiqué.pdf")
+        this.AssertEquals(list[32], "Plan\Bericht\Fakten\Communiquee.pdf")
         this.AssertEquals(list[33], "Plan\Bericht\Fakten\Konnossement.mp3")
         this.AssertEquals(list[34], "Plan\Bericht\Fakten\Kurrende.ahk")
         this.AssertEquals(list[35], "Plan\Bericht\Fakten\Rundbrief.rtf")
         this.AssertEquals(list[36], "Plan\Bericht\Fakten\Schlussformel.exe")
-        this.AssertEquals(list[37], "Plan\Bericht\Fakten\Schriftstück.ahk")
-        this.AssertEquals(list[38], "Plan\Bericht\Nichtveranlagungsbescheinigung.jpeg")
-        this.AssertEquals(list[39], "Plan\Bericht\Wille.rtf")
+        this.AssertEquals(list[37], "Plan\Bericht\Fakten\Schriftstueck.ahk")
+        this.AssertEquals(list[38], "Plan\Bericht\Letzter_Wille.rtf")
+        this.AssertEquals(list[39], "Plan\Bericht\Nichtveranlagungsbescheinigung.jpeg")
         this.AssertEquals(list[40], "Plan\Bulletin.ahk")
-        this.AssertEquals(list[41], "Plan\Communiqué.mp3")
+        this.AssertEquals(list[41], "Plan\Communiquee.mp3")
         this.AssertEquals(list[42], "Plan\L-Schein.pdf")
         this.AssertEquals(list[43], "Plan\Nachlassdokument.rtf")
-        this.AssertEquals(list[44], "Plan\Presseerklärung.ahk")
-        this.AssertEquals(list[45], "Plan\Presseerklärung.txt")
+        this.AssertEquals(list[44], "Plan\Presseerklaerung.ahk")
+        this.AssertEquals(list[45], "Plan\Presseerklaerung.txt")
+
+        SetWorkingDir %A_ScriptDir%\Testdata\Schema\Fakten\Verkehrsdaten
+        list := Mack.determine_files([])
+        this.AssertEquals(list.MaxIndex(), 3)
+    }
+
+    @Test_Usage() {
+		this.AssertEquals(Mack.Run(["-h"]), "")
+		Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Usage.txt"))
+    }
+
+    @Test_Filelist() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "-f"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Filelist.txt"))
+    }
+
+    @Test_PatternFilelist() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--sort-files", "-g", "i)^[abcklmstu].*\.txt$"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Pattern-Filelist.txt"))
+    }
+
+    @Test_FilteredFilelist() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "--column", "--nogroup", "-icl1", "est lorem ipsum dolor sit amet\."]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
     }
 }
 	

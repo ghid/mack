@@ -1,0 +1,9 @@
+.\Ammenmaerchen\Auskunftsschalter\Schema\Bescheid.txt
+.\Ammenmaerchen\L-Schein.txt
+.\Basisinformationen\Autograf.txt
+.\Bekanntmachung\Basisinformationen\Kolophon.txt
+.\Buecherei\Kolophon.txt
+.\Buecherei\Wissen\Datenschema\Urkunde.txt
+.\Datenansammlung\Anlage.txt
+.\Metainformationen\Ammenmaerchen\doppelt\L-Schein.txt
+.\Metainformationen\Ammenmaerchen\doppelt\Strafzettel.txt

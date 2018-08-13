@@ -1,0 +1,13 @@
+[32;1m.\Anzeichen\Datenansammlung\NV-Bescheinigung.ahk:3[0m
+[32;1m.\Buecherei\Bulletin.ahk:1[0m
+[32;1m.\Buecherei\Wissen\Rapport.ahk:1[0m
+[32;1m.\Plan\Bekanntmachung\Ueberweisungsschein.ahk:7[0m
+[32;1m.\Plan\Bericht\Fakten\Kurrende.ahk:3[0m
+[32;1m.\Plan\Bericht\Fakten\Schriftstueck.ahk:3[0m
+[32;1m.\Plan\Bulletin.ahk:3[0m
+[32;1m.\Plan\Presseerklaerung.ahk:5[0m
+[32;1m.\Schema\Fakten\Verkehrsdaten\Urkunde.ahk:1[0m
+[32;1m.\Schema\Fakten\Verkehrsdaten\Verfuegung.ahk:2[0m
+[32;1m.\Verkehrsdaten\Adelsdiplom.ahk:4[0m
+[32;1m.\Verkehrsdaten\Botschaft\Aktienzertifikat.ahk:2[0m
+[32;1m.\Verkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Diplom.ahk:1[0m

@@ -1,20 +1,4 @@
 ; ahk: console
-#NoEnv
-#NoTrayIcon
-#SingleInstance off
-SetBatchLines -1
-
-#Include <logging>
-#Include <ansi>
-#Include c:\work\ahk\projects\lib2\optparser.ahk
-#Include <system>
-#Include <string>
-#Include <datatable>
-#Include <arrays>
-#Include <queue>
-#include <pager>
-#Include *i %A_ScriptDir%\.versioninfo
-
 class Mack {
 
 	static Option := Mack.set_defaults()
@@ -23,7 +7,7 @@ class Mack {
 	set_defaults() {
 		dv :=  {  A						: 0
 				, B				  		: 0
-				, C				  		: false
+				, c				  		: false
 				, column		  		: false
 				, color			  		: true
 				, color_filename  		: Ansi.FOREGROUND_GREEN ";" Ansi.ATTR_BOLD
@@ -257,7 +241,8 @@ class Mack {
 		}
 
 		Mack.refine_file_pattern(dirname)
-		loop %dirname%, 1, 0
+		; FIXME: New syntax: loop %dirname%, F
+		loop %dirname%, 1, 0	; NOWARN
 		{
 			if (_log.Logs(Logger.FINEST)) {
 				_log.Finest("A_LoopFileAttrib", A_LoopFileAttrib)
@@ -774,6 +759,8 @@ class Mack {
 	 * TODO: Add a description
 	 */
 	search_for_pattern(file_name, regex_opts = "") {
+		_log := new Logger("class." A_ThisFunc)
+
 		if (_log.Logs(Logger.INPUT)) {
 			_log.Input("file_name", file_name)
 			_log.Input("regex_opts", regex_opts)
@@ -797,6 +784,7 @@ class Mack {
 			} else {
 				hit_n := 0
 				tabstops := Mack.do_modelines(f)
+				last_col := 0
 				while (!f.AtEOF) {
 					line := RegExReplace(f.ReadLine(), "\t", tabstops)
 
@@ -918,7 +906,7 @@ class Mack {
 		op.Add(new OptParser.Boolean("1", "", Mack.Option, "1", "Stop searching after one match of any kind"))
 		op.Add(new OptParser.Boolean("c", "count", Mack.Option, "c", "Show number of lines matching per file"))
 		op.Add(new OptParser.Boolean(0, "filename", Mack.Option, "filename", "Suppress prefixing filename on output (default)", OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
-		op.Add(new OptParser.Boolean(0, "line", Mack.Option, "line", "Show the line number of the match", OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE, G_opts["line"]))
+		op.Add(new OptParser.Boolean(0, "line", Mack.Option, "line", "Show the line number of the match", OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE, Mack.Option.line))
 		op.Add(new OptParser.Boolean(0, "column", Mack.Option, "column", "Show the column number of the first match", OptParser.OPT_NEG))
 		op.Add(new OptParser.String("A", "after-context", Mack.Option, "A", "NUM", "Print NUM lines of trailing context after matching lines",,, Mack.Option.A))
 		op.Add(new OptParser.String("B", "before-context", Mack.Option, "B", "NUM", "Print NUM lines of leading context before matching lines",,, Mack.Option.B))
@@ -929,8 +917,8 @@ class Mack {
 		op.Add(new OptParser.Boolean(0, "pager", Mack.Option, "pager", "Send output trough a pager (default)", OptParser.OPT_NEG, Mack.Option.pager))
 		op.Add(new OptParser.Boolean(0, "group", Mack.Option, "group", "Print a filename heading above each file's results (default: on when used interactively)", OptParser.OPT_NEG, true))
 		op.Add(new OptParser.Boolean(0, "color", Mack.Option, "color", "Highlight the matching text (default: on)", OptParser.OPT_NEG, Mack.Option.color))
-		op.Add(new OptParser.String(0, "color-filename", Mack.Option, "color_filename", "color", "", OptParser.OPT_ARG, G_opts["color_filename"], Mack.Option.color_filename))
-		op.Add(new OptParser.String(0, "color-match", Mack.Option, "color_match",  "color", "", OptParser.OPT_ARG, G_opts["color_match"], Mack.Option.color_match))
+		op.Add(new OptParser.String(0, "color-filename", Mack.Option, "color_filename", "color", "", OptParser.OPT_ARG, Mack.Option.color_filename, Mack.Option.color_filename))
+		op.Add(new OptParser.String(0, "color-match", Mack.Option, "color_match",  "color", "", OptParser.OPT_ARG, Mack.Option.color_match, Mack.Option.color_match))
 		op.Add(new OptParser.String(0, "color-line-no", Mack.Option, "color_line_no", "color", "Set the color for filenames, matches, and line numbers as ANSI color attributes (e.g. ""7;37"")", OptParser.OPT_ARG, Mack.Option.color_line_no, Mack.Option.color_line_no))
 		op.Add(new OptParser.Group("`nFile finding:"))
 		op.Add(new OptParser.Boolean("f", "", Mack.Option, "f", "Only print the files selected, without searching. The pattern must not be specified"))
@@ -953,7 +941,7 @@ class Mack {
 		op.Add(new OptParser.Boolean("h", "help", Mack.Option, "h", "This help", OptParser.OPT_HIDDEN))
 		op.Add(new OptParser.Boolean(0, "version", Mack.Option, "version", "Display version info"))
 		op.Add(new OptParser.Boolean(0, "help-types", Mack.Option, "ht", "Display all knwon types"))
-		op.Add(Mack.Sel_Types_Option := new OptParser.Generic(Mack.Option.types_expr, sel_types, OptParser.OPT_MULTIPLE|OptParser.OPT_NEG))
+		op.Add(Mack.Sel_Types_Option := new OptParser.Generic(Mack.Option.types_expr, Mack.Option, sel_types, OptParser.OPT_MULTIPLE|OptParser.OPT_NEG))
 
 		return _log.Exit(op)
 	}
@@ -997,6 +985,13 @@ class Mack {
 			Mack.Option.match_ignore_files := Mack.regex_match_list(Mack.Option.ignore_files)
 			Mack.Option.match_type := Mack.regex_match_list(Mack.Option.type)
 			Mack.Option.match_type_ignore := Mack.regex_match_list(Mack.Option.type_ignore)
+
+			if (_log.Logs(Logger.Finest)) {
+				_log.Finest("Mack.Option.match_ignore_dirs", Mack.Option.match_ignore_dirs)
+				_log.Finest("Mack.Option.match_ignore_files", Mack.Option.match_ignore_files)
+				_log.Finest("Mack.Option.match_type", Mack.Option.match_type)
+				_log.Finest("Mack.Option.match_type_ignore", Mack.Option.match_type_ignore)
+			}
 
 			if (Mack.Option.context > 0 && Mack.Option.A = 0) {
 				Mack.Option.A := Mack.Option.context
@@ -1693,6 +1688,22 @@ class Mack {
 ; 	return _log.Exit(SubStr("         ", 1, tabsize))
 ; }
 
+#NoEnv						; NOTEST-BEGIN
+#NoTrayIcon
+#SingleInstance off
+SetBatchLines -1
+
+#Include <logging>
+#Include <ansi>
+#Include c:\work\ahk\projects\lib2\optparser.ahk
+#Include <system>
+#Include <string>
+#Include <datatable>
+#Include <arrays>
+#Include <queue>
+#include <pager>
+#Include *i %A_ScriptDir%\.versioninfo
+
 main:
 	_main := new Logger("app.mack.main")
 
@@ -1703,7 +1714,7 @@ main:
 	RC := Mack.run(System.vArgs)
 	Ansi.FlushInput()
 
-	exitapp _main.Exit(RC)
+exitapp _main.Exit(RC)		; NOTEST-END
 
 	
 	/*

@@ -1,0 +1,74 @@
+usage: mack [options] [--] <pattern> [file | directory]...
+   or: mack -f [options] [--] [directory]...
+
+Searching:
+    -i, --ignore-case     Ignore case distinctions in pattern
+    -v, --invert-match    Select non-matching lines
+    -w, --word-regexp     Force pattern to match only whole words
+    -Q, --literal         Quote all metacharacters; pattern is literal
+
+Search output:
+    -l, --files-with-matches
+                          Only print filenames containing matches
+    -L, --files-without-matches
+                          Only print filenames with no matches
+    --output <EXPR>       Output the evaluation of EXPR for each line (turns of text
+                          highlighting)
+    -o                    Show only the part of a line matching PATTERN. Same as
+                          --output $0
+    --passthru            Print all lines, whether matching or not
+    -1                    Stop searching after one match of any kind
+    -c, --count           Show number of lines matching per file
+    --[no]filename        Suppress prefixing filename on output (default)
+    --[no]line            Show the line number of the match
+    --column              Show the column number of the first match
+    -A, --after-context <NUM>
+                          Print NUM lines of trailing context after matching lines
+    -B, --before-context <NUM>
+                          Print NUM lines of leading context before matching lines
+    -C, --context[=<NUM>] Print NUM (default 2) lines of output context
+    --tabstop <size>      Calculate tabstops with width of size (default 8)
+    --modelines[=<lines>] Search modelines (default 5) for tabstop info. Set to 0 to
+                          ignore modelines
+
+File presentation:
+    --pager               Send output trough a pager (default)
+    --group               Print a filename heading above each file's results (default:
+                          on when used interactively)
+    --color               Highlight the matching text (default: on)
+    --color-filename <color>
+    --color-match <color> 
+    --color-line-no <color>
+                          Set the color for filenames, matches, and line numbers as
+                          ANSI color attributes (e.g. "7;37")
+
+File finding:
+    -f                    Only print the files selected, without searching. The
+                          pattern must not be specified
+    -g                    Same as -f, but only select files matching pattern
+    --sort-files          Sort the found files lexically
+    --files-from <FILE>   Read the list of files to search from FILE
+    -x                    Read the list of files to search from STDIN
+
+File inclusion/exclusion:
+    --ignore-dir <name>   Add/remove directory from list of ignored dirs
+    --ignore-file <filter>
+                          Add filter for ignoring files
+    -r, --recurse         Recurse into subdirectories (default: on)
+    -k, --known-types     Include only files of types that are recognized
+    --[no]type[=<X>]      Include/exclude X files
+
+File type specification:
+    --type-set <X:FILTER[+FILTER...]>
+                          Files with given FILTER are recognized of type X. This
+                          replaces an existing defintion.
+    --type-add <X:FILTER[+FILTER...]>
+                          Files with given FILTER are recognized of type X
+    --type-del <X>        Remove all filters associated with X
+
+Miscellaneous:
+    --[no]env             Ignore environment variable MACK_OPTIONS
+    --version             Display version info
+    --help-types          Display all knwon types
+
+
