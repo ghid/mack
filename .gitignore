@@ -8,4 +8,7 @@ trace.log
 .*.swn
 .*.exe
 /test/Testdata/**
+*.ctest
+*.crun
+*.cstat
 

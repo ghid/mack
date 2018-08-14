@@ -1,7 +1,7 @@
 ; ahk: con
 #NoEnv
 SetBatchLines -1
-#Warn All, OutputDebug
+; #Warn All, OutputDebug
 
 #Include <logging>
 #Include <testcase>
@@ -170,6 +170,10 @@ class MackTest extends TestCase {
         this.AssertEquals(Mack.Option.ignore_dirs[1], "\.git")
         this.AssertEquals(Mack.Option.ignore_dirs[2], "\.svn")
         this.AssertEquals(Mack.Option.ignore_dirs[3], "CVS")
+
+        Mack.add_to_list("type", "*.ahk")
+        this.AssertEquals(Mack.Option.type.MaxIndex(), 1)
+        this.AssertEquals(Mack.Option.type[1], ".*?\.ahk")
     }
 
     @Test_Remove_From_List() {
@@ -374,7 +378,14 @@ class MackTest extends TestCase {
 
     @Test_FilteredFilelist() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "--column", "--nogroup", "-icl1", "est lorem ipsum dolor sit amet\."]), "")
+        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "-ilc", "est lorem ipsum dolor sit amet\."]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
+    }
+
+    @Test_FilteredTypenameFilelist() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-ilc", "est lorem ipsum dolor sit amet\."]), "")
         Ansi.Flush()
 		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
     }

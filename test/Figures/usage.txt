@@ -21,7 +21,7 @@ Search output:
     -c, --count           Show number of lines matching per file
     --[no]filename        Suppress prefixing filename on output (default)
     --[no]line            Show the line number of the match
-    --column              Show the column number of the first match
+    --[no]column          Show the column number of the first match
     -A, --after-context <NUM>
                           Print NUM lines of trailing context after matching lines
     -B, --before-context <NUM>
@@ -32,7 +32,7 @@ Search output:
                           ignore modelines
 
 File presentation:
-    --pager               Send output trough a pager (default)
+    --pager               Send output through a pager (default)
     --group               Print a filename heading above each file's results (default:
                           on when used interactively)
     --color               Highlight the matching text (default: on)
