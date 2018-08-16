@@ -3,6 +3,7 @@ class Mack {
 
 	static Option := Mack.set_defaults()
 	static Sel_Types_Option := ""
+	static First_Call := true
 
 	set_defaults() {
 		dv :=  {  A						: 0
@@ -495,18 +496,18 @@ class Mack {
 				line := file.ReadLine()
 				try {
 					if (RegExMatch(line, Mack.Option.modeline_expr, $)) {
-						tabsize := ""
+						
 						loop % Mack.Option.modeline_pattern.MaxIndex() {
-							tabsize .= $tabstop%A_Index%
+							tabsize := $tabstop
 						}
 						if (_log.Logs(Logger.Detail)) {
-							_log.Detail("Header modeline found: ", line ": " tabsize)
+							_log.Detail("Header modeline found #" A_Index " in " line ": " tabsize)
 						}
 						modeline_found := true
 						break
 					}
-				} catch _ex {
-					_log.Severe(LoggingHelper.Dump(_ex))
+				} catch _ex {								; NOTEST: Would happen, if an invalid regex for modeline patterns is provided.
+					_log.Severe(LoggingHelper.Dump(_ex))	; NOTEST: Will not be tested, because the pattern is hardcoded.
 				}
 			}
 			if (!modeline_found) {
@@ -550,6 +551,7 @@ class Mack {
 		if (_log.Logs(Logger.Finest)) {
 			_log.Finest("tabsize", tabsize)
 		}
+
 		return _log.Exit(SubStr("         ", 1, tabsize))
 	}
 
@@ -651,8 +653,6 @@ class Mack {
 	output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 		_log := new Logger("class." A_ThisFunc)
 
-		static first_call := true
-
 		if (_log.Logs(Logger.INPUT)) {
 			_log.Input("file_name", file_name)
 			_log.Input("line_no", line_no)
@@ -680,10 +680,10 @@ class Mack {
 			}
 		} else {
 			if (hit_n = 1 && Mack.Option.group) {
-				if (!first_call) {
+				if (!Mack.First_Call) {
 					Mack.process_line(" ")
 				} else {
-					first_call := false
+					Mack.First_Call := false
 				}
 				if (Mack.Option.color) {
 					Mack.process_line(Ansi.SetGraphic(Mack.Option.color_filename) file_name Ansi.Reset())
@@ -712,17 +712,24 @@ class Mack {
 			if (column_no = 0) {
 				if (!Mack.Option.files_w_matches) {
 					if (Mack.Option.color) {
-						Mack.process_line((Mack.Option.filename ? line_file_name : "") (Mack.Option.line ? Ansi.SetGraphic(Mack.Option.color_line_no) A_Index Ansi.Reset() ":" : "") Mack.array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
+						Mack.process_line((Mack.Option.filename ? line_file_name : "")
+						. (Mack.Option.line ? Ansi.SetGraphic(Mack.Option.color_line_no) A_Index Ansi.Reset() ":" : "")
+						. Mack.array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
 					} else {
-						Mack.process_line((Mack.Option.filename ? line_file_name : "") (Mack.Option.line ? A_Index ":" : "") Mack.array_to_string(parts))
+						Mack.process_line((Mack.Option.filename ? line_file_name : "")
+						. (Mack.Option.line ? A_Index ":" : "") Mack.array_to_string(parts))
 					}
 				}
 			} else {
 				if (!Mack.Option.files_w_matches) {
 					if (Mack.Option.color) {
-						Mack.process_line((Mack.Option.filename ? line_file_name : "") (Mack.Option.line ? Ansi.SetGraphic(Mack.Option.color_line_no) A_Index Ansi.Reset() ":" : "") Ansi.SetGraphic(Mack.Option.color_line_no) column_no Ansi.Reset() ":" Mack.array_to_string(parts) Ansi.Reset() Ansi.EraseLine())
+						Mack.process_line((Mack.Option.filename ? line_file_name : "")
+						. (Mack.Option.line ? Ansi.SetGraphic(Mack.Option.color_line_no) A_Index Ansi.Reset() ":" : "")
+						. Ansi.SetGraphic(Mack.Option.color_line_no) column_no Ansi.Reset() ":" Mack.array_to_string(parts)
+						. Ansi.Reset() Ansi.EraseLine())
 					} else {
-						Mack.process_line((Mack.Option.filename ? line_file_name : "") (Mack.Option.line ? A_Index ":" : "") column_no ":" Mack.array_to_string(parts))
+						Mack.process_line((Mack.Option.filename ? line_file_name : "")
+						. (Mack.Option.line ? A_Index ":" : "") column_no ":" Mack.array_to_string(parts))
 					}
 				}
 			}
@@ -736,7 +743,7 @@ class Mack {
 			}
 			Ansi.Flush()
 			Ansi.FlushInput()
-			exitapp _log.Exit(0)	; QUESTION: Is it neccessary to use exitapp here?
+			exitapp _log.Exit(0)	; QUESTION: Is it neccessary to use exitapp here? This will interfere testing.
 		}
 
 		return _log.Exit(true)
@@ -1002,6 +1009,7 @@ class Mack {
 			_log.Input("args:`n" LoggingHelper.Dump(args))
 		}
 
+		Mack.First_Call := true
 		Mack.set_defaults()
 
 		RC := 0

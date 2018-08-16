@@ -356,10 +356,38 @@ class MackTest extends TestCase {
         this.AssertEquals(list.MaxIndex(), 3)
     }
 
+    @Test_Modeline1() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        if (FileExist("modeline_test.txt")) {
+            FileDelete modeline_test.txt
+        }
+        FileAppend `; vim:ts=03, modeline_test.txt
+        this.AssertEquals(Mack.run([".", "modeline_test.txt"]), "")
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Modeline.txt"))
+        FileDelete modeline_test.txt
+    }
+
+    @Test_Modeline2() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        if (FileExist("modeline_test.txt")) {
+            FileDelete modeline_test.txt
+        }
+        FileAppend `n`n`n`n`n`n; vim:ts=03, modeline_test.txt
+        this.AssertEquals(Mack.run([".", "modeline_test.txt"]), "")
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Modeline2.txt"))
+        FileDelete modeline_test.txt
+    }
+
     @Test_Usage() {
 		this.AssertEquals(Mack.Run(["-h"]), "")
 		Ansi.Flush()
 		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Usage.txt"))
+    }
+
+    @Test_BadUsage() {
+		this.AssertEquals(Mack.Run(["--foo"]), "")
+		Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\BadUsage.txt"))
     }
 
     @Test_Filelist() {
@@ -383,11 +411,81 @@ class MackTest extends TestCase {
 		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
     }
 
-    @Test_FilteredTypenameFilelist() {
+    @Test_FilteredTypenameFilelist() { 
         SetWorkingDir %A_ScriptDir%\Testdata
         this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-ilc", "est lorem ipsum dolor sit amet\."]), "")
         Ansi.Flush()
 		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
+    }
+
+    @Test_FilesWithMatches1() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "-cQw", "--files-with-matches", "ut", "Verkehrsdaten\"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\FilesWithMatches1.txt"))
+    }
+
+    @Test_Search1() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "--column", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search1.txt"))
+    }
+
+    @Test_Search2() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "--nocolor", "-v", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search2.txt"))
+    }
+
+    @Test_Search3() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "-C", "3", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search3.txt"))
+    }
+
+    @Test_Search4() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "--nocolor", "-C", "2", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search4.txt"))
+    }
+
+    @Test_Search5() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "--output", "$1", "Lorem ipsum dolor sit amet(.)", "Verkehrsdaten\"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search5.txt"))
+    }
+
+    @Test_Search6() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "--output", "$0", "Lorem ipsum dolor sit amet(.)", "Verkehrsdaten\"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search6.txt"))
+    }
+
+    @Test_Search7() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-c", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search7.txt"))
+    }
+
+    @Test_Search8() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-cQ", "--nocolor", "Lorem ipsum dolor sit amet.", "Verkehrsdaten\"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search8.txt"))
+    }
+
+    @Test_Search9() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-C", "2", "eleifend", "Verkehrsdaten\"]), "")
+        Ansi.Flush()
+		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search9.txt"))
     }
 }
 	
