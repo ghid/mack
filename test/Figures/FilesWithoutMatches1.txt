@@ -1,0 +1,3 @@
+Verkehrsdaten\Adelsdiplom.ahk
+Verkehrsdaten\Botschaft\Aktienzertifikat.ahk
+Verkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Diplom.ahk

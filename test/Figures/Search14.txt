@@ -1,0 +1,119 @@
+[32;1mVerkehrsdaten\Abstraktion\Anhang.doc[0m
+[33;1m2[0m:[33;1m1[0m:Duis [0m[K
+[33;1m5[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Abstraktion\Archivale.rtf[0m
+[33;1m3[0m:[33;1m1[0m:Duis [0m[K
+[33;1m6[0m:[33;1m1[0m:Duis [0m[K
+[33;1m12[0m:[33;1m1[0m:Duis [0m[K
+[33;1m14[0m:[33;1m1[0m:Duis [0m[K
+[33;1m15[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Adelsdiplom.ahk[0m
+[33;1m5[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Aktienzertifikat.ahk[0m
+[33;1m4[0m:[33;1m1[0m:Duis [0m[K
+[33;1m7[0m:[33;1m1[0m:Duis [0m[K
+[33;1m11[0m:[33;1m1[0m:Duis [0m[K
+[33;1m13[0m:[33;1m1[0m:Duis [0m[K
+[33;1m14[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Anhang.jpeg[0m
+[33;1m3[0m:[33;1m1[0m:Duis [0m[K
+[33;1m6[0m:[33;1m1[0m:Duis [0m[K
+[33;1m7[0m:[33;1m1[0m:Duis [0m[K
+[33;1m8[0m:[33;1m1[0m:Duis [0m[K
+[33;1m11[0m:[33;1m1[0m:Duis [0m[K
+[33;1m12[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Aufzeichnung.pdf[0m
+[33;1m5[0m:[33;1m1[0m:Duis [0m[K
+[33;1m11[0m:[33;1m1[0m:Duis [0m[K
+[33;1m12[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Dokument.doc[0m
+[33;1m1[0m:[33;1m1[0m:Duis [0m[K
+[33;1m3[0m:[33;1m1[0m:Duis [0m[K
+[33;1m4[0m:[33;1m1[0m:Duis [0m[K
+[33;1m6[0m:[33;1m1[0m:Duis [0m[K
+[33;1m10[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Geograph.rtf[0m
+[33;1m7[0m:[33;1m1[0m:Duis [0m[K
+[33;1m10[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Geschichte.mp3[0m
+[33;1m2[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Nachlassdokument.md[0m
+[33;1m1[0m:[33;1m1[0m:Duis [0m[K
+[33;1m2[0m:[33;1m1[0m:Duis [0m[K
+[33;1m7[0m:[33;1m1[0m:Duis [0m[K
+[33;1m8[0m:[33;1m1[0m:Duis [0m[K
+[33;1m10[0m:[33;1m1[0m:Duis [0m[K
+[33;1m14[0m:[33;1m1[0m:Duis [0m[K
+[33;1m15[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Aktienzertifikat.html[0m
+[33;1m2[0m:[33;1m1[0m:Duis [0m[K
+[33;1m4[0m:[33;1m1[0m:Duis [0m[K
+[33;1m5[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Bericht.md[0m
+[33;1m3[0m:[33;1m1[0m:Duis [0m[K
+[33;1m5[0m:[33;1m1[0m:Duis [0m[K
+[33;1m10[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Aktienurkunde.pdf[0m
+[33;1m8[0m:[33;1m1[0m:Duis [0m[K
+[33;1m12[0m:[33;1m1[0m:Duis [0m[K
+[33;1m13[0m:[33;1m1[0m:Duis [0m[K
+[33;1m14[0m:[33;1m1[0m:Duis [0m[K
+[33;1m16[0m:[33;1m1[0m:Duis [0m[K
+[33;1m18[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Diplom.ahk[0m
+[33;1m1[0m:[33;1m1[0m:Duis [0m[K
+[33;1m2[0m:[33;1m1[0m:Duis [0m[K
+[33;1m7[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Einreiseerlaubnis.rtf[0m
+[33;1m4[0m:[33;1m1[0m:Duis [0m[K
+[33;1m8[0m:[33;1m1[0m:Duis [0m[K
+[33;1m9[0m:[33;1m1[0m:Duis [0m[K
+[33;1m11[0m:[33;1m1[0m:Duis [0m[K
+[33;1m14[0m:[33;1m1[0m:Duis [0m[K
+[33;1m17[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Kommunikee.doc[0m
+[33;1m3[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Letzter_Wille.html[0m
+[33;1m5[0m:[33;1m1[0m:Duis [0m[K
+[33;1m8[0m:[33;1m1[0m:Duis [0m[K
+[33;1m9[0m:[33;1m1[0m:Duis [0m[K
+[33;1m12[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Strafzettel.jpeg[0m
+[33;1m3[0m:[33;1m1[0m:Duis [0m[K
+[33;1m8[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\unbelebtes.html[0m
+[33;1m3[0m:[33;1m1[0m:Duis [0m[K
+[33;1m12[0m:[33;1m1[0m:Duis [0m[K
+[33;1m15[0m:[33;1m1[0m:Duis [0m[K
+[33;1m19[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Communiquee.md[0m
+[33;1m1[0m:[33;1m1[0m:Duis [0m[K
+[33;1m3[0m:[33;1m1[0m:Duis [0m[K
+[33;1m4[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Manuskript.pdf[0m
+[33;1m5[0m:[33;1m1[0m:Duis [0m[K
+[33;1m6[0m:[33;1m1[0m:Duis [0m[K
+[33;1m15[0m:[33;1m1[0m:Duis [0m[K
+ 
+[32;1mVerkehrsdaten\Presseerklaerung.mp3[0m
+[33;1m3[0m:[33;1m1[0m:Duis [0m[K

@@ -648,7 +648,9 @@ class Mack {
 	 *			parts - A list of matching/non-matching text and escape sequences.
 	 *
 	 * Returns:
-	 *			TODO: Check for what reason true or false will be returned
+	 *			- true to continue with normal processing.
+	 *			- false to stop processing of the current file.
+	 *			- -1 to stop processing of the current file and any following files.
 	 */
 	output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 		_log := new Logger("class." A_ThisFunc)
@@ -741,9 +743,11 @@ class Mack {
 			} else {
 				Mack.process_line(file_name)
 			}
+
 			Ansi.Flush()
 			Ansi.FlushInput()
-			exitapp _log.Exit(0)	; QUESTION: Is it neccessary to use exitapp here? This will interfere testing.
+
+			return _log.Exit(-1)
 		}
 
 		return _log.Exit(true)
@@ -830,10 +834,12 @@ class Mack {
 		before_context := new Queue(Mack.Option.B)
 		after_context := new Queue(Mack.Option.A)
 
+		cont := true
+
 		try {
 			f := FileOpen(file_name, "r `n")
 			if (!f) {
-				_log.Severe("Could not open file " file_name)
+				_log.Severe("Could not open file " file_name)	; NOTEST: Difficult to test. The file would have to be deleted after collecting filename
 			} else {
 				hit_n := 0
 				tabstops := Mack.do_modelines(f)
@@ -857,13 +863,15 @@ class Mack {
 					} else if (found && !Mack.Option.v) {
 						; if the line matches and invert-match is disabled: output results
 						hit_n++
-						if (!Mack.output(file_name, A_Index, column, hit_n, before_context, after_context, parts)) {
+						cont := Mack.output(file_name, A_Index, column, hit_n, before_context, after_context, parts)
+						if (cont != true) {
 							break
 						}
 					} else if ((!found && Mack.Option.v) || Mack.Option.passthru) {
 						; if the line doesn't match, but invert-match or passthru is enabled: output results
 						hit_n++
-						if (!Mack.output(file_name, A_Index, column, hit_n, "", "", line)) {
+						cont := Mack.output(file_name, A_Index, column, hit_n, "", "", line)
+						if (cont != true) {
 							break
 						}
 					} else {
@@ -932,7 +940,7 @@ class Mack {
 			}
 		}
 
-		return _log.Exit()
+		return _log.Exit(cont)
 	}
 
 	/*
@@ -1105,8 +1113,12 @@ class Mack {
 					}
 				} else {
 					Console.RefreshBufferInfo()
+					x := 0
 					for _i, file_entry in file_list {
-						Mack.search_for_pattern(file_entry, Mack.Option.i ? "i" : "")
+						x := Mack.search_for_pattern(file_entry, Mack.Option.i ? "i" : "")
+						if (x = -1) {
+							return _log.Exit(result)
+						}
 					}
 				}
 			}
