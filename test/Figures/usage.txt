@@ -69,6 +69,6 @@ File type specification:
 Miscellaneous:
     --[no]env             Ignore environment variable MACK_OPTIONS
     --version             Display version info
-    --help-types          Display all knwon types
+    --help-types          Display all known types
 
 

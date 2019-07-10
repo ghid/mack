@@ -25,48 +25,48 @@ class MackTest extends TestCase {
             OutputDebug *** Create Testdata ***
 			FileCreateDir %A_ScriptDir%\Testdata
 			SetWorkingDir %A_ScriptDir%\Testdata
-			fd1 := new FlimsyData.Simple(1428)
-			fd2 := new FlimsyData.Lorem(2404)
+			fd1 := new FlimsyData.simple(1428)
+			fd2 := new FlimsyData.lorem(2404)
 			; Create test folders & files
 			dir_list := []
 			loop 20 {
 				dir_name := ""
-				loop % fd1.GetInt(1, 4) {
-					dir_name .= (dir_name = "" ? "" : "\") fd2.GetWord("PFolderName")
-					dir_list.Insert(dir_name)
+				loop % fd1.getInt(1, 4) {
+					dir_name .= (dir_name = "" ? "" : "\") fd2.getWord("PFolderName")
+					dir_list.insert(dir_name)
 				}
 				FileCreateDir %dir_name%
 			}
 			loop 200 {
-				dir_name := dir_list[fd1.GetInt(dir_list.MinIndex()+2, dir_list.MaxIndex()-2)]
-				file_name := fd2.GetWord("PFileName") "." fd2.GetWord("PFileext")
-				FileAppend % fd2.GetParagraph("PLorem", fd1.GetInt(1, 20)), %dir_name%\%file_name%
+				dir_name := dir_list[fd1.getInt(dir_list.minIndex()+2, dir_list.maxIndex()-2)]
+				file_name := fd2.getWord("PFileName") "." fd2.getWord("PFileext")
+				FileAppend % fd2.getParagraph("PLorem", fd1.getInt(1, 20)), %dir_name%\%file_name%
 			}
 		}
 	}
 
-    @Before_ResetOptions() {
-        ; Reset options to default values before running any testcase
-        Mack.set_defaults()
+    @Before_resetOptions() {
+        Mack.setDefaults()
+		EnvSet MACK_OPTIONS,
     }
 
-	@BeforeRedirStdOut() {
-		Ansi.StdOut := FileOpen(A_Temp "\mack-test.txt", "w `n")
+	@Before_redirStdOut() {
+		Ansi.stdOut := FileOpen(A_Temp "\mack-test.txt", "w `n")
 	}
 
-	@AfterRedirStdOut() {
-		Ansi.StdOut.Close()
-		Ansi.StdOut := Ansi.__InitStdOut()
-		FileDelete %A_Temp%\mack-test.txt
+	@After_redirStdOut() {
+		Ansi.stdOut.close()
+		Ansi.stdOut := Ansi.__InitStdOut()
+		; FileDelete %A_Temp%\mack-test.txt
 	}
 
-	@Test_GetVersionInfo() {
-		this.AssertTrue(IsFunc("Mack.get_version_info"))
-		this.AssertTrue(InStr(Mack.get_version_info(), " Copyright (C) "))
+	@Test_getVersionInfo() {
+		this.assertTrue(IsFunc("Mack.getVersionInfo"))
+		this.assertTrue(InStr(Mack.getVersionInfo(), " Copyright (C) "))
 	}
 
-	@Test_CheckHelpTypes() {
-		pre_def_type_list = 
+	@Test_checkHelpTypes() {
+		preDefTypeList = 
 		( LTrim RTrim0
 			autohotkey *.ahk                                             
 			batch      *.bat *.cmd                                       
@@ -87,31 +87,42 @@ class MackTest extends TestCase {
 			yaml       *.yaml *.yml                                      
 
 		)
-		this.AssertTrue(IsFunc("Mack.help_types"))
-		this.AssertEquals(Mack.help_types(), pre_def_type_list)
+		this.assertTrue(IsFunc("Mack.printKnownFileTypes"))
+		this.assertEquals(Mack.printKnownFileTypes(), preDefTypeList)
 	}
 
-	@Test_Refine_File_Pattern() {
+	@Test_checkDefaultModeLineExpression() {
+		this.assertTrue(IsFunc("Mack.setDefaultModelineExpression"))
+		this.assertEquals(SubStr(Mack.option.modeline_expr, 1, 2), "J)")
+	}
+
+	@Test_refineFilePattern() {
 		SetWorkingDir %A_ScriptDir%\Testdata
-		Mack.refine_file_pattern(fp := "Verkehrsdaten")
-		this.AssertEquals(fp, "Verkehrsdaten\*.*")
-		Mack.refine_file_pattern(fp := "Verkehrsdaten\")
-		this.AssertEquals(fp, "Verkehrsdaten\*.*")
-		Mack.refine_file_pattern(fp := "Verkehrsdaten\a*.txt")
-		this.AssertEquals(fp, "Verkehrsdaten\a*.txt")
-		Mack.refine_file_pattern(fp := "Verkehrsdaten\*.*")
-		this.AssertEquals(fp, "Verkehrsdaten\*.*")
+		this.assertEquals(Mack.refineFileOrPathPattern("Verkehrsdaten"), "Verkehrsdaten\*.*")
+		this.assertEquals(Mack.refineFileOrPathPattern("Verkehrsdaten\"), "Verkehrsdaten\*.*")
+		this.assertEquals(Mack.refineFileOrPathPattern("Verkehrsdaten\*"), "Verkehrsdaten\*")
+		this.assertEquals(Mack.refineFileOrPathPattern("Verkehrsdaten\a*.txt"), "Verkehrsdaten\a*.txt")
+		this.assertEquals(Mack.refineFileOrPathPattern("Verkehrsdaten\*.*"), "Verkehrsdaten\*.*")
 	}
 
-	@Test_Types() {
-		this.AssertEquals(Mack.regex_of_types(),"(autohotkey|batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
-		del_type("autohotkey")
-		this.AssertEquals(Mack.regex_of_types(),"(batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
-		this.AssertException("", "add_type", "", "", "autohotkey:*.ahk+*.inc")
-		set_type("autohotkey:*.ahk+*.inc")
-		this.AssertEquals(Mack.regex_of_types(),"(autohotkey|batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
-		add_type("autohotkey:*.ahi")
-		pre_def_type_list = 
+    @Test_regexOfTypeList() {
+        this.assertEquals(Mack.regularExpressionOfTypeList()
+			, "(autohotkey|batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
+    }
+
+	@Test_types() {
+		this.assertEquals(Mack.regularExpressionOfTypeList()
+			, "(autohotkey|batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
+		OutputDebug % LoggingHelper.dump(Mack.option.types)
+		removeFileType("autohotkey")
+		this.assertEquals(Mack.regularExpressionOfTypeList()
+			, "(batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
+		this.assertException("", "addFileTypePattern", "", "", "autohotkey:*.ahk+*.inc")
+		addNewFileType("autohotkey:*.ahk+*.inc")
+		this.assertEquals(Mack.regularExpressionOfTypeList()
+		 	, "(autohotkey|batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
+		addFileTypePattern("autohotkey:*.ahi")
+		preDefTypeList = 
 		( LTrim RTrim0
 			autohotkey *.ahk *.inc *.ahi                                 
 			batch      *.bat *.cmd                                       
@@ -132,238 +143,240 @@ class MackTest extends TestCase {
 			yaml       *.yaml *.yml                                      
 
 		)
-		this.AssertEquals(Mack.help_types(), pre_def_type_list)
+		this.assertEquals(Mack.printKnownFileTypes(), preDefTypeList)
 	}
 
-    @Test_Regex_Of_File_Pattern() {
-        this.AssertEquals(Mack.regex_of_file_pattern("*.*"), ".*?\..*?")
-        this.AssertEquals(Mack.regex_of_file_pattern(".git"), "\.git")
-        this.AssertEquals(Mack.regex_of_file_pattern("CVS"), "CVS")
+    @Test_regexOfFileTypePattern() {
+        this.assertEquals(Mack.convertFileTypePatternToRegularExpression("*.*"), ".*?\..*?")
+        this.assertEquals(Mack.convertFileTypePatternToRegularExpression(".git"), "\.git")
+        this.assertEquals(Mack.convertFileTypePatternToRegularExpression("CVS"), "CVS")
     }
 
-    @Test_Regex_Match_List() {
-        this.AssertEquals(Mack.regex_match_list(["abc", "def", "ghi"]), "S)^(abc|def|ghi)$")
-        this.AssertEquals(Mack.regex_match_list([]), "")
-        this.AssertEquals(Mack.regex_match_list(["xyz"]), "S)^(xyz)$")
+    @Test_regexMatchList() {
+        this.assertEquals(Mack.convertArrayToRegularExpression(["abc", "def", "ghi"]), "S)^(abc|def|ghi)$")
+        this.assertEquals(Mack.convertArrayToRegularExpression([]), "")
+        this.assertEquals(Mack.convertArrayToRegularExpression(["xyz"]), "S)^(xyz)$")
     }
 
-    @Test_Regex_Of_Types() {
-        this.AssertEquals(Mack.regex_of_types(), "(autohotkey|batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
+	@Test_isEntryInList() {
+		Mack.option.ignore_dirs := [ "\.git", "\.svn", "CVS" ]
+		this.assertException(Mack, "positionInList", "", "", "ignore_dirs", "foobar")
+		this.assertEquals(Mack.positionInList("ignore_dirs", "\.svn"), 2)
+	}
+
+    @Test_addToList() {
+        Mack.option.ignore_dirs := []
+        this.assertEquals(Mack.option.ignore_dirs.maxIndex(), "")
+        this.assertEquals(Mack.addOrReturnListEntry("ignore_dirs", ".git"), 1)
+        this.assertEquals(Mack.addOrReturnListEntry("ignore_dirs", ".svn"), 2)
+        this.assertEquals(Mack.addOrReturnListEntry("ignore_dirs", "CVS"), 3)
+        this.assertEquals(Mack.option.ignore_dirs.maxIndex(), 3)
+        this.assertEquals(Mack.option.ignore_dirs[1], "\.git")
+        this.assertEquals(Mack.option.ignore_dirs[2], "\.svn")
+        this.assertEquals(Mack.option.ignore_dirs[3], "CVS")
+
+        Mack.addOrReturnListEntry("ignore_dirs", ".git")
+        this.assertEquals(Mack.option.ignore_dirs.maxIndex(), 3)
+        this.assertEquals(Mack.option.ignore_dirs[1], "\.git")
+        this.assertEquals(Mack.option.ignore_dirs[2], "\.svn")
+        this.assertEquals(Mack.option.ignore_dirs[3], "CVS")
+
+        Mack.addOrReturnListEntry("type", "*.ahk")
+        this.assertEquals(Mack.option.type.maxIndex(), 1)
+        this.assertEquals(Mack.option.type[1], ".*?\.ahk")
     }
 
-    @Depend_@Test_Add_To_List() {
-        return "@Test_Regex_Of_File_Pattern"
-    }
-    @Test_Add_To_List() {
-        Mack.Option.ignore_dirs := []
-        this.AssertEquals(Mack.Option.ignore_dirs.MaxIndex(), "")
-        Mack.add_to_list("ignore_dirs", ".git")
-        Mack.add_to_list("ignore_dirs", ".svn")
-        Mack.add_to_list("ignore_dirs", "CVS")
-        this.AssertEquals(Mack.Option.ignore_dirs.MaxIndex(), 3)
-        this.AssertEquals(Mack.Option.ignore_dirs[1], "\.git")
-        this.AssertEquals(Mack.Option.ignore_dirs[2], "\.svn")
-        this.AssertEquals(Mack.Option.ignore_dirs[3], "CVS")
-
-        Mack.add_to_list("ignore_dirs", ".git")
-        this.AssertEquals(Mack.Option.ignore_dirs.MaxIndex(), 3)
-        this.AssertEquals(Mack.Option.ignore_dirs[1], "\.git")
-        this.AssertEquals(Mack.Option.ignore_dirs[2], "\.svn")
-        this.AssertEquals(Mack.Option.ignore_dirs[3], "CVS")
-
-        Mack.add_to_list("type", "*.ahk")
-        this.AssertEquals(Mack.Option.type.MaxIndex(), 1)
-        this.AssertEquals(Mack.Option.type[1], ".*?\.ahk")
+    @Test_removeFromList() {
+		Mack.option.ignore_dirs := [ "\.git", "\.svn", "CVS" ]
+		this.assertException(Mack, "removeListEntry", "", "", "ignore_dirs", "foobar")
+        x := Mack.option.ignore_dirs.maxIndex()
+        this.assertEquals(Mack.removeListEntry("ignore_dirs", ".svn"), "\.svn")
+        this.assertTrue(Mack.option.ignore_dirs.maxIndex() = x - 1)
     }
 
-    @Test_Remove_From_List() {
-        x := Mack.Option.ignore_dirs.MaxIndex()
-        Mack.remove_from_list("ignore_dirs", ".svn")
-        this.AssertTrue(Mack.Option.ignore_dirs.MaxIndex() = x - 1)
+    @Test_deleteType() {
+        this.assertException("", "removeFileType", "", "", "foo")
+        this.assertTrue(Mack.option.types.hasKey("text"))
+        this.assertEquals(removeFileType("text"), "*.txt *.rtf *.readme")
+        this.assertFalse(Mack.option.types.hasKey("text"))
     }
 
-    @Test_Del_Type() {
-        this.AssertException("", "del_type", "", "", "foo")
-        this.AssertTrue(Mack.Option.types.HasKey("text"))
-        del_type("text")
-        this.AssertFalse(Mack.Option.types.HasKey("text"))
+    @Test_addFileTypePattern() {
+        this.assertException("", "addFileTypePattern", "", "", "foo:*.bar+*.buzz")
+        this.assertException("", "addFileTypePattern", "", "", "foo")
+        this.assertTrue(Mack.option.types.hasKey("text"))
+        addFileTypePattern("text:*.doc")
+        this.assertEquals(Mack.option.types["text"], "*.txt *.rtf *.readme *.doc")
     }
 
-    @Test_Add_Type() {
-        this.AssertException("", "add_type", "", "", "foo:*.bar+*.buzz")
-        this.AssertException("", "add_type", "", "", "foo")
-        this.AssertTrue(Mack.Option.types.HasKey("text"))
-        add_type("text:*.doc")
-        this.AssertEquals(Mack.Option.types["text"], "*.txt *.rtf *.readme *.doc")
+    @Test_addNewFileType() {
+        this.assertException("", "addNewFileType", "", "", "text:*.txt+*.doc")
+        this.assertException("", "addNewFileType", "", "", "foo")
+        this.assertFalse(Mack.option.types.hasKey("foo"))
+        addNewFileType("foo:*.bar")
+        this.assertEquals(Mack.option.types["foo"], "*.bar")
     }
 
-    @Test_Set_Type() {
-        this.AssertException("", "set_type", "", "", "text:*.txt+*.doc")
-        this.AssertException("", "set_type", "", "", "foo")
-        this.AssertFalse(Mack.Option.types.HasKey("foo"))
-        set_type("foo:*.bar")
-        this.AssertEquals(Mack.Option.types["foo"], "*.bar")
+    @Test_typeFilter() {
+        this.assertException("", "maintainTypeFilter", "", "", "foo")
+        this.assertException("", "maintainTypeFilter", "", "", "foo", "no")
+        this.assertEquals(maintainTypeFilter("yaml"), 1)
+        this.assertEquals(maintainTypeFilter("python"), 2)
+        this.assertEquals(maintainTypeFilter("batch", "no"), 1)
+        this.assertEquals(Mack.option.type.maxIndex(), 2)
+        this.assertEquals(Mack.option.type[1], "(.*?\.yaml|.*?\.yml)")
+        this.assertEquals(Mack.option.type[2], ".*?\.py")
+        this.assertEquals(Mack.option.type_ignore.maxIndex(), 1)
+        this.assertEquals(Mack.option.type_ignore[1], "(.*?\.bat|.*?\.cmd)")
     }
 
-    @Test_Type_Filter() {
-        this.AssertException("", "type_filter", "", "", "foo")
-        this.AssertException("", "type_filter", "", "", "foo", "no")
-        type_filter("yaml")
-        type_filter("python")
-        type_filter("batch", "no")
-        this.AssertEquals(Mack.Option.type.MaxIndex(), 2)
-        this.AssertEquals(Mack.Option.type[1], "(.*?\.yaml|.*?\.yml)")
-        this.AssertEquals(Mack.Option.type[2], ".*?\.py")
-        this.AssertEquals(Mack.Option.type_ignore.MaxIndex(), 1)
-        this.AssertEquals(Mack.Option.type_ignore[1], "(.*?\.bat|.*?\.cmd)")
+    @Test_setDefaultIgnoreDirs() {
+        this.assertEquals(Mack.option.ignore_dirs.maxIndex(), 3)
+        this.assertEquals(Mack.option.ignore_dirs[1], "\.svn")
+        this.assertEquals(Mack.option.ignore_dirs[2], "\.git")
+        this.assertEquals(Mack.option.ignore_dirs[3], "CVS")
     }
 
-    @Test_Set_Default_Ignore_Dirs() {
-        this.AssertEquals(Mack.Option.ignore_dirs.MaxIndex(), 3)
-        this.AssertEquals(Mack.Option.ignore_dirs[1], "\.svn")
-        this.AssertEquals(Mack.Option.ignore_dirs[2], "\.git")
-        this.AssertEquals(Mack.Option.ignore_dirs[3], "CVS")
+    @Test_setDefaultIgnoreFiles() {
+        this.assertEquals(Mack.option.ignore_files.maxIndex(), 7)
+        this.assertEquals(Mack.option.ignore_files[1], "#.*?#")
+        this.assertEquals(Mack.option.ignore_files[2], ".*?~")
+        this.assertEquals(Mack.option.ignore_files[3], ".*?\.bak")
+        this.assertEquals(Mack.option.ignore_files[4], ".*?\.swp")
+        this.assertEquals(Mack.option.ignore_files[5], ".*?\.exe")
+        this.assertEquals(Mack.option.ignore_files[6], ".*?\.dll")
+        this.assertEquals(Mack.option.ignore_files[7], "Thumbs\.db")
     }
 
-    @Test_Set_Default_Ignore_Files() {
-        this.AssertEquals(Mack.Option.ignore_files.MaxIndex(), 7)
-        this.AssertEquals(Mack.Option.ignore_files[1], "#.*?#")
-        this.AssertEquals(Mack.Option.ignore_files[2], ".*?~")
-        this.AssertEquals(Mack.Option.ignore_files[3], ".*?\.bak")
-        this.AssertEquals(Mack.Option.ignore_files[4], ".*?\.swp")
-        this.AssertEquals(Mack.Option.ignore_files[5], ".*?\.exe")
-        this.AssertEquals(Mack.Option.ignore_files[6], ".*?\.dll")
-        this.AssertEquals(Mack.Option.ignore_files[7], "Thumbs\.db")
+    @Test_arrayToString() {
+        this.assertEquals(Mack.arrayOrStringToString("foo"), "foo")
+        this.assertEquals(Mack.arrayOrStringToString(["foo", "bar", "buzz"]), "foobarbuzz")
     }
 
-    @Test_Array_To_String() {
-        this.AssertEquals(Mack.array_to_string("foo"), "foo")
-        this.AssertEquals(Mack.array_to_string(["foo", "bar", "buzz"]), "foobarbuzz")
+    @Test_ignoreDir() {
+        x := Mack.option.ignore_dirs.maxIndex()
+        maintainDirectoriesToIgnore("foo")
+        this.assertEquals(Mack.option.ignore_dirs[x+1], "foo")
+        maintainDirectoriesToIgnore("foo", "no")
+        this.assertEquals(Mack.option.ignore_dirs.maxIndex(), x)
     }
 
-    @Test_Ignore_Dir() {
-        x := Mack.Option.ignore_dirs.MaxIndex()
-        ignore_dir("foo")
-        this.AssertEquals(Mack.Option.ignore_dirs[x+1], "foo")
-        ignore_dir("foo", "no")
-        this.AssertEquals(Mack.Option.ignore_dirs.MaxIndex(), x)
-    }
-
-    @Test_Ignore_File() {
-        x := Mack.Option.ignore_files.MaxIndex()
-        ignore_file("*.foo")
-        this.AssertEquals(Mack.Option.ignore_files[x+1], ".*?\.foo")
-        ignore_file("*.foo", "no")
-        this.AssertEquals(Mack.Option.ignore_files.MaxIndex(), x)
+    @Test_ignoreFile() {
+        x := Mack.option.ignore_files.maxIndex()
+        this.assertEquals(maintainFilesToIgnore("*.foo"), x+1)
+        this.assertEquals(Mack.option.ignore_files[x+1], ".*?\.foo")
+        this.assertEquals(maintainFilesToIgnore("*.foo", "no"), ".*?\.foo")
+        this.assertEquals(Mack.option.ignore_files.maxIndex(), x)
     }
 
     @Test_Collect_Filenames() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        Mack.Option.r := false
+        Mack.option.r := false
         list := Mack.collect_filenames("Plan")
-        this.AssertEquals(list.MaxIndex(), 8)
-        this.AssertEquals(list[1], "Plan\Autograph.png")
-        this.AssertEquals(list[2], "Plan\Bericht.pdf")
-        this.AssertEquals(list[3], "Plan\Bulletin.ahk")
-        this.AssertEquals(list[4], "Plan\Communiquee.mp3")
-        this.AssertEquals(list[5], "Plan\L-Schein.pdf")
-        this.AssertEquals(list[6], "Plan\Nachlassdokument.rtf")
-        this.AssertEquals(list[7], "Plan\Presseerklaerung.ahk")
-        this.AssertEquals(list[8], "Plan\Presseerklaerung.txt")
+        this.assertEquals(list.maxIndex(), 8)
+        this.assertEquals(list[1], "Plan\Autograph.png")
+        this.assertEquals(list[2], "Plan\Bericht.pdf")
+        this.assertEquals(list[3], "Plan\Bulletin.ahk")
+        this.assertEquals(list[4], "Plan\Communiquee.mp3")
+        this.assertEquals(list[5], "Plan\L-Schein.pdf")
+        this.assertEquals(list[6], "Plan\Nachlassdokument.rtf")
+        this.assertEquals(list[7], "Plan\Presseerklaerung.ahk")
+        this.assertEquals(list[8], "Plan\Presseerklaerung.txt")
 
-        Mack.Option.r := true
+        Mack.option.r := true
         list := Mack.collect_filenames("Plan")
-        this.AssertEquals(list.MaxIndex(), 24)
-        this.AssertEquals(list[1],  "Plan\Autograph.png")
-        this.AssertEquals(list[2], "Plan\Bekanntmachung\Adelsdiplom.png")
-        this.AssertEquals(list[3], "Plan\Bekanntmachung\Anfuegung.rtf")
-        this.AssertEquals(list[4], "Plan\Bekanntmachung\Archivale.mp3")
-        this.AssertEquals(list[5], "Plan\Bekanntmachung\Ueberweisungsschein.ahk")
-        this.AssertEquals(list[6], "Plan\Bekanntmachung\Waffenpass.html")
-        this.AssertEquals(list[7], "Plan\Bericht\Anlage.mp3")
-        this.AssertEquals(list[8], "Plan\Bericht\Aussendung.png")
-        this.AssertEquals(list[9], "Plan\Bericht\Fakten\Bemerkung.html")
-        this.AssertEquals(list[10], "Plan\Bericht\Fakten\Communiquee.pdf")
-        this.AssertEquals(list[11], "Plan\Bericht\Fakten\Konnossement.mp3")
-        this.AssertEquals(list[12], "Plan\Bericht\Fakten\Kurrende.ahk")
-        this.AssertEquals(list[13], "Plan\Bericht\Fakten\Rundbrief.rtf")
-        this.AssertEquals(list[14], "Plan\Bericht\Fakten\Schlussformel.exe")
-        this.AssertEquals(list[15], "Plan\Bericht\Fakten\Schriftstueck.ahk")
-        this.AssertEquals(list[16], "Plan\Bericht\Letzter_Wille.rtf")
-        this.AssertEquals(list[17], "Plan\Bericht\Nichtveranlagungsbescheinigung.jpeg")
-        this.AssertEquals(list[18], "Plan\Bericht.pdf")
-        this.AssertEquals(list[19], "Plan\Bulletin.ahk")
-        this.AssertEquals(list[20], "Plan\Communiquee.mp3")
-        this.AssertEquals(list[21], "Plan\L-Schein.pdf")
-        this.AssertEquals(list[22], "Plan\Nachlassdokument.rtf")
-        this.AssertEquals(list[23], "Plan\Presseerklaerung.ahk")
-        this.AssertEquals(list[24], "Plan\Presseerklaerung.txt")
+        this.assertEquals(list.maxIndex(), 24)
+        this.assertEquals(list[1],  "Plan\Autograph.png")
+        this.assertEquals(list[2], "Plan\Bekanntmachung\Adelsdiplom.png")
+        this.assertEquals(list[3], "Plan\Bekanntmachung\Anfuegung.rtf")
+        this.assertEquals(list[4], "Plan\Bekanntmachung\Archivale.mp3")
+        this.assertEquals(list[5], "Plan\Bekanntmachung\Ueberweisungsschein.ahk")
+        this.assertEquals(list[6], "Plan\Bekanntmachung\Waffenpass.html")
+        this.assertEquals(list[7], "Plan\Bericht\Anlage.mp3")
+        this.assertEquals(list[8], "Plan\Bericht\Aussendung.png")
+        this.assertEquals(list[9], "Plan\Bericht\Fakten\Bemerkung.html")
+        this.assertEquals(list[10], "Plan\Bericht\Fakten\Communiquee.pdf")
+        this.assertEquals(list[11], "Plan\Bericht\Fakten\Konnossement.mp3")
+        this.assertEquals(list[12], "Plan\Bericht\Fakten\Kurrende.ahk")
+        this.assertEquals(list[13], "Plan\Bericht\Fakten\Rundbrief.rtf")
+        this.assertEquals(list[14], "Plan\Bericht\Fakten\Schlussformel.exe")
+        this.assertEquals(list[15], "Plan\Bericht\Fakten\Schriftstueck.ahk")
+        this.assertEquals(list[16], "Plan\Bericht\Letzter_Wille.rtf")
+        this.assertEquals(list[17], "Plan\Bericht\Nichtveranlagungsbescheinigung.jpeg")
+        this.assertEquals(list[18], "Plan\Bericht.pdf")
+        this.assertEquals(list[19], "Plan\Bulletin.ahk")
+        this.assertEquals(list[20], "Plan\Communiquee.mp3")
+        this.assertEquals(list[21], "Plan\L-Schein.pdf")
+        this.assertEquals(list[22], "Plan\Nachlassdokument.rtf")
+        this.assertEquals(list[23], "Plan\Presseerklaerung.ahk")
+        this.assertEquals(list[24], "Plan\Presseerklaerung.txt")
     }
 
     @Test_Determine_Files() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        Mack.Option.sort_files := true
+        Mack.option.sort_files := true
         list := Mack.determine_files(["Plan", "Ammenmaerchen"])
-        this.AssertEquals(list.MaxIndex(), 45)
-        this.AssertEquals(list[1], "Ammenmaerchen\Adelsdiplom.mp3")
-        this.AssertEquals(list[2], "Ammenmaerchen\Anlage.pdf")
-        this.AssertEquals(list[3], "Ammenmaerchen\Auskunftsschalter\Aktienurkunde.rtf")
-        this.AssertEquals(list[4], "Ammenmaerchen\Auskunftsschalter\Arztbrief.html")
-        this.AssertEquals(list[5], "Ammenmaerchen\Auskunftsschalter\Rundschreiben.pdf")
-        this.AssertEquals(list[6], "Ammenmaerchen\Auskunftsschalter\Schema\Anfuegung.html")
-        this.AssertEquals(list[7], "Ammenmaerchen\Auskunftsschalter\Schema\Bericht.pdf")
-        this.AssertEquals(list[8], "Ammenmaerchen\Auskunftsschalter\Schema\Bescheid.txt")
-        this.AssertEquals(list[9], "Ammenmaerchen\Auskunftsschalter\Schema\Geograph.md")
-        this.AssertEquals(list[10], "Ammenmaerchen\Auskunftsschalter\Schema\Geograph.mp3")
-        this.AssertEquals(list[11], "Ammenmaerchen\Auskunftsschalter\Schema\Geschichte.md")
-        this.AssertEquals(list[12], "Ammenmaerchen\Auskunftsschalter\Schema\Schlussformel.rtf")
-        this.AssertEquals(list[13], "Ammenmaerchen\Auskunftsschalter\Schema\Wertpapier.jpeg")
-        this.AssertEquals(list[14], "Ammenmaerchen\Auskunftsschalter\unbelebtes.pdf")
-        this.AssertEquals(list[15], "Ammenmaerchen\Befundbericht.pdf")
-        this.AssertEquals(list[16], "Ammenmaerchen\Buchung.md")
-        this.AssertEquals(list[17], "Ammenmaerchen\L-Schein.txt")
-        this.AssertEquals(list[18], "Ammenmaerchen\Nachlassdokument.exe")
-        this.AssertEquals(list[19], "Ammenmaerchen\Strafzettel.html")
-        this.AssertEquals(list[20], "Ammenmaerchen\Wertpapier.doc")
-        this.AssertEquals(list[21], "Ammenmaerchen\nicht.doc")
-        this.AssertEquals(list[22], "Plan\Autograph.png")
-        this.AssertEquals(list[23], "Plan\Bekanntmachung\Adelsdiplom.png")
-        this.AssertEquals(list[24], "Plan\Bekanntmachung\Anfuegung.rtf")
-        this.AssertEquals(list[25], "Plan\Bekanntmachung\Archivale.mp3")
-        this.AssertEquals(list[26], "Plan\Bekanntmachung\Ueberweisungsschein.ahk")
-        this.AssertEquals(list[27], "Plan\Bekanntmachung\Waffenpass.html")
-        this.AssertEquals(list[28], "Plan\Bericht.pdf")
-        this.AssertEquals(list[29], "Plan\Bericht\Anlage.mp3")
-        this.AssertEquals(list[30], "Plan\Bericht\Aussendung.png")
-        this.AssertEquals(list[31], "Plan\Bericht\Fakten\Bemerkung.html")
-        this.AssertEquals(list[32], "Plan\Bericht\Fakten\Communiquee.pdf")
-        this.AssertEquals(list[33], "Plan\Bericht\Fakten\Konnossement.mp3")
-        this.AssertEquals(list[34], "Plan\Bericht\Fakten\Kurrende.ahk")
-        this.AssertEquals(list[35], "Plan\Bericht\Fakten\Rundbrief.rtf")
-        this.AssertEquals(list[36], "Plan\Bericht\Fakten\Schlussformel.exe")
-        this.AssertEquals(list[37], "Plan\Bericht\Fakten\Schriftstueck.ahk")
-        this.AssertEquals(list[38], "Plan\Bericht\Letzter_Wille.rtf")
-        this.AssertEquals(list[39], "Plan\Bericht\Nichtveranlagungsbescheinigung.jpeg")
-        this.AssertEquals(list[40], "Plan\Bulletin.ahk")
-        this.AssertEquals(list[41], "Plan\Communiquee.mp3")
-        this.AssertEquals(list[42], "Plan\L-Schein.pdf")
-        this.AssertEquals(list[43], "Plan\Nachlassdokument.rtf")
-        this.AssertEquals(list[44], "Plan\Presseerklaerung.ahk")
-        this.AssertEquals(list[45], "Plan\Presseerklaerung.txt")
+        this.assertEquals(list.maxIndex(), 45)
+        this.assertEquals(list[1], "Ammenmaerchen\Adelsdiplom.mp3")
+        this.assertEquals(list[2], "Ammenmaerchen\Anlage.pdf")
+        this.assertEquals(list[3], "Ammenmaerchen\Auskunftsschalter\Aktienurkunde.rtf")
+        this.assertEquals(list[4], "Ammenmaerchen\Auskunftsschalter\Arztbrief.html")
+        this.assertEquals(list[5], "Ammenmaerchen\Auskunftsschalter\Rundschreiben.pdf")
+        this.assertEquals(list[6], "Ammenmaerchen\Auskunftsschalter\Schema\Anfuegung.html")
+        this.assertEquals(list[7], "Ammenmaerchen\Auskunftsschalter\Schema\Bericht.pdf")
+        this.assertEquals(list[8], "Ammenmaerchen\Auskunftsschalter\Schema\Bescheid.txt")
+        this.assertEquals(list[9], "Ammenmaerchen\Auskunftsschalter\Schema\Geograph.md")
+        this.assertEquals(list[10], "Ammenmaerchen\Auskunftsschalter\Schema\Geograph.mp3")
+        this.assertEquals(list[11], "Ammenmaerchen\Auskunftsschalter\Schema\Geschichte.md")
+        this.assertEquals(list[12], "Ammenmaerchen\Auskunftsschalter\Schema\Schlussformel.rtf")
+        this.assertEquals(list[13], "Ammenmaerchen\Auskunftsschalter\Schema\Wertpapier.jpeg")
+        this.assertEquals(list[14], "Ammenmaerchen\Auskunftsschalter\unbelebtes.pdf")
+        this.assertEquals(list[15], "Ammenmaerchen\Befundbericht.pdf")
+        this.assertEquals(list[16], "Ammenmaerchen\Buchung.md")
+        this.assertEquals(list[17], "Ammenmaerchen\L-Schein.txt")
+        this.assertEquals(list[18], "Ammenmaerchen\Nachlassdokument.exe")
+        this.assertEquals(list[19], "Ammenmaerchen\Strafzettel.html")
+        this.assertEquals(list[20], "Ammenmaerchen\Wertpapier.doc")
+        this.assertEquals(list[21], "Ammenmaerchen\nicht.doc")
+        this.assertEquals(list[22], "Plan\Autograph.png")
+        this.assertEquals(list[23], "Plan\Bekanntmachung\Adelsdiplom.png")
+        this.assertEquals(list[24], "Plan\Bekanntmachung\Anfuegung.rtf")
+        this.assertEquals(list[25], "Plan\Bekanntmachung\Archivale.mp3")
+        this.assertEquals(list[26], "Plan\Bekanntmachung\Ueberweisungsschein.ahk")
+        this.assertEquals(list[27], "Plan\Bekanntmachung\Waffenpass.html")
+        this.assertEquals(list[28], "Plan\Bericht.pdf")
+        this.assertEquals(list[29], "Plan\Bericht\Anlage.mp3")
+        this.assertEquals(list[30], "Plan\Bericht\Aussendung.png")
+        this.assertEquals(list[31], "Plan\Bericht\Fakten\Bemerkung.html")
+        this.assertEquals(list[32], "Plan\Bericht\Fakten\Communiquee.pdf")
+        this.assertEquals(list[33], "Plan\Bericht\Fakten\Konnossement.mp3")
+        this.assertEquals(list[34], "Plan\Bericht\Fakten\Kurrende.ahk")
+        this.assertEquals(list[35], "Plan\Bericht\Fakten\Rundbrief.rtf")
+        this.assertEquals(list[36], "Plan\Bericht\Fakten\Schlussformel.exe")
+        this.assertEquals(list[37], "Plan\Bericht\Fakten\Schriftstueck.ahk")
+        this.assertEquals(list[38], "Plan\Bericht\Letzter_Wille.rtf")
+        this.assertEquals(list[39], "Plan\Bericht\Nichtveranlagungsbescheinigung.jpeg")
+        this.assertEquals(list[40], "Plan\Bulletin.ahk")
+        this.assertEquals(list[41], "Plan\Communiquee.mp3")
+        this.assertEquals(list[42], "Plan\L-Schein.pdf")
+        this.assertEquals(list[43], "Plan\Nachlassdokument.rtf")
+        this.assertEquals(list[44], "Plan\Presseerklaerung.ahk")
+        this.assertEquals(list[45], "Plan\Presseerklaerung.txt")
 
         SetWorkingDir %A_ScriptDir%\Testdata\Schema\Fakten\Verkehrsdaten
         list := Mack.determine_files([])
-        this.AssertEquals(list.MaxIndex(), 3)
+        this.assertEquals(list.maxIndex(), 3)
     }
 
-    @Test_Modeline1() {
+    @Test_modeline1() {
         SetWorkingDir %A_ScriptDir%\Testdata
         if (FileExist("modeline_test.txt")) {
             FileDelete modeline_test.txt
         }
         FileAppend `; vim:ts=03, modeline_test.txt
-        this.AssertEquals(Mack.run([".", "modeline_test.txt"]), "")
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Modeline.txt"))
+        this.assertEquals(Mack.run([".", "modeline_test.txt"]), "")
+		Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Modeline.txt"))
         FileDelete modeline_test.txt
     }
 
@@ -373,234 +386,235 @@ class MackTest extends TestCase {
             FileDelete modeline_test.txt
         }
         FileAppend `n`n`n`n`n`n; vim:ts=03, modeline_test.txt
-        this.AssertEquals(Mack.run([".", "modeline_test.txt"]), "")
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Modeline2.txt"))
+        this.assertEquals(Mack.run([".", "modeline_test.txt"]), "")
+		Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Modeline2.txt"))
         FileDelete modeline_test.txt
     }
 
     @Test_VersionInfo() {
-        this.AssertEquals(Mack.Run(["--version"]), "")
-        Ansi.Flush()
-        this.AssertTrue(RegExMatch(TestCase.FileContent(A_Temp "\mack-test.txt"), ".+"))
+        this.assertEquals(Mack.run(["--version"]), "")
+        Ansi.flush()
+        this.assertTrue(RegExMatch(TestCase.fileContent(A_Temp "\mack-test.txt"), ".+"))
     }
 
-    @Test_HelpTypes() {
-        this.AssertEquals(Mack.Run(["--help-types"]), "")
-        Ansi.Flush()
-        this.AssertTrue(RegExMatch(TestCase.FileContent(A_Temp "\mack-test.txt"), ".+"))
+    @Test_helpTypes() {
+        this.assertEquals(Mack.run(["--help-types"]), "")
+        Ansi.flush()
+        this.assertTrue(RegExMatch(TestCase.fileContent(A_Temp "\mack-test.txt"), ".+"))
     }
 
-    @Test_Usage() {
-		this.AssertEquals(Mack.Run(["-h"]), "")
-		Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Usage.txt"))
+    @Test_usage() {
+		this.assertEquals(Mack.run(["-h"]), "")
+		Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Usage.txt"))
     }
 
     @Test_BadUsage() {
-		this.AssertEquals(Mack.Run(["--foo"]), "")
-		Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\BadUsage.txt"))
+		this.assertEquals(Mack.run(["--foo"]), "")
+		Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\BadUsage.txt"))
     }
 
     @Test_Filelist() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "-f"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Filelist.txt"))
+        this.assertEquals(Mack.run(["--nopager", "-f"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Filelist.txt"))
     }
 
     @Test_PatternFilelist() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--sort-files", "-g", "i)^[abcklmstu].*\.txt$"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Pattern-Filelist.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--sort-files", "-g", "i)^[abcklmstu].*\.txt$"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Pattern-Filelist.txt"))
     }
 
     @Test_FilteredFilelist() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "-ilc", "est lorem ipsum dolor sit amet\."]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "-ilc", "est lorem ipsum dolor sit amet\."]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
     }
 
     @Test_FilteredTypenameFilelist() { 
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-ilc", "est lorem ipsum dolor sit amet\."]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-ilc", "est lorem ipsum dolor sit amet\."]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
     }
 
     @Test_FilesWithMatches1() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "-Qw", "--files-with-matches", "ut", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\FilesWithMatches1.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "-Qw", "--files-with-matches", "ut", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\FilesWithMatches1.txt"))
     }
 
     @Test_FilesWithMatches2() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "--nocolor", "-Qw", "--files-with-matches", "ut", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\FilesWithMatches2.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "--nocolor", "-Qw", "--files-with-matches", "ut", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\FilesWithMatches2.txt"))
     }
 
     @Test_FilesWithoutMatches1() {
         SetWorkingDir %A_ScriptDir%\Testdata
-            this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "--nocolor", "-L", "foo", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\FilesWithoutMatches1.txt"))
+            this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "--nocolor", "-L", "foo", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\FilesWithoutMatches1.txt"))
     }
 
     @Test_FilesWithoutMatches2() {
         SetWorkingDir %A_ScriptDir%\Testdata
-            this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "-L", "foo", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\FilesWithoutMatches2.txt"))
+            this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "-L", "foo", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\FilesWithoutMatches2.txt"))
     }
 
     @Test_Search1() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "--column", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search1.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "--column", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search1.txt"))
     }
 
     @Test_Search2() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "--nocolor", "-v", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search2.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "--nocolor", "-v", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search2.txt"))
     }
 
     @Test_Search3() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "-C", "3", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search3.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "-C", "3", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search3.txt"))
     }
 
     @Test_Search4() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "--nocolor", "-C", "2", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search4.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--nocolor", "-C", "2", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search4.txt"))
     }
 
     @Test_Search5() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "--output", "$1", "Lorem ipsum dolor sit amet(.)", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search5.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--output", "$1", "Lorem ipsum dolor sit amet(.)", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search5.txt"))
     }
 
     @Test_Search6() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "--output", "$0", "Lorem ipsum dolor sit amet(.)", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search6.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--output", "$0", "Lorem ipsum dolor sit amet(.)", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search6.txt"))
     }
 
     @Test_Search7() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-c", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search7.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-c", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search7.txt"))
     }
 
     @Test_Search8() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-cQ", "--nocolor", "Lorem ipsum dolor sit amet.", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search8.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-cQ", "--nocolor", "Lorem ipsum dolor sit amet.", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search8.txt"))
     }
 
     @Test_Search9() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-C", "2", "eleifend", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search9.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-C", "2", "eleifend", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search9.txt"))
     }
 
     @Test_Search10() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-A", "2", "^Duis ", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search10.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-A", "2", "^Duis ", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search10.txt"))
     }
 
     @Test_Search11() {
         SetWorkingDir %A_ScriptDir%\Testdata
         f := FileOpen("Verkehrsdaten\Adelsdiplom.ahk", "r-rwd")
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-A", "2", "^Duis ", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search11.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-A", "2", "^Duis ", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search11.txt"))
         f.close()
     }
 
-    @Test_SearchNoPattern() {
+    @Test_noSearchPattern() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\NoSearchPattern.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\NoSearchPattern.txt"))
     }
 
     @Test_SearchNoHits() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "--no-html", "-L", "^Duis ", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--no-html", "-L", "^Duis ", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), "")
     }
 
     @Test_Search13() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "-k", "^Duis ", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search13.txt"))
+        this.assertEquals(Mack.run(["--nopager", "-k", "^Duis ", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search13.txt"))
     }
 
     @Test_Search14() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--column", "-o", "^Duis ", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search14.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--column", "-o", "^Duis ", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search14.txt"))
     }
 
     @Test_Search15() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "--nocolor", "-C", "2", "eleifend", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search15.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--nocolor", "-C", "2", "eleifend", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search15.txt"))
     }
 
     @Test_Search16() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "-1", "eleifend", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search16.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-1", "eleifend", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search16.txt"))
     }
 
     @Test_Search17() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "--nocolor", "-1", "eleifend", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search17.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--nocolor", "-1", "eleifend", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search17.txt"))
     }
 
     @Test_Search18() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--autohotkey", "--nocolor", "-1v", "eleifend", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search18.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--nocolor", "-1v", "eleifend", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search18.txt"))
     }
 
     @Test_Search19() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.AssertEquals(Mack.Run(["--nopager", "--type", "autohotkey", "--nocolor", "--column", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
-        Ansi.Flush()
-		this.AssertEquals(TestCase.FileContent(A_Temp "\mack-test.txt"), TestCase.FileContent(A_ScriptDir "\Figures\Search19.txt"))
+        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "--nocolor", "--column", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search19.txt"))
     }
 }
 	
-exitapp MackTest.RunTests()
+exitapp MackTest.runTests()
 
 #Include %A_ScriptDir%\..\mack.ahk
