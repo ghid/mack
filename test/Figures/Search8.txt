@@ -1,15 +1,85 @@
 Verkehrsdaten\Adelsdiplom.ahk
-1:At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. Sanctus sea sed takimata ut vero voluptua. Est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.
-2:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-4:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-6:At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. Sanctus sea sed takimata ut vero voluptua. Est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.
+1:At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd guber
+gren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor 
+sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
+ labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
+ et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sa
+nctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sad
+ipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat,
+ et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, ka
+sd magna no rebum. Sanctus sea sed takimata ut vero voluptua. Est Lorem ipsum do
+lor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.
+2:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore 
+et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et just
+o duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus es
+t Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing 
+elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
+ erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebu
+m. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit 
+amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy e
+irmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua
+. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd guber
+gren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+4:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore 
+et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et just
+o duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus es
+t Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing 
+elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
+ erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebu
+m. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit 
+amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy e
+irmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua
+. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd guber
+gren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+6:At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd guber
+gren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor 
+sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
+ labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
+ et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sa
+nctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sad
+ipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat,
+ et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, ka
+sd magna no rebum. Sanctus sea sed takimata ut vero voluptua. Est Lorem ipsum do
+lor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
+nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.
 4 match(es)
  
 Verkehrsdaten\Botschaft\Aktienzertifikat.ahk
-9:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-12:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+9:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore 
+et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et just
+o duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus es
+t Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing 
+elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
+ erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebu
+m. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit 
+amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy e
+irmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua
+. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd guber
+gren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+12:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
+ et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et jus
+to duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus e
+st Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing
+ elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquya
+m erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea reb
+um. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit
+ amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy 
+eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptu
+a. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gube
+rgren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
 2 match(es)
  
 Verkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Diplom.ahk
-6:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+6:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore 
+et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et just
+o duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus es
+t Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing 
+elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
+ erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebu
+m. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit 
+amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy e
+irmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua
+. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd guber
+gren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
 1 match(es)

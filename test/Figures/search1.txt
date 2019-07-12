@@ -1,25 +1,160 @@
 [32;1mVerkehrsdaten\Adelsdiplom.ahk[0m
-[33;1m1[0m:[33;1m141[0m:At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. Sanctus sea sed takimata ut vero voluptua. Est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.[0m[K
-[33;1m2[0m:[33;1m269[0m:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.[0m[K
-[33;1m3[0m:[33;1m124[0m:Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.[0m[K
-[33;1m4[0m:[33;1m269[0m:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.[0m[K
-[33;1m6[0m:[33;1m141[0m:At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. Sanctus sea sed takimata ut vero voluptua. Est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.[0m[K
+[33;1m1[0m:[33;1m141[0m:At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd g
+ubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum do
+lor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun
+t ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et acc
+usam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimat
+a sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur
+ sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos e
+rat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren
+, kasd magna no rebum. Sanctus sea sed takimata ut vero voluptua. Est Lorem ipsu
+m dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed d
+iam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.[0m[K
+[33;1m2[0m:[33;1m269[0m:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut lab
+ore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et 
+justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctu
+s est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipsc
+ing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliq
+uyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea 
+rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor 
+sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonu
+my eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam volu
+ptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd g
+ubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.[0m[K
+--break--[33;1m3[0m:[33;1m124[0m:Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet d
+oming id quod mazim placerat facer possim assum. [33;1;7mLorem ipsum dolor sit amet,[0m con
+sectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet do
+lore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exe
+rci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+.[0m[K
+[33;1m4[0m:[33;1m269[0m:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut lab
+ore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et 
+justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctu
+s est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipsc
+ing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliq
+uyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea 
+rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor 
+sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonu
+my eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam volu
+ptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd g
+ubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.[0m[K
+[33;1m6[0m:[33;1m141[0m:At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd g
+ubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum do
+lor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun
+t ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et acc
+usam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimat
+a sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur
+--break-- sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos e
+rat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren
+, kasd magna no rebum. Sanctus sea sed takimata ut vero voluptua. Est Lorem ipsu
+m dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed d
+iam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.[0m[K
  
 [32;1mVerkehrsdaten\Botschaft\Aktienzertifikat.ahk[0m
-[33;1m1[0m:[33;1m124[0m:Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.[0m[K
-[33;1m2[0m:[33;1m124[0m:Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.[0m[K
-[33;1m3[0m:[33;1m124[0m:Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.[0m[K
-[33;1m4[0m:[33;1m272[0m:Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.[0m[K
-[33;1m6[0m:[33;1m1[0m:[33;1;7mLorem ipsum dolor sit amet,[0m consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.[0m[K
-[33;1m9[0m:[33;1m269[0m:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.[0m[K
-[33;1m12[0m:[33;1m269[0m:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.[0m[K
-[33;1m13[0m:[33;1m272[0m:Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.[0m[K
-[33;1m15[0m:[33;1m1[0m:[33;1;7mLorem ipsum dolor sit amet,[0m consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.[0m[K
-[33;1m16[0m:[33;1m1[0m:[33;1;7mLorem ipsum dolor sit amet,[0m consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.[0m[K
+[33;1m1[0m:[33;1m124[0m:Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet d
+oming id quod mazim placerat facer possim assum. [33;1;7mLorem ipsum dolor sit amet,[0m con
+sectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet do
+lore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exe
+rci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+.[0m[K
+[33;1m2[0m:[33;1m124[0m:Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet d
+oming id quod mazim placerat facer possim assum. [33;1;7mLorem ipsum dolor sit amet,[0m con
+sectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet do
+lore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exe
+rci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+.[0m[K
+[33;1m3[0m:[33;1m124[0m:Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet d
+oming id quod mazim placerat facer possim assum. [33;1;7mLorem ipsum dolor sit amet,[0m con
+sectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet do
+lore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exe
+--break--rci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+.[0m[K
+[33;1m4[0m:[33;1m272[0m:Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse moles
+tie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accum
+san et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue du
+is dolore te feugait nulla facilisi. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer ad
+ipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna a
+liquam erat volutpat.[0m[K
+[33;1m6[0m:[33;1m1[0m:[33;1;7mLorem ipsum dolor sit amet,[0m consectetur adipisici elit, sed eiusmod tempor i
+ncidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud 
+exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute 
+iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatu
+r. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia des
+erunt mollit anim id est laborum.[0m[K
+[33;1m9[0m:[33;1m269[0m:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut lab
+ore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et 
+justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctu
+s est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipsc
+ing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliq
+uyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea 
+rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor 
+sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonu
+my eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam volu
+--break--ptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd g
+ubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.[0m[K
+[33;1m12[0m:[33;1m269[0m:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut la
+bore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et
+ justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanct
+us est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadips
+cing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna ali
+quyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea
+ rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor
+ sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam non
+umy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam vol
+uptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd 
+gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.[0m[K
+[33;1m13[0m:[33;1m272[0m:Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse mole
+stie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accu
+msan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue d
+uis dolore te feugait nulla facilisi. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer a
+dipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna 
+aliquam erat volutpat.[0m[K
+[33;1m15[0m:[33;1m1[0m:[33;1;7mLorem ipsum dolor sit amet,[0m consectetur adipisici elit, sed eiusmod tempor 
+incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+ exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute
+ iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariat
+--break--ur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia de
+serunt mollit anim id est laborum.[0m[K
+[33;1m16[0m:[33;1m1[0m:[33;1;7mLorem ipsum dolor sit amet,[0m consectetur adipisici elit, sed eiusmod tempor 
+incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+ exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute
+ iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariat
+ur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia de
+serunt mollit anim id est laborum.[0m[K
  
 [32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Diplom.ahk[0m
-[33;1m1[0m:[33;1m272[0m:Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.[0m[K
-[33;1m2[0m:[33;1m272[0m:Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.[0m[K
-[33;1m3[0m:[33;1m124[0m:Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.[0m[K
-[33;1m4[0m:[33;1m1[0m:[33;1;7mLorem ipsum dolor sit amet,[0m consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.[0m[K
-[33;1m6[0m:[33;1m269[0m:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.[0m[K
+[33;1m1[0m:[33;1m272[0m:Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse moles
+tie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accum
+san et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue du
+is dolore te feugait nulla facilisi. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer ad
+ipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna a
+liquam erat volutpat.[0m[K
+[33;1m2[0m:[33;1m272[0m:Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse moles
+tie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accum
+san et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue du
+is dolore te feugait nulla facilisi. [33;1;7mLorem ipsum dolor sit amet,[0m consectetuer ad
+ipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna a
+liquam erat volutpat.[0m[K
+[33;1m3[0m:[33;1m124[0m:Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet d
+--break--oming id quod mazim placerat facer possim assum. [33;1;7mLorem ipsum dolor sit amet,[0m con
+sectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet do
+lore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exe
+rci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+.[0m[K
+[33;1m4[0m:[33;1m1[0m:[33;1;7mLorem ipsum dolor sit amet,[0m consectetur adipisici elit, sed eiusmod tempor i
+ncidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud 
+exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute 
+iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatu
+r. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia des
+erunt mollit anim id est laborum.[0m[K
+[33;1m6[0m:[33;1m269[0m:Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut lab
+ore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et 
+justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctu
+s est Lorem ipsum dolor sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipsc
+ing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliq
+uyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea 
+rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor 
+sit amet. [33;1;7mLorem ipsum dolor sit amet,[0m consetetur sadipscing elitr, sed diam nonu
+my eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam volu
+ptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd g
+ubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.[0m[K

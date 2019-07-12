@@ -96,17 +96,21 @@ class Mack {
 	}
 
 	setDefaultModelineExpression() {
-		Mack.option.modeline_expr := "J)" Arrays.toString(Mack.option.modeline_pattern, "|")
+		Mack.option.modeline_expr := "J)"
+			. Arrays.toString(Mack.option.modeline_pattern, "|")
 	}
 
 	getVersionInfo() {
 		global G_VERSION_INFO
-		return G_VERSION_INFO.NAME "/" G_VERSION_INFO.ARCH "-b" G_VERSION_INFO.BUILD " Copyright (C) 2014-2018 K.-P. Schreiner`n"
+		return G_VERSION_INFO.NAME "/" G_VERSION_INFO.ARCH
+			. "-b" G_VERSION_INFO.BUILD
+			. " Copyright (C) 2014-2018 K.-P. Schreiner`n"
 	}
 
 	printKnownFileTypes() {
 		dt := new DataTable()
-		dt.defineColumn(new DataTable.column(, DataTable.COL_RESIZE_USE_LARGEST_DATA))
+		dt.defineColumn(new DataTable.column(
+			, DataTable.COL_RESIZE_USE_LARGEST_DATA))
 		dt.defineColumn(new DataTable.column.wrapped(50))
 
 		for filetype, filter in Mack.option.types {
@@ -116,65 +120,43 @@ class Mack {
 		return dt.getTableAsString()
 	}
 
-	/*
-	 * Method:	determine_files
-	 *			Find all matching files.
-	 *
-	 * Parameters:
-	 *			args - Files and Directories to examine
-	 *
-	 * Returns:
-	 *			A list of matching files or empty list.
-	 *
-	 * Remarks:
-	 *			If args is empty, the current directory will be used.
-	 */
-	; TODO: Refactor!
-	determine_files(args) {
-		_log := new Logger("class." A_ThisFunc)
-		
-		if (_log.logs(Logger.INPUT)) {
-			_log.input("args", args)
-			if (_log.logs(Logger.finer)) {
-				_log.finer("args:`n" LoggingHelper.dump(args))
-			}
-		}
-
+	determineFilesForSearch(args) {
 		if (args.maxIndex() = "") {
-			args := ["."]
-		}
-
-		file_list := ""	; CAVEAT: This will force collect_filenames to create a new list at first loop iteration and fill the list up every further iteration
-		for _i, file_pattern in args {
-			file_pattern := Mack.refineFileOrPathPattern(file_pattern)
-			file_list := Mack.collect_filenames(file_pattern, file_list)
-		}
-
-		if (_log.logs(Logger.finest)) {
-			_log.finest("Mack.option.sort_files", Mack.option.sort_files)
-		}
-		if (Mack.option.sort_files && file_list.maxIndex() <> "") {
-			file_list_string := ""
-			loop % (file_list.maxIndex()-1) {
-				file_list_string .= file_list[A_Index] "`n"
+			file_list := Mack.collectFileNames(".\*.*")
+		} else {
+			loop % args.maxIndex() {
+				file_pattern := Mack.refineFileOrPathPattern(args[A_Index])
+				file_list := Mack.collectFileNames(file_pattern
+					, (A_Index > 1 ? file_list : ""))
 			}
-			file_list_string .= file_list[file_list.maxIndex()]
-			Sort file_list_string, C
-			file_list := StrSplit(file_list_string, "`n")
 		}
 
-		if (_log.logs(Logger.finer)) {
-			_log.finer("file_list:`n" LoggingHelper.dump(file_list))
+		if (Mack.option.sort_files && file_list.maxIndex() <> "") {
+			file_list := Mack.sortFileList(file_list)
 		}
-		
-		return _log.exit(file_list)
+
+		return file_list
+	}
+
+	sortFileList(fileList) {
+		fileListAsString := ""
+		numberOfEntries := fileList.maxIndex()
+		loop % numberOfEntries {
+			fileListAsString .= fileList[A_Index]
+				. (A_Index < numberOfEntries ? "`n" : "")
+		}
+		Sort fileListAsString, C
+		sortedFileList := StrSplit(fileListAsString, "`n")
+
+		return sortedFileList
 	}
 
 	refineFileOrPathPattern(fileOrPathPattern) {
 		refinedPathPattern := fileOrPathPattern
 		isDirectory := InStr(FileExist(fileOrPathPattern), "D")
 		if (isDirectory) {
-			RegExMatch(fileOrPathPattern, "(?P<Backslash>\\)?(?P<Wildcard>\*\.?\*?)?$", hasMatching)
+			RegExMatch(fileOrPathPattern
+				, "(?P<Backslash>\\)?(?P<Wildcard>\*\.?\*?)?$", hasMatching)
 			if (!hasMatchingBackslash)
 				refinedPathPattern .= "\"
 			if (!hasMatchingWildcard)
@@ -184,75 +166,43 @@ class Mack {
 		return refinedPathPattern
 	}
 
-	/*
-	 * Method:	collect_filenames
-	 *			gather all files to search for the pattern or to list for -f / -g option.
-	 *
-	 * Parameter:
-	 *			fn_list - a list object to store the filenames.
-	 *			dirname - the directory to start the search in.
-	 *
-	 * Returns:
-	 *			A list with matching files.
-	 */
-	; TODO: Refactor
-	collect_filenames(dirname, fn_list = "") {
-		_log := new Logger("class." A_ThisFunc)
-
-		if (!IsObject(fn_list)) {
-			fn_list := []
+	collectFileNames(directoryName, listOfFileNames = "") {
+		if (!IsObject(listOfFileNames)) {
+			listOfFileNames := []
 		}
 
-		if (_log.logs(Logger.INPUT)) {
-			_log.input("dirname", dirname)
-			if (_log.logs(Logger.ALL)) {
-				_log.all("fn_list:`n" LoggingHelper.dump(fn_list))
-			}
-		}
-
-		dirname := Mack.refineFileOrPathPattern(dirname)
-		loop Files, %dirname%, DF	; NOWARN
+		directoryName := Mack.refineFileOrPathPattern(directoryName)
+		loop Files, %directoryName%, DF	; NOWARN
 		{
-			if (_log.logs(Logger.FINEST)) {
-				_log.finest("A_LoopFileAttrib", A_LoopFileAttrib)
-				_log.finest("A_LoopFileFullPath", A_LoopFileFullPath)
-				_log.finest("A_LoopFileName", A_LoopFileName)
-				_log.finest("Mack.option.g", Mack.option.g)
-				_log.finest("Mack.option.r", Mack.option.r)
-				_log.finest("Mack.option.file_pattern", Mack.option.file_pattern)
-				_log.finest("Mack.option.match_type", Mack.option.match_type)
-				_log.finest("Mack.option.match_type_ignore", Mack.option.match_type_ignore)
-				_log.finest("Mack.option.match_ignore_dirs", Mack.option.match_ignore_dirs)
-				_log.finest("Mack.option.match_ignore_files", Mack.option.match_ignore_files)
-			}
-			if (Mack.option.r && InStr(A_LoopFileAttrib, "D") 
-					&& (Mack.option.match_ignore_dirs = "" || !RegExMatch(A_LoopFileName, Mack.option.match_ignore_dirs))) {
-				if (_log.logs(Logger.info)) {
-					_log.info("Search in " A_LoopFileName)
-				}
-				fn_list := Mack.collect_filenames(A_LoopFileFullPath, fn_list)
-			} else if (!InStr(A_LoopFileAttrib, "D")
-					&& (!Mack.option.g || (Mack.option.g && RegExMatch(A_LoopFileName, Mack.option.file_pattern)))
-					&& (Mack.option.match_type = "" || RegExMatch(A_LoopFileName, Mack.option.match_type))
-					&& (Mack.option.match_type_ignore = "" || !RegExMatch(A_LoopFileName, Mack.option.match_type_ignore))
-					&& (Mack.option.match_ignore_files = "" || !RegExMatch(A_LoopFileName, Mack.option.match_ignore_files))) {
-				fn_list.push(A_LoopFileFullPath)
-				if (_log.logs(Logger.info)) {
-					_log.info("Add " A_LoopFileName)
-				}
-			} else {
-				if (_log.logs(Logger.detail)) {
-					_log.detail("Discard " A_LoopFileName)
-				}
+			if (Mack.isMatchingDirectory(A_LoopFileName, A_LoopFileAttrib)) {
+				listOfFileNames := Mack.collectFileNames(A_LoopFileFullPath
+					, listOfFileNames)
+			} else if (Mack.isMatchingFile(A_LoopFileName, A_LoopFileAttrib)) {
+				listOfFileNames.push(A_LoopFileFullPath)
 			}
 		}
 
-		if (_log.logs(Logger.output)) {
-			_log.output("fn_list: Collected " fn_list.maxIndex() " file(s)")
-			_log.all("fn_list:`n" LoggingHelper.dump(fn_list))
-		}
+		return listOfFileNames
+	}
 
-		return _log.exit(fn_list)
+	isMatchingDirectory(directoryName, directoryAttributes) {
+		return (InStr(directoryAttributes, "D")
+			&& Mack.option.r
+			&& (Mack.option.match_ignore_dirs = ""
+			|| !RegExMatch(directoryName, Mack.option.match_ignore_dirs)))
+	}
+
+	isMatchingFile(fileName, fileAttributes) {
+		return (!InStr(fileAttributes, "D")
+			&& (!Mack.option.g
+				|| (Mack.option.g && RegExMatch(fileName
+					, Mack.option.file_pattern)))
+			&& (Mack.option.match_type = ""
+				|| RegExMatch(fileName, Mack.option.match_type))
+			&& (Mack.option.match_type_ignore = ""
+				|| !RegExMatch(fileName, Mack.option.match_type_ignore))
+			&& (Mack.option.match_ignore_files = ""
+				|| !RegExMatch(fileName, Mack.option.match_ignore_files)))
 	}
 
 	addOrReturnListEntry(listName, entryToAdd) {
@@ -490,63 +440,27 @@ class Mack {
 		return _log.Exit(parts)
 	}
 
-	/*
-	 * Method:	output
-	 *			Assemble the output, by using the given format options.
-	 *
-	 * Parameter:
-	 *			file_name - Name of the file.
-	 *			line_no	- Line number.
-	 *			column_no - Column number.
-	 *			hit_n - nth hit within the line.
-	 *			before_ctx - A list of context lines before the matched text.
-	 *			after_ctx - A list of context lines after the matched text.
-	 *			parts - A list of matching/non-matching text and escape sequences.
-	 *
-	 * Returns:
-	 *			- true to continue with normal processing.
-	 *			- false to stop processing of the current file.
-	 *			- -1 to stop processing of the current file and any following files.
-	 */
-	output(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
-		_log := new Logger("class." A_ThisFunc)
-
-		if (_log.Logs(Logger.INPUT)) {
-			_log.Input("file_name", file_name)
-			_log.Input("line_no", line_no)
-			_log.Input("column_no", column_no)
-			_log.Input("hit_n", hit_n)
-			_log.Input("before_ctx", before_ctx)
-			_log.Input("after_ctx", after_ctx)
-			_log.Input("parts", parts)
-			if (_log.Logs(Logger.ALL)) {
-				_log.All("before_ctx:`n" LoggingHelper.Dump(before_ctx))
-				_log.All("after_ctx:`n" LoggingHelper.Dump(after_ctx))
-				_log.All("parts:`n" LoggingHelper.Dump(parts))
-			}
-		}
-
-
+	prepareOutput(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
 		if (hit_n = 1 && (Mack.Option.g || Mack.Option.files_w_matches)) {
 			if (!Mack.Option.c) {
 				if (Mack.Option.color) {
-					Mack.process_line(Ansi.SetGraphic(Mack.Option.color_filename) file_name Ansi.Reset())
+					Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) file_name Ansi.Reset())
 				} else {
-					Mack.process_line(file_name)
+					Mack.processLine(file_name)
 				}
-				return _log.Exit(false)	
+				return false
 			}
 		} else {
 			if (hit_n = 1 && Mack.Option.group) {
 				if (!Mack.First_Call) {
-					Mack.process_line(" ")
+					Mack.processLine(" ")
 				} else {
 					Mack.First_Call := false
 				}
 				if (Mack.Option.color) {
-					Mack.process_line(Ansi.SetGraphic(Mack.Option.color_filename) file_name Ansi.Reset())
+					Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) file_name Ansi.Reset())
 				} else {
-					Mack.process_line(file_name)
+					Mack.processLine(file_name)
 				}
 			}
 			if (Mack.Option.color) {
@@ -557,36 +471,36 @@ class Mack {
 
 			if (after_ctx.Length() > 0) {
 				loop % after_ctx.Length() {
-					Mack.process_line(after_ctx.Pop())
+					Mack.processLine(after_ctx.Pop())
 				}
 			}
 
 			if (before_ctx.Length() > 0) {
 				loop % before_ctx.Length() {
-					Mack.process_line(before_ctx.Pop())
+					Mack.processLine(before_ctx.Pop())
 				}
 			}
 
 			if (column_no = 0) {
 				if (!Mack.Option.files_w_matches) {
 					if (Mack.Option.color) {
-						Mack.process_line((Mack.Option.filename ? line_file_name : "")
+						Mack.processLine((Mack.Option.filename ? line_file_name : "")
 						. (Mack.Option.line ? Ansi.SetGraphic(Mack.Option.color_line_no) A_Index Ansi.Reset() ":" : "")
 						. Mack.arrayOrStringToString(parts) Ansi.Reset() Ansi.EraseLine())
 					} else {
-						Mack.process_line((Mack.Option.filename ? line_file_name : "")
+						Mack.processLine((Mack.Option.filename ? line_file_name : "")
 						. (Mack.Option.line ? A_Index ":" : "") Mack.arrayOrStringToString(parts))
 					}
 				}
 			} else {
 				if (!Mack.Option.files_w_matches) {
 					if (Mack.Option.color) {
-						Mack.process_line((Mack.Option.filename ? line_file_name : "")
+						Mack.processLine((Mack.Option.filename ? line_file_name : "")
 						. (Mack.Option.line ? Ansi.SetGraphic(Mack.Option.color_line_no) A_Index Ansi.Reset() ":" : "")
 						. Ansi.SetGraphic(Mack.Option.color_line_no) column_no Ansi.Reset() ":" Mack.arrayOrStringToString(parts)
 						. Ansi.Reset() Ansi.EraseLine())
 					} else {
-						Mack.process_line((Mack.Option.filename ? line_file_name : "")
+						Mack.processLine((Mack.Option.filename ? line_file_name : "")
 						. (Mack.Option.line ? A_Index ":" : "") column_no ":" Mack.arrayOrStringToString(parts))
 					}
 				}
@@ -594,55 +508,30 @@ class Mack {
 		}
 
 		if (Mack.Option.1) {
-			if (Mack.Option.color) {
-				Mack.process_line(Ansi.SetGraphic(Mack.Option.color_filename) file_name Ansi.Reset())
-			} else {
-				Mack.process_line(file_name)
-			}
-
 			Ansi.Flush()
 			Ansi.FlushInput()
-
-			return _log.Exit(-1)
+			return -1
 		}
 
-		return _log.Exit(true)
+		return true
 	}
 
-	/*
-	 * Method:	process_line
-	 *			Prepare text for output.
-	 *
-	 * Parameters:
-	 *			line - The text to display.
-	 *
-	 * Remarks:
-	 *			If context is printed before or after the found text, 
-	 *			"..." will displayed as an block-separator if the lines are not 
-	 *			in sequence.
-	 *
-	 * Returns:
-	 *			The prepard text, written thru the pager.
-	 */
-	process_line(line) {
-		_log := new Logger("class." A_ThisFunc)
+	processLine(line) {
+		Mack.printContextSeparatorIfNecessary(line)
+		return Pager.writeHardWrapped(Ansi.readable(line, Mack.Option.color))
+	}
 
-		static last_line_no := 0
+	printContextSeparatorIfNecessary(line) {
+		static lastPrintedLineNo := 0
 
-		if (_log.Logs(Logger.Input)) {
-			_log.Input("line", line)
-		}
-
-		if (Mack.Option.A || Mack.Option.B) {
-			if (RegExMatch(Ansi.PlainStr(line), "^(?P<line_no>\d+)", $)) {
-				if ($line_no - last_line_no > 1) {
+		if (Mack.option.A || Mack.option.B) {
+			if (RegExMatch(Ansi.plainStr(line), "^(?P<LineNo>\d+)", contains)) {
+				if (containsLineNo - lastPrintedLineNo > 1) {
 					Pager.writeHardWrapped("...")
 				}
 			}
-			last_line_no := $line_no
+			lastPrintedLineNo := containsLineNo
 		}
-
-		return _log.Exit(Pager.writeHardWrapped(Ansi.Readable(line, Mack.Option.color)))
 	}
 
 	arrayOrStringToString(inputValue) {
@@ -709,14 +598,14 @@ class Mack {
 					} else if (found && !Mack.Option.v) {
 						; if the line matches and invert-match is disabled: output results
 						hit_n++
-						cont := Mack.output(file_name, A_Index, column, hit_n, before_context, after_context, parts)
+						cont := Mack.prepareOutput(file_name, A_Index, column, hit_n, before_context, after_context, parts)
 						if (cont != true) {
 							break
 						}
 					} else if ((!found && Mack.Option.v) || Mack.Option.passthru) {
 						; if the line doesn't match, but invert-match or passthru is enabled: output results
 						hit_n++
-						cont := Mack.output(file_name, A_Index, column, hit_n, "", "", line)
+						cont := Mack.prepareOutput(file_name, A_Index, column, hit_n, "", "", line)
 						if (cont != true) {
 							break
 						}
@@ -754,9 +643,9 @@ class Mack {
 			if (hit_n = 0 && Mack.Option.files_wo_matches) {
 				; if the line doen't match but files w/o matches should be displayed: Process output
 				if (Mack.Option.color) {
-					Mack.process_line(Ansi.SetGraphic(Mack.Option.color_filename) file_name Ansi.Reset())
+					Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) file_name Ansi.Reset())
 				} else if (!Mack.Option.c) {
-					Mack.process_line(file_name)
+					Mack.processLine(file_name)
 				}
 				G_file_count++
 			}
@@ -767,19 +656,19 @@ class Mack {
 			; Are there after-context-lines to print?
 			if (after_context.Length() > 0) {
 				loop % after_context.Length() {
-					Mack.process_line(after_context.Pop())
+					Mack.processLine(after_context.Pop())
 				}
 			}
 			; Print hit count?
 			if (Mack.Option.c && hit_n > 0) {
 				if (!Mack.Option.files_w_matches) {
 					if (Mack.Option.color) {
-						Mack.process_line(Ansi.SetGraphic(Mack.Option.color_filename) hit_n " match(es)" Ansi.Reset())
+						Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) hit_n " match(es)" Ansi.Reset())
 					} else {
-						Mack.process_line(hit_n " match(es)")
+						Mack.processLine(hit_n " match(es)")
 					}
 				} else {
-					Mack.process_line(Ansi.SetGraphic(Mack.Option.color_filename) file_name ":" hit_n Ansi.Reset())
+					Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) file_name ":" hit_n Ansi.Reset())
 				}
 				G_file_count++
 				G_hit_count += hit_n
@@ -789,53 +678,129 @@ class Mack {
 		return _log.Exit(cont)
 	}
 
-	/*
-	 * Method:	cli
-	 *			Create the command line interface.
-	 *
-	 * Returns:
-	 *			OptParser object.
-	 */
 	cli() {
-		_log := new Logger("class." A_ThisFunc)
-
 		op := new OptParser(["mack [options] [--] <pattern> [file | directory]..."
 						   , "mack -f [options] [--] [directory]..."]
 						   , OptParser.PARSER_ALLOW_DASHED_ARGS, "MACK_OPTIONS")
 		op.Add(new OptParser.Group("Searching:"))
-		op.Add(new OptParser.Boolean("i", "ignore-case", Mack.Option, "i", "Ignore case distinctions in pattern"))
-		op.Add(new OptParser.Boolean("v", "invert-match", Mack.Option, "v", "Select non-matching lines"))
-		op.Add(new OptParser.Boolean("w", "word-regexp", Mack.Option, "w", "Force pattern to match only whole words"))
-		op.Add(new OptParser.Boolean("Q", "literal", Mack.Option, "Q", "Quote all metacharacters; pattern is literal"))
+		op.Add(new OptParser.Boolean("i", "ignore-case"
+			, Mack.Option, "i"
+			, "Ignore case distinctions in pattern"))
+		op.Add(new OptParser.Boolean("v", "invert-match"
+			, Mack.Option, "v"
+			, "Select non-matching lines"))
+		op.Add(new OptParser.Boolean("w", "word-regexp"
+			, Mack.Option, "w"
+			, "Force pattern to match only whole words"))
+		op.Add(new OptParser.Boolean("Q", "literal"
+			, Mack.Option, "Q"
+			, "Quote all metacharacters; pattern is literal"))
 		op.Add(new OptParser.Group("`nSearch output:"))
-		op.Add(new OptParser.Boolean("l", "files-with-matches", Mack.Option, "files_w_matches", "Only print filenames containing matches"))
-		op.Add(new OptParser.Boolean("L", "files-without-matches", Mack.Option, "files_wo_matches", "Only print filenames with no matches"))
-		op.Add(new OptParser.String(0, "output", Mack.Option, "output", "EXPR", "Output the evaluation of EXPR for each line (turns of text highlighting)", OptParser.OPT_ARG))
-		op.Add(new OptParser.Boolean("o", "", Mack.Option, "o", "Show only the part of a line matching PATTERN. Same as --output $0"))
-		op.Add(new OptParser.Boolean(0, "passthru", Mack.Option, "passthru", "Print all lines, whether matching or not"))
-		op.Add(new OptParser.Boolean("1", "", Mack.Option, "1", "Stop searching after one match of any kind"))
-		op.Add(new OptParser.Boolean("c", "count", Mack.Option, "c", "Show number of lines matching per file"))
-		op.Add(new OptParser.Boolean(0, "filename", Mack.Option, "filename", "Suppress prefixing filename on output (default)", OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
-		op.Add(new OptParser.Boolean(0, "line", Mack.Option, "line", "Show the line number of the match", OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE, Mack.Option.line))
-		op.Add(new OptParser.Boolean(0, "column", Mack.Option, "column", "Show the column number of the first match", OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
-		op.Add(new OptParser.String("A", "after-context", Mack.Option, "A", "NUM", "Print NUM lines of trailing context after matching lines", OptParser.OPT_ARG))
-		op.Add(new OptParser.String("B", "before-context", Mack.Option, "B", "NUM", "Print NUM lines of leading context before matching lines", OptParser.OPT_ARG))
-		op.Add(new OptParser.String("C", "context", Mack.Option, "context", "NUM", "Print NUM (default 2) lines of output context", OptParser.OPT_OPTARG, Mack.Option.context))
-		op.Add(new OptParser.String(0, "tabstop", Mack.Option, "tabstop", "size", "Calculate tabstops with width of size (default 8)",,, Mack.Option.tabstop))
-		op.Add(new OptParser.String(0, "modelines", Mack.Option, "modelines", "lines", "Search modelines (default 5) for tabstop info. Set to 0 to ignore modelines", OptParser.OPT_OPTARG,, 5, Mack.Option.modelines))
+		op.Add(new OptParser.Boolean("l", "files-with-matches"
+			, Mack.Option, "files_w_matches"
+			, "Only print filenames containing matches"))
+		op.Add(new OptParser.Boolean("L", "files-without-matches"
+			, Mack.Option, "files_wo_matches"
+			, "Only print filenames with no matches"))
+		op.Add(new OptParser.String(0, "output"
+			, Mack.Option, "output"
+			, "EXPR", "Output the evaluation of EXPR for each line "
+			. "(turns of text highlighting)"
+			, OptParser.OPT_ARG))
+		op.Add(new OptParser.Boolean("o", ""
+			, Mack.Option, "o"
+			, "Show only the part of a line matching PATTERN. "
+			. "Same as --output $0"))
+		op.Add(new OptParser.Boolean(0, "passthru"
+			, Mack.Option, "passthru"
+			, "Print all lines, whether matching or not"))
+		op.Add(new OptParser.Boolean("1", ""
+			, Mack.Option, "1"
+			, "Stop searching after one match of any kind"))
+		op.Add(new OptParser.Boolean("c", "count"
+			, Mack.Option, "c"
+			, "Show number of lines matching per file"))
+		op.Add(new OptParser.Boolean(0, "filename"
+			, Mack.Option, "filename"
+			, "Suppress prefixing filename on output (default)"
+			, OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
+		op.Add(new OptParser.Boolean(0, "line"
+			, Mack.Option, "line"
+			, "Show the line number of the match"
+			, OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE, Mack.Option.line))
+		op.Add(new OptParser.Boolean(0, "column"
+			, Mack.Option, "column"
+			, "Show the column number of the first match"
+			, OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
+		op.Add(new OptParser.String("A", "after-context"
+			, Mack.Option, "A"
+			, "NUM", "Print NUM lines of trailing context after matching lines"
+			, OptParser.OPT_ARG))
+		op.Add(new OptParser.String("B", "before-context"
+			, Mack.Option, "B"
+			, "NUM", "Print NUM lines of leading context before matching lines"
+			, OptParser.OPT_ARG))
+		op.Add(new OptParser.String("C", "context"
+			, Mack.Option, "context"
+			, "NUM", "Print NUM (default 2) lines of output context"
+			, OptParser.OPT_OPTARG, Mack.Option.context))
+		op.Add(new OptParser.String(0, "tabstop"
+			, Mack.Option, "tabstop"
+			, "size", "Calculate tabstops with width of size (default 8)"
+			,,, Mack.Option.tabstop))
+		op.Add(new OptParser.String(0, "modelines"
+			, Mack.Option, "modelines"
+			, "lines", "Search modelines (default 5) for tabstop info. "
+			. "Set to 0 to ignore modelines"
+			, OptParser.OPT_OPTARG,, 5, Mack.Option.modelines))
 		op.Add(new OptParser.Group("`nFile presentation:"))
-		op.Add(new OptParser.Boolean(0, "pager", Mack.Option, "pager", "Send output through a pager (default)", OptParser.OPT_NEG, Mack.Option.pager))
-		op.Add(new OptParser.Boolean(0, "group", Mack.Option, "group", "Print a filename heading above each file's results (default: on when used interactively)", OptParser.OPT_NEG, true))
-		op.Add(new OptParser.Boolean(0, "color", Mack.Option, "color", "Highlight the matching text (default: on)", OptParser.OPT_NEG, Mack.Option.color))
-		op.Add(new OptParser.String(0, "color-filename", Mack.Option, "color_filename", "color", "", OptParser.OPT_ARG, Mack.Option.color_filename, Mack.Option.color_filename))
-		op.Add(new OptParser.String(0, "color-match", Mack.Option, "color_match",  "color", "", OptParser.OPT_ARG, Mack.Option.color_match, Mack.Option.color_match))
-		op.Add(new OptParser.String(0, "color-line-no", Mack.Option, "color_line_no", "color", "Set the color for filenames, matches, and line numbers as ANSI color attributes (e.g. ""7;37"")", OptParser.OPT_ARG, Mack.Option.color_line_no, Mack.Option.color_line_no))
+		op.Add(new OptParser.Boolean(0, "pager"
+			, Mack.Option, "pager"
+			, "Send output through a pager (default)"
+			, OptParser.OPT_NEG, Mack.Option.pager))
+		op.Add(new OptParser.Boolean(0, "group"
+			, Mack.Option, "group"
+			, "Print a filename heading above each file's results "
+			. "(default: on when used interactively)"
+			, OptParser.OPT_NEG, true))
+		op.Add(new OptParser.Boolean(0, "color"
+			, Mack.Option, "color"
+			, "Highlight the matching text (default: on)"
+			, OptParser.OPT_NEG, Mack.Option.color))
+		op.Add(new OptParser.String(0, "color-filename"
+			, Mack.Option, "color_filename"
+			, "color", ""
+			, OptParser.OPT_ARG
+			, Mack.Option.color_filename, Mack.Option.color_filename))
+		op.Add(new OptParser.String(0, "color-match"
+			, Mack.Option, "color_match"
+			, "color", ""
+			, OptParser.OPT_ARG
+			, Mack.Option.color_match, Mack.Option.color_match))
+		op.Add(new OptParser.String(0, "color-line-no"
+			, Mack.Option, "color_line_no"
+			, "color", "Set the color for filenames, matches, and line numbers "
+			. "as ANSI color attributes (e.g. ""7;37"")"
+			, OptParser.OPT_ARG
+			, Mack.Option.color_line_no, Mack.Option.color_line_no))
 		op.Add(new OptParser.Group("`nFile finding:"))
-		op.Add(new OptParser.Boolean("f", "", Mack.Option, "f", "Only print the files selected, without searching. The pattern must not be specified"))
-		op.Add(new OptParser.Boolean("g", "", Mack.Option, "g", "Same as -f, but only select files matching pattern"))
-		op.Add(new OptParser.Boolean(0, "sort-files", Mack.Option, "sort_files", "Sort the found files lexically"))
-		op.Add(new OptParser.String(0, "files-from", Mack.Option, "files_from", "FILE", "Read the list of files to search from FILE", OptParser.OPT_ARG)) ; TODO: Implement --files-from option
-		op.Add(new OptParser.Boolean("x", "", Mack.Option, "x", "Read the list of files to search from STDIN")) ; TODO Implement -x option
+		op.Add(new OptParser.Boolean("f", ""
+			, Mack.Option, "f"
+			, "Only print the files selected, without searching. "
+			. "The pattern must not be specified"))
+		op.Add(new OptParser.Boolean("g", ""
+			, Mack.Option, "g"
+			, "Same as -f, but only select files matching pattern"))
+		op.Add(new OptParser.Boolean(0, "sort-files"
+			, Mack.Option, "sort_files"
+			, "Sort the found files lexically"))
+		op.Add(new OptParser.String(0, "files-from"
+			, Mack.Option, "files_from"
+			, "FILE", "Read the list of files to search from FILE"
+			, OptParser.OPT_ARG)) ; TODO: Implement --files-from option
+		op.Add(new OptParser.Boolean("x", ""
+			, Mack.Option, "x"
+			, "Read the list of files to search from STDIN")) ; TODO Implement -x option
 		op.Add(new OptParser.Group("`nFile inclusion/exclusion:"))
 		op.Add(new OptParser.Callback(0, "ignore-dir"
 			, Mack.option, "ignore_dir"
@@ -847,30 +812,56 @@ class Mack {
 			, "maintainFilesToIgnore", "filter"
 			, "Add filter for ignoring files"
 			, OptParser.OPT_ARG | OptParser.OPT_NEG))
-		op.Add(new OptParser.Boolean("r", "recurse", Mack.Option, "r", "Recurse into subdirectories (default: on)", OptParser.OPT_NEG, true))
-		op.Add(new OptParser.Boolean("k", "known-types", Mack.Option, "k", "Include only files of types that are recognized"))
+		op.Add(new OptParser.Boolean("r", "recurse"
+			, Mack.Option, "r"
+			, "Recurse into subdirectories (default: on)"
+			, OptParser.OPT_NEG, true))
+		op.Add(new OptParser.Boolean("k", "known-types"
+			, Mack.Option, "k"
+			, "Include only files of types that are recognized"))
 		op.Add(new OptParser.Callback(0, "type"
-			, Mack.Option, "type_inex" ; CAVEAT: type_inex will never be set due to the callback function... that's a bit confusing!?!
+			, Mack.Option, "" ; CAVEAT: type_inex will never be set due to the callback function... that's a bit confusing!?!
 			, "maintainTypeFilter", "X"
 			, "Include/exclude X files"
 			, OptParser.OPT_ARG | OptParser.OPT_OPTARG
 			| OptParser.OPT_NEG | OptParser.OPT_NEG_USAGE))
 		op.Add(new OptParser.Group("`nFile type specification:"))
-		op.Add(new OptParser.Callback(0, "type-set", Mack.Option, "type_set", "addFileTypePattern", "X:FILTER[+FILTER...]", "Files with given FILTER are recognized of type X. This replaces an existing defintion.", OptParser.OPT_ARG))
-		op.Add(new OptParser.Callback(0, "type-add", Mack.Option, "type_add", "addNewFileType", "X:FILTER[+FILTER...]", "Files with given FILTER are recognized of type X", OptParser.OPT_ARG))
-		op.Add(new OptParser.Callback(0, "type-del", Mack.Option, "type_del", "removeFileType", "X", "Remove all filters associated with X", OptParser.OPT_ARG))
+		op.Add(new OptParser.Callback(0, "type-set"
+			, Mack.Option, "type_set"
+			, "addNewFileType", "X:FILTER[+FILTER...]"
+			, "Files with given FILTER are recognized of type X. "
+			. "This replaces an existing defintion."
+			, OptParser.OPT_ARG))
+		op.Add(new OptParser.Callback(0, "type-add"
+			, Mack.Option, "type_add"
+			, "addFileTypePattern", "X:FILTER[+FILTER...]"
+			, "Files with given FILTER are recognized of type X"
+			, OptParser.OPT_ARG))
+		op.Add(new OptParser.Callback(0, "type-del"
+			, Mack.Option, "type_del"
+			, "removeFileType", "X"
+			, "Remove all filters associated with X"
+			, OptParser.OPT_ARG))
 		op.Add(new OptParser.Group("`nMiscellaneous:"))
-		op.Add(new OptParser.Boolean(0, "env", Mack.Option, "__env_dummy", "Ignore environment variable MACK_OPTIONS", OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
-		op.Add(new OptParser.Boolean("h", "help", Mack.Option, "h", "This help", OptParser.OPT_HIDDEN))
+		op.Add(new OptParser.Boolean(0, "env"
+			, Mack.Option, "__env_dummy"
+			, "Ignore environment variable MACK_OPTIONS"
+			, OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
+		op.Add(new OptParser.Boolean("h", "help"
+			, Mack.Option, "h"
+			, "This help"
+			, OptParser.OPT_HIDDEN))
 		op.Add(new OptParser.Boolean(0, "version"
 			, Mack.option, "version"
 			, "Display version info"))
 		op.Add(new OptParser.Boolean(0, "help-types"
 			, Mack.option, "ht"
 			, "Display all known types"))
-		op.Add(Mack.Sel_Types_Option := new OptParser.Generic(Mack.Option.types_expr, Mack.Option, "sel_types", OptParser.OPT_MULTIPLE|OptParser.OPT_NEG))
+		op.Add(Mack.Sel_Types_Option := new OptParser.Generic(Mack.Option.types_expr
+			, Mack.Option, "sel_types"
+			, OptParser.OPT_MULTIPLE|OptParser.OPT_NEG))
 
-		return _log.Exit(op)
+		return op
 	}
 
 	run(args) {
@@ -969,7 +960,7 @@ class Mack {
 						_log.Finest("Mack.Option.file_pattern", Mack.Option.file_pattern)
 					}
 				}
-				file_list := Mack.determine_files(args)
+				file_list := Mack.determineFilesForSearch(args)
 				if (Mack.Option.f || Mack.Option.g) {
 					for _i, file_entry in file_list {
 						Pager.writeWordWrapped(file_entry)

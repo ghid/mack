@@ -78,7 +78,8 @@
 [33;1m2[0m:[33;1m1[0m:Duis [0m[K
 [33;1m7[0m:[33;1m1[0m:Duis [0m[K
  
-[32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Einreiseerlaubnis.rtf[0m
+[32;1mVerkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Einreiseerlaubnis.rt
+f[0m
 [33;1m4[0m:[33;1m1[0m:Duis [0m[K
 [33;1m8[0m:[33;1m1[0m:Duis [0m[K
 [33;1m9[0m:[33;1m1[0m:Duis [0m[K

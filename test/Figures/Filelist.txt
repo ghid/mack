@@ -21,7 +21,7 @@
 .\Anzeichen\Bescheid.jpeg
 .\Anzeichen\Datenansammlung\Handelspapier.png
 .\Anzeichen\Datenansammlung\NV-Bescheinigung.ahk
-.\Anzeichen\Datenansammlung\NV-Bescheinigung.jpeg
+--break--.\Anzeichen\Datenansammlung\NV-Bescheinigung.jpeg
 .\Anzeichen\Datenansammlung\Presseaussendung.html
 .\Anzeichen\Datenansammlung\Unterlage.mp3
 .\Anzeichen\Passvermerk.html
@@ -44,7 +44,7 @@
 .\Buecherei\Bericht.png
 .\Buecherei\Bulletin.ahk
 .\Buecherei\Kolophon.txt
-.\Buecherei\Rundbrief.txt
+--break--.\Buecherei\Rundbrief.txt
 .\Buecherei\Rundschreiben.rtf
 .\Buecherei\Wissen\Adelsbrief.mp3
 .\Buecherei\Wissen\Archivale.rtf
@@ -67,7 +67,7 @@
 .\Datenansammlung\Communiquee.jpeg
 .\Datenansammlung\Handelspapier.jpeg
 .\Datenansammlung\NV-Bescheinigung.jpeg
-.\Datenansammlung\Verfasseranmerkung.pdf
+--break--.\Datenansammlung\Verfasseranmerkung.pdf
 .\Information\Buchung.rtf
 .\Information\Fahrausweis.mp3
 .\Information\Landkarte\Arztbrief.md
@@ -90,7 +90,7 @@
 .\Karte\Buecherei\Autograf.md
 .\Karte\Buecherei\Buchung.jpeg
 .\Karte\Buecherei\Diplomurkunde.html
-.\Karte\Buecherei\Kurrende.jpeg
+--break--.\Karte\Buecherei\Kurrende.jpeg
 .\Karte\Buecherei\Rundbrief.pdf
 .\Karte\Buecherei\Ueberweisungsschein.html
 .\Karte\Bulletin.pdf
@@ -113,7 +113,7 @@
 .\mehrfach\Information\Berichterstattung\Presseerklaerung.rtf
 .\mehrfach\Information\nicht.doc
 .\mehrfach\Information\Unterlage.pdf
-.\Metainformationen\Ammenmaerchen\doppelt\Adelsdiplom.jpeg
+--break--.\Metainformationen\Ammenmaerchen\doppelt\Adelsdiplom.jpeg
 .\Metainformationen\Ammenmaerchen\doppelt\Aktienzertifikat.mp3
 .\Metainformationen\Ammenmaerchen\doppelt\Anhang.png
 .\Metainformationen\Ammenmaerchen\doppelt\Communiquee.rtf
@@ -136,7 +136,7 @@
 .\Plan\Bekanntmachung\Ueberweisungsschein.ahk
 .\Plan\Bekanntmachung\Waffenpass.html
 .\Plan\Bericht\Anlage.mp3
-.\Plan\Bericht\Aussendung.png
+--break--.\Plan\Bericht\Aussendung.png
 .\Plan\Bericht\Fakten\Bemerkung.html
 .\Plan\Bericht\Fakten\Communiquee.pdf
 .\Plan\Bericht\Fakten\Konnossement.mp3
@@ -159,7 +159,7 @@
 .\Schema\Fakten\Verkehrsdaten\Waffenpass.txt
 .\Schema\Nichtveranlagungsbescheinigung.rtf
 .\Verkehrsdaten\Abstraktion\Anhang.doc
-.\Verkehrsdaten\Abstraktion\Archivale.rtf
+--break--.\Verkehrsdaten\Abstraktion\Archivale.rtf
 .\Verkehrsdaten\Adelsdiplom.ahk
 .\Verkehrsdaten\Botschaft\Aktienzertifikat.ahk
 .\Verkehrsdaten\Botschaft\Anhang.jpeg
@@ -173,7 +173,8 @@
 .\Verkehrsdaten\Botschaft\Nachrichteninhalt\Bericht.md
 .\Verkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Aktienurkunde.pdf
 .\Verkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Diplom.ahk
-.\Verkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Einreiseerlaubnis.rtf
+.\Verkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Einreiseerlaubnis.
+rtf
 .\Verkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Kommunikee.doc
 .\Verkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Letzter_Wille.html
 .\Verkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Strafzettel.jpeg
