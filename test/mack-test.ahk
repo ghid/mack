@@ -66,7 +66,7 @@ class MackTest extends TestCase {
 	@After_redirStdOut() {
 		Ansi.stdOut.close()
 		Ansi.stdOut := Ansi.__InitStdOut()
-		FileDelete %A_Temp%\mack-test.txt
+		; FileDelete %A_Temp%\mack-test.txt
 	}
 
 	@Test_getVersionInfo() {
@@ -397,11 +397,12 @@ class MackTest extends TestCase {
         if (FileExist("modeline_test.txt")) {
             FileDelete modeline_test.txt
         }
-        FileAppend `; vim:ts=03, modeline_test.txt
+        FileAppend `; `tvim:ts=07, modeline_test.txt
         this.assertEquals(Mack.run([".", "modeline_test.txt"]), "")
 		Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Modeline.txt"))
-        FileDelete modeline_test.txt
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Modeline.txt"))
+        ; FileDelete modeline_test.txt
     }
 
     @Test_Modeline2() {
@@ -409,96 +410,118 @@ class MackTest extends TestCase {
         if (FileExist("modeline_test.txt")) {
             FileDelete modeline_test.txt
         }
-        FileAppend `n`n`n`n`n`n; vim:ts=03, modeline_test.txt
+        FileAppend `n`n`n`n`n`n; `tvim:ts=03, modeline_test.txt
         this.assertEquals(Mack.run([".", "modeline_test.txt"]), "")
 		Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Modeline2.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Modeline2.txt"))
         FileDelete modeline_test.txt
     }
 
     @Test_VersionInfo() {
         this.assertEquals(Mack.run(["--version"]), "")
         Ansi.flush()
-        this.assertTrue(RegExMatch(TestCase.fileContent(A_Temp "\mack-test.txt"), ".+"))
+        this.assertTrue(RegExMatch(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, ".+"))
     }
 
     @Test_helpTypes() {
         this.assertEquals(Mack.run(["--help-types"]), "")
         Ansi.flush()
-        this.assertTrue(RegExMatch(TestCase.fileContent(A_Temp "\mack-test.txt"), ".+"))
+        this.assertTrue(RegExMatch(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, ".+"))
     }
 
     @Test_usage() {
 		this.assertEquals(Mack.run(["-h"]), "")
 		Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Usage.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Usage.txt"))
     }
 
     @Test_BadUsage() {
 		this.assertEquals(Mack.run(["--foo"]), "")
 		Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\BadUsage.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\BadUsage.txt"))
     }
 
     @Test_fileList() {
         SetWorkingDir %A_ScriptDir%\Testdata
         this.assertEquals(Mack.run(["-f"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Filelist.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Filelist.txt"))
     }
 
     @Test_PatternFilelist() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--sort-files", "-g", "i)^[abcklmstu].*\.txt$"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--sort-files", "-g"
+			, "i)^[abcklmstu].*\.txt$"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Pattern-Filelist.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Pattern-Filelist.txt"))
     }
 
     @Test_FilteredFilelist() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "-ilc", "est lorem ipsum dolor sit amet\."]), "")
+        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "-ilc"
+			, "est lorem ipsum dolor sit amet\."]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
     }
 
     @Test_FilteredTypenameFilelist() { 
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-ilc", "est lorem ipsum dolor sit amet\."]), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-ilc"
+			, "est lorem ipsum dolor sit amet\."]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Filtered-Filelist.txt"))
     }
 
     @Test_FilesWithMatches1() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "-Qw", "--files-with-matches", "ut", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "-Qw"
+			, "--files-with-matches", "ut", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\FilesWithMatches1.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\FilesWithMatches1.txt"))
     }
 
     @Test_FilesWithMatches2() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "--nocolor", "-Qw", "--files-with-matches", "ut", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey"
+			, "--nocolor", "-Qw", "--files-with-matches", "ut", "Verkehrsdaten\"])
+			, "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\FilesWithMatches2.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\FilesWithMatches2.txt"))
     }
 
     @Test_FilesWithoutMatches1() {
         SetWorkingDir %A_ScriptDir%\Testdata
-            this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "--nocolor", "-L", "foo", "Verkehrsdaten\"]), "")
+            this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey"
+				, "--nocolor", "-L", "foo", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\FilesWithoutMatches1.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\FilesWithoutMatches1.txt"))
     }
 
     @Test_FilesWithoutMatches2() {
         SetWorkingDir %A_ScriptDir%\Testdata
-            this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "-L", "foo", "Verkehrsdaten\"]), "")
+            this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey"
+				, "-L", "foo", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\FilesWithoutMatches2.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\FilesWithoutMatches2.txt"))
     }
 
     @Test_Search1() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--type", "autohotkey", "--column", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--type", "autohotkey", "--column"
+			, "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
         Ansi.flush()
 		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
 			, TestCase.fileContent(A_ScriptDir "\Figures\Search1.txt"))
@@ -506,73 +529,94 @@ class MackTest extends TestCase {
 
     @Test_Search2() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--type", "autohotkey", "--nocolor", "-v", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--type", "autohotkey", "--nocolor"
+			, "-v", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search2.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search2.txt"))
     }
 
     @Test_Search3() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--type", "autohotkey", "-C", "3", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--type", "autohotkey", "-C", "3"
+			, "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search3.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search3.txt"))
     }
 
     @Test_Search4() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--autohotkey", "--nocolor", "-C", "2", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--autohotkey", "--nocolor", "-C"
+			, "2", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search4.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search4.txt"))
     }
 
     @Test_Search5() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--output", "$1", "Lorem ipsum dolor sit amet(.)", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--output"
+			, "$1", "Lorem ipsum dolor sit amet(.)", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search5.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search5.txt"))
     }
 
     @Test_Search6() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--output", "$0", "Lorem ipsum dolor sit amet(.)", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--output"
+			, "$0", "Lorem ipsum dolor sit amet(.)", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search6.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search6.txt"))
     }
 
     @Test_Search7() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--autohotkey", "-c", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--autohotkey", "-c"
+			, "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search7.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search7.txt"))
     }
 
     @Test_Search8() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-cQ", "--nocolor", "Lorem ipsum dolor sit amet.", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-cQ"
+			, "--nocolor", "Lorem ipsum dolor sit amet.", "Verkehrsdaten\"])
+			, "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search8.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search8.txt"))
     }
 
     @Test_Search9() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-C", "2", "eleifend", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-C"
+			, "2", "eleifend", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search9.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search9.txt"))
     }
 
     @Test_Search10() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--autohotkey", "-A", "2", "^Duis\s", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--autohotkey", "-A", "2", "^Duis\s"
+			, "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search10.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search10.txt"))
     }
 
     @Test_Search11() {
         SetWorkingDir %A_ScriptDir%\Testdata
         f := FileOpen("Verkehrsdaten\Adelsdiplom.ahk", "r-rwd")
-        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-A", "2", "^Duis\s", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-A", "2"
+			, "^Duis\s", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search11.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search11.txt"))
         f.close()
     }
 
@@ -580,63 +624,80 @@ class MackTest extends TestCase {
         SetWorkingDir %A_ScriptDir%\Testdata
         this.assertEquals(Mack.run(["--nopager", "--autohotkey"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\NoSearchPattern.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\NoSearchPattern.txt"))
     }
 
     @Test_SearchNoHits() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--no-html", "-L", "^Duis ", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--no-html"
+			, "-L", "^Duis ", "Verkehrsdaten\"]), "")
         Ansi.flush()
 		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), "")
     }
 
     @Test_Search13() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "-k", "^Duis ", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "-k", "^Duis "
+			, "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search13.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search13.txt"))
     }
 
     @Test_Search14() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--column", "-o", "^Duis ", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--column", "-o", "^Duis "
+			, "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search14.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search14.txt"))
     }
 
     @Test_Search15() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--nocolor", "-C", "2", "eleifend", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey"
+			, "--nocolor", "-C", "2", "eleifend", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search15.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search15.txt"))
     }
 
     @Test_Search16() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-1", "eleifend", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "-1"
+			, "eleifend", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search16.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search16.txt"))
     }
 
     @Test_Search17() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--nocolor", "-1", "eleifend", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--nocolor"
+			, "-1", "eleifend", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search17.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search17.txt"))
     }
 
     @Test_Search18() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--nocolor", "-1v", "eleifend", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--autohotkey", "--nocolor"
+			, "-1v", "eleifend", "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search18.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search18.txt"))
     }
 
     @Test_Search19() {
         SetWorkingDir %A_ScriptDir%\Testdata
-        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey", "--nocolor", "--column", "Lorem ipsum dolor sit amet,", "Verkehrsdaten\"]), "")
+        this.assertEquals(Mack.run(["--nopager", "--type", "autohotkey"
+			, "--nocolor", "--column", "Lorem ipsum dolor sit amet,"
+			, "Verkehrsdaten\"]), "")
         Ansi.flush()
-		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt"), TestCase.fileContent(A_ScriptDir "\Figures\Search19.txt"))
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search19.txt"))
     }
 }
 	

@@ -1,4 +1,6 @@
 ; ahk: console
+#Include <PrintLineData>
+
 class Mack {
 
 	static Option := Mack.setDefaults()
@@ -265,100 +267,63 @@ class Mack {
 		return regularExpression
 	}
 
-	/*
-	 * Method:	do_modelines
-	 *			Check if modelines are available to set the tabsize.
-	 *
-	 * Parameter:
-	 *			file - FileObject to examine.
-	 *
-	 * Returns:
-	 *			Number of spaces according to the tabsize of a modeline; otherwise default.
-	 *
-	 * Remarks:
-	 *			The first Mack.Option.modelines will be checked for a Mack.Option.modeline_pattern. 
-	 *			If no one is found, the last 100*Mack.Option.modlines bytes of the file will be checked for Mack.Option.modeline_pattern.
-	 *			The tabsize will be stored in the Mack.Option.tabsize property.
-	 */
-	do_modelines(file) {
-		_log := new Logger("class." A_ThisFunc)
-
-		if (_log.logs(Logger.input)) {
-			_log.input("file", file)
-			if (_log.logs(Logger.finest)) {
-				_log.finest("Mack.option.tabstop", Mack.option.tabstop)
-				_log.finest("Mack.option.modelines", Mack.option.modelines)
-				_log.finest("Mack.option.modeline_pattern", Mack.option.modeline_pattern)
-				if (_log.logs(Logger.all)) {
-					_log.all("Mack.option.modeline_pattern:`n" LoggingHelper.dump(Mack.option.modeline_pattern))
-				}
-				_log.finest("Mack.option.modeline_expr", Mack.option.modeline_expr)
-			}
-		}
-
-		modeline_found := false
+	setTabstop(file) {
+		tabstop := 0
 		if (Mack.option.modelines) {
-			loop % Mack.option.modelines {
+			tabstop := Mack.fromModelineAtTopOfFile(file)
+			if (!tabstop)
+				tabstop := Mack.fromModelineAtBottomOfFile(file)
+			file.seek(0)
+		}
+
+		return " ".repeat(tabstop ? tabstop : Mack.option.tabstop)
+	}
+
+	fromModelineAtTopOfFile(file) {
+		tabstop := 0
+		while (tabstop == 0 && A_Index <= Mack.option.modelines) {
+			try {
 				line := file.readLine()
-				try {
-					if (RegExMatch(line, Mack.option.modeline_expr, $)) {
-						
-						loop % Mack.option.modeline_pattern.maxIndex() {
-							tabsize := $tabstop
-						}
-						if (_log.logs(Logger.detail)) {
-							_log.detail("Header modeline found #" A_Index " in " line ": " tabsize)
-						}
-						modeline_found := true
-						break
-					}
-				} catch _ex {								; NOTEST: Would happen, if an invalid regex for modeline patterns is provided.
-					_log.severe(LoggingHelper.dump(_ex))	; NOTEST: Will not be tested, because the pattern is hardcoded.
-				}
+				if (RegExMatch(line, Mack.option.modeline_expr, $))
+					tabstop := $tabstop
+			} catch ex {
+				OutputDebug % ex.What ": " ex.Message		; NOTEST: Will not be tested, because the pattern is hardcoded.
+				throw ex									; NOTEST
 			}
-			if (!modeline_found) {
-				search_size := Mack.option.modelines * 100
-				if (file.length > search_size) {
-					file.seek(-search_size, 2)
-					tail_content := file.read(search_size)
-				} else {
-					file.seek(0)
-					tail_content := file.read(search_size := file.length)
-				}
-				lines := StrSplit(tail_content, "`n", "`r")
-				if (_log.logs(Logger.finest)) {
-					_log.finest("search_size", search_size)
-					_log.finest("lines:`n" LoggingHelper.Dump(lines))
-				}
-				loop % Mack.Option.modelines {
-					if (RegExMatch(lines[lines.MaxIndex() - A_Index + 1], Mack.Option.modeline_expr, $)) {
-						tabsize := $tabstop
-						loop % Mack.Option.modeline_pattern.MaxIndex() {
-							tabsize .= $tabstop%A_Index%
-						}
-						if (_log.Logs(Logger.Detail)) {
-							_log.Detail("Trailer modeline found: ", lines[lines.MaxIndex() - A_Index + 1] ": " tabsize)
-						}
-						modeline_found := true
-						break
-					}
-				}
+		}
+		return tabstop
+	}
+
+	fromModelineAtBottomOfFile(file) {
+		tabstop := 0
+		readAt := file.length
+		while (tabstop == 0 && A_Index <= Mack.option.modelines) {
+			try {
+				line := Mack.readLineFromBottomOfFile(file, readAt)
+				if (RegExMatch(line, Mack.option.modeline_expr, $))
+					tabstop := $tabstop
+				else
+					readAt -= StrLen(line)
+			} catch ex {
+				OutputDebug % ex.What ": " ex.Message
+				if (ex.Message != "EndOfFile")
+					throw ex
 			}
-			file.Seek(0)
 		}
+		return tabstop
+	}
 
-		if (!modeline_found) {
-			if (_log.Logs(Logger.Finest)) {
-				_log.Finest("Mack.Option.tabstop", Mack.Option.tabstop)
-			}
-			tabsize := Mack.Option.tabstop
+	readLineFromBottomOfFile(file, readAt) {
+		line := ""
+		while (readAt >= 0)	{
+			file.seek(readAt)
+			charAt := file.read(1)
+			line := charAt . line
+			if (charAt == "`n")
+				return line
+			readAt--
 		}
-
-		if (_log.Logs(Logger.Finest)) {
-			_log.Finest("tabsize", tabsize)
-		}
-
-		return _log.Exit(SubStr("         ", 1, tabsize))
+		throw Exception("EndOfFile", A_ThisFunc)
 	}
 
 	/*
@@ -374,7 +339,8 @@ class Mack {
 	 * Returns:
 	 *			A list of "parts" representing the result.
 	 */
-	test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0) {
+	; test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0) {
+	test(ByRef haystack, regex_opts, ByRef found := 0) {
 		_log := new Logger("class." A_ThisFunc)
 
 		if (_log.Logs(Logger.Input)) {
@@ -398,7 +364,7 @@ class Mack {
 			}
 			if (found_at > 0) {
 				if (A_Index = 1 && Mack.Option.column) {
-					first_match_column := found_at
+					PrintLineData.columnNumberInLine := found_at
 				}
 
 				if (Mack.Option.output) {
@@ -440,70 +406,24 @@ class Mack {
 		return _log.Exit(parts)
 	}
 
-	prepareOutput(file_name, line_no, column_no, hit_n, before_ctx, after_ctx, parts) {
-		if (hit_n = 1 && (Mack.Option.g || Mack.Option.files_w_matches)) {
+	processOutput() {
+		if (PrintLineData.hitNumber = 1 && (Mack.Option.g || Mack.Option.files_w_matches)) {
 			if (!Mack.Option.c) {
-				if (Mack.Option.color) {
-					Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) file_name Ansi.Reset())
-				} else {
-					Mack.processLine(file_name)
-				}
+				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData.fileName))
 				return false
 			}
 		} else {
-			if (hit_n = 1 && Mack.Option.group) {
+			if (PrintLineData.hitNumber = 1 && Mack.Option.group) {
 				if (!Mack.First_Call) {
 					Mack.processLine(" ")
 				} else {
 					Mack.First_Call := false
 				}
-				if (Mack.Option.color) {
-					Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) file_name Ansi.Reset())
-				} else {
-					Mack.processLine(file_name)
-				}
+				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData.fileName))
 			}
-			if (Mack.Option.color) {
-				line_file_name := Ansi.SetGraphic(Mack.Option.color_filename) file_name ":" Ansi.Reset()
-			} else {
-				line_file_name := file_name ":"
-			}
-
-			if (after_ctx.Length() > 0) {
-				loop % after_ctx.Length() {
-					Mack.processLine(after_ctx.Pop())
-				}
-			}
-
-			if (before_ctx.Length() > 0) {
-				loop % before_ctx.Length() {
-					Mack.processLine(before_ctx.Pop())
-				}
-			}
-
-			if (column_no = 0) {
-				if (!Mack.Option.files_w_matches) {
-					if (Mack.Option.color) {
-						Mack.processLine((Mack.Option.filename ? line_file_name : "")
-						. (Mack.Option.line ? Ansi.SetGraphic(Mack.Option.color_line_no) A_Index Ansi.Reset() ":" : "")
-						. Mack.arrayOrStringToString(parts) Ansi.Reset() Ansi.EraseLine())
-					} else {
-						Mack.processLine((Mack.Option.filename ? line_file_name : "")
-						. (Mack.Option.line ? A_Index ":" : "") Mack.arrayOrStringToString(parts))
-					}
-				}
-			} else {
-				if (!Mack.Option.files_w_matches) {
-					if (Mack.Option.color) {
-						Mack.processLine((Mack.Option.filename ? line_file_name : "")
-						. (Mack.Option.line ? Ansi.SetGraphic(Mack.Option.color_line_no) A_Index Ansi.Reset() ":" : "")
-						. Ansi.SetGraphic(Mack.Option.color_line_no) column_no Ansi.Reset() ":" Mack.arrayOrStringToString(parts)
-						. Ansi.Reset() Ansi.EraseLine())
-					} else {
-						Mack.processLine((Mack.Option.filename ? line_file_name : "")
-						. (Mack.Option.line ? A_Index ":" : "") column_no ":" Mack.arrayOrStringToString(parts))
-					}
-				}
+			Mack.printContextIfNecessary()
+			if (!Mack.Option.files_w_matches) {
+				Mack.printMatchLine(Mack.prepareFileNameForOutput(PrintLineData.fileName ":"))
 			}
 		}
 
@@ -514,6 +434,50 @@ class Mack {
 		}
 
 		return true
+	}
+
+	prepareFileNameForOutput(fileName) {
+		if (Mack.option.color) {
+			printFileName := Ansi.SetGraphic(Mack.Option.color_filename)
+				. fileName
+				. Ansi.Reset()
+		} else {
+			printFileName := fileName
+		}
+		return printFileName
+	}
+
+	printMatchLine(lineFileName) {
+		lineNumber := PrintLineData.lineNumberInFile
+		columnNumber := PrintLineData.columnNumberInLine
+		if (Mack.Option.color) {
+			coloredLineNumber := Ansi.SetGraphic(Mack.option.color_line_no) lineNumber Ansi.Reset()
+			coloredColumnNumber := Ansi.SetGraphic(Mack.option.color_line_no) columnNumber Ansi.Reset()
+			Mack.processLine((Mack.option.filename ? lineFileName : "")
+				. (Mack.option.line ? coloredLineNumber ":"  : "")
+				. (columnNumber ? coloredColumnNumber ":" : "")
+				. Mack.arrayOrStringToString(PrintLineData.text)
+				. Ansi.Reset() Ansi.EraseLine())
+		} else {
+			Mack.processLine((Mack.option.filename ? lineFileName : "")
+				. (Mack.option.line ? lineNumber ":" : "")
+				. (columnNumber ? columnNumber ":" : "")
+				. Mack.arrayOrStringToString(PrintLineData.text))
+		}
+	}
+
+	printContextIfNecessary() {
+		if (PrintLineData.contextAfterHit.Length() > 0) {
+			loop % PrintLineData.contextAfterHit.Length() {
+				Mack.processLine(PrintLineData.contextAfterHit.Pop())
+			}
+		}
+
+		if (PrintLineData.contextBeforeHit.Length() > 0) {
+			loop % PrintLineData.contextBeforeHit.Length() {
+				Mack.processLine(PrintLineData.contextBeforeHit.Pop())
+			}
+		}
 	}
 
 	processLine(line) {
@@ -573,17 +537,23 @@ class Mack {
 
 		try {
 			f := FileOpen(file_name, "r `n")
+			Mack.resetPrintLineData()
+			PrintLineData.fileName := file_name
 			if (!f) {
-				_log.Severe("Could not open file " file_name)	; NOTEST: Difficult to test. The file would have to be deleted after collecting filename
+				; The file would have to be deleted after collecting filename
+				OutputDebug % "Could not open file " PrintLineData.fileName	; NOTEST: Difficult to test
 			} else {
-				hit_n := 0
-				tabstops := Mack.do_modelines(f)
+				tabstops := Mack.setTabstop(f)
 				last_col := 0
 				while (!f.AtEOF) {
+					PrintLineData.lineNumberInFile := A_Index
 					line := RegExReplace(f.ReadLine(), "\t", tabstops)
 
-					parts := Mack.test(line, regex_opts, found := 0, column := 0)
-					last_col := (column = 0 ? last_col : column)
+					PrintLineData.text := Mack.test(line, regex_opts, found := 0)
+					; parts := Mack.test(line, regex_opts, found := 0, column := 0)
+					last_col := (PrintLineData.columnNumberInLine = 0
+						? last_col
+						: PrintLineData.columnNumberInLine)
 
 					if (found && _log.Logs(Logger.Finest)) {
 						_log.Finest("Found pattern: " line)
@@ -593,29 +563,34 @@ class Mack {
 
 					if (found && Mack.Option.files_wo_matches) {
 						; if the line matches but only files w/o matches should be listed: skip
-						hit_n++
+						PrintLineData.hitNumber++
 						break
 					} else if (found && !Mack.Option.v) {
 						; if the line matches and invert-match is disabled: output results
-						hit_n++
-						cont := Mack.prepareOutput(file_name, A_Index, column, hit_n, before_context, after_context, parts)
+						PrintLineData.hitNumber++
+						PrintLineData.contextBeforeHit := before_context
+						PrintLineData.contextAfterHit := after_context
+						cont := Mack.processOutput()
 						if (cont != true) {
 							break
 						}
 					} else if ((!found && Mack.Option.v) || Mack.Option.passthru) {
 						; if the line doesn't match, but invert-match or passthru is enabled: output results
-						hit_n++
-						cont := Mack.prepareOutput(file_name, A_Index, column, hit_n, "", "", line)
+						PrintLineData.hitNumber++
+						PrintLineData.contextBeforeHit := ""
+						PrintLineData.contextAfterHit := ""
+						PrintLineData.text := line
+						cont := Mack.processOutput()
 						if (cont != true) {
 							break
 						}
 					} else {
-						if (Mack.Option.A > 0 && after_context.Length() < Mack.Option.A && hit_n) {
+						if (Mack.Option.A > 0 && after_context.Length() < Mack.Option.A && PrintLineData.hitNumber) {
 							; if after-context is enabled and the context-buffer isn't full and we had a hit before: Add line to context-buffer (for colored or uncolored output)
 							if (Mack.Option.color) {
-								after_context.Push(a_line := Ansi.SetGraphic(Mack.Option.color_context) (Mack.Option.filename ? file_name ":" : "") A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col)) " ") line Ansi.Reset())
+								after_context.Push(a_line := Ansi.SetGraphic(Mack.Option.color_context) (Mack.Option.filename ? PrintLineData.fileName ":" : "") PrintLineData.lineNumberInFile ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col)) " ") line Ansi.Reset())
 							} else {
-								after_context.Push(a_line := "+" (Mack.Option.filename ? file_name ":" : "") A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col))) line)
+								after_context.Push(a_line := "+" (Mack.Option.filename ? PrintLineData.fileName ":" : "") PrintLineData.lineNumberInFile ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col))) line)
 							}
 							if (_log.Logs(Logger.Finest)) {
 								_log.Finest("Pushing line to after-context: ", a_line)
@@ -626,9 +601,9 @@ class Mack {
 						} else if (Mack.Option.B > 0) {
 							; if before-context is enabled, collect the lines to the buffer (colored or uncolored) to have it ready to display if a following line is matching
 							if (Mack.Option.color) {
-								before_context.Push(b_line := Ansi.SetGraphic(Mack.Option.color_context) (Mack.Option.filename ? file_name ":" : "") A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col)) " ") line Ansi.Reset())	
+								before_context.Push(b_line := Ansi.SetGraphic(Mack.Option.color_context) (Mack.Option.filename ? PrintLineData.fileName ":" : "") PrintLineData.lineNumberInFile ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col)) " ") line Ansi.Reset())	
 							} else {
-								before_context.Push(b_line := "-" (Mack.Option.filename ? file_name ":" : "") A_Index ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col))) line)	
+								before_context.Push(b_line := "-" (Mack.Option.filename ? PrintLineData.fileName ":" : "") PrintLineData.lineNumberInFile ":" (last_col = 0 ? "" : " ".Repeat(StrLen(last_col))) line)	
 							}
 							if (_log.Logs(Logger.Finest)) {
 								_log.Finest("Pushing line to before-context: ", b_line)
@@ -640,13 +615,8 @@ class Mack {
 					}
 				}
 			}
-			if (hit_n = 0 && Mack.Option.files_wo_matches) {
-				; if the line doen't match but files w/o matches should be displayed: Process output
-				if (Mack.Option.color) {
-					Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) file_name Ansi.Reset())
-				} else if (!Mack.Option.c) {
-					Mack.processLine(file_name)
-				}
+			if (PrintLineData.hitNumber = 0 && Mack.Option.files_wo_matches) {
+				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData.fileName))
 				G_file_count++
 			}
 		} finally {
@@ -660,18 +630,18 @@ class Mack {
 				}
 			}
 			; Print hit count?
-			if (Mack.Option.c && hit_n > 0) {
+			if (Mack.Option.c && PrintLineData.hitNumber > 0) {
 				if (!Mack.Option.files_w_matches) {
 					if (Mack.Option.color) {
-						Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) hit_n " match(es)" Ansi.Reset())
+						Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) PrintLineData.hitNumber " match(es)" Ansi.Reset())
 					} else {
-						Mack.processLine(hit_n " match(es)")
+						Mack.processLine(PrintLineData.hitNumber " match(es)")
 					}
 				} else {
-					Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) file_name ":" hit_n Ansi.Reset())
+					Mack.processLine(Ansi.SetGraphic(Mack.Option.color_filename) PrintLineData.fileName ":" PrintLineData.hitNumber Ansi.Reset())
 				}
 				G_file_count++
-				G_hit_count += hit_n
+				G_hit_count += PrintLineData.hitNumber
 			}
 		}
 
@@ -983,6 +953,16 @@ class Mack {
 		}
 
 		return _log.Exit(result)
+	}
+
+	resetPrintLineData() {
+		PrintLineData.fileName := ""
+		PrintLineData.lineNumberInFile := 0
+		PrintLineData.columnNumberInLine := 0
+		PrintLineData.hitNumber := 0
+		PrintLineData.contextBeforeHit := ""
+		PrintLineData.contextAfterHit := ""
+		PrintLineData.text := ""
 	}
 }
 
