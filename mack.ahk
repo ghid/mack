@@ -305,7 +305,6 @@ class Mack {
 				else
 					readAt -= StrLen(line)
 			} catch ex {
-				OutputDebug % ex.What ": " ex.Message
 				if (ex.Message != "EndOfFile")
 					throw ex
 			}
@@ -326,96 +325,81 @@ class Mack {
 		throw Exception("EndOfFile", A_ThisFunc)
 	}
 
-	/*
-	 * Method:	test
-	 *			Search a text for a regualar pattern.
-	 *
-	 * Parameter:
-	 *			haystack - The text to examine.
-	 *			regex_opts - Regex options to change behaviour of the regex parser.
-	 *			found - Indicates if the pattern was found within haystack.
-	 *			first_match_column - Indicates the column where the pattern matches for the first time.
-	 *
-	 * Returns:
-	 *			A list of "parts" representing the result.
-	 */
-	; test(ByRef haystack, regex_opts, ByRef found := 0, ByRef first_match_column := 0) {
-	test(ByRef haystack, regex_opts) {
-		_log := new Logger("class." A_ThisFunc)
-
-		if (_log.Logs(Logger.Input)) {
-			_log.Input("haystack", haystack)
-			_log.Input("regex_opts", regex_opts)
-			_log.Input("found", found)
-			_log.Input("Mack.Option.pattern", Mack.Option.pattern)
-			_log.Input("Mack.Option.column", Mack.Option.column)
-			_log.Input("Mack.Option.color_match", Mack.Option.color_match)
-			_log.Finest("Mack.Option.output", Mack.Option.output)
-		}
-
-		search_at := 1
-		parts := []
-		haystack := RegExReplace(haystack, "`n$", "", 1)
+	searchPatternInText(text) {
+		searchAt := 1
+		matchesFound := 0
+		PrintLineData.text := []
 		loop {
-			found_at := RegExMatch(haystack, regex_opts "S)" Mack.Option.pattern, $, search_at)
-			if (_log.Logs(Logger.Finest)) {
-				_log.Finest("found_at", found_at)
-				_log.Finest("$", $)
-			}
-			if (found_at > 0) {
-				if (A_Index = 1 && Mack.Option.column) {
-					PrintLineData.columnNumberInLine := found_at
+			; TODO: Refactor?
+			patternFoundAt := RegExMatch(text
+				, (Mack.option.i ? "i" : "") "OS)" Mack.option.pattern
+				, group, searchAt)
+			if (patternFoundAt) {
+				if (A_Index = 1 && Mack.option.column) {
+					Mack.saveColumnOfFirstHitInLine(patternFoundAt)
 				}
-
-				if (Mack.Option.output) {
-					pattern := Mack.Option.output
-					while (RegExMatch(pattern, "\$(\d+)", arg_no)) {
-						if (arg_no1 = 0) {
-							arg_no1 := ""
-						}
-						pattern := RegExReplace(pattern, "\Q" arg_no "\E", $%arg_no1%)
-					}
-					found := true
-					parts.Push(pattern)
+				if (Mack.option.output) {
+					PrintLineData.text.push(Mack.substitueBackReferences(group))
+					matchesFound := 1
 					break
 				} else {
-					found++
-					if (found_at > 1) {
-						parts.Push(SubStr(haystack, search_at, found_at - search_at))
-					}
-					if (Mack.Option.color) {
-						parts.Push(Ansi.SetGraphic(Mack.Option.color_match) $ Ansi.Reset())
-					} else {
-						parts.Push($)
-					}
-					search_at := found_at + StrLen($)
+					matchesFound++
+					if (patternFoundAt > 1)
+						PrintLineData.text.push(Mack.textInFrontOfHit(text, searchAt, patternFoundAt))
+					PrintLineData.text.push(Mack.prepareHit(group))
+					searchAt := patternFoundAt + StrLen(group.value)
 				}
-			} else if (found > 0) {
-				parts.Push(SubStr(haystack, search_at))
-			} else
-				parts.push(haystack)
-		} until (found_at = 0)
+			} else if (matchesFound) {
+				PrintLineData.text.push(Mack.noMoreMatchesButTextAfterHit(text
+					, searchAt))
+			} else {
+				PrintLineData.text.push(Mack.lineHasNoHit(text))
+			}	
+		} until (patternFoundAt = 0)
+		return matchesFound
+	}
 
-		if (_log.Logs(Logger.Output)) {
-			_log.Output("found", found)
-			_log.Output("first_match_column", first_match_column)
-			if (_log.Logs(Logger.ALL)) {
-				_log.ALL("parts:`n" LoggingHelper.Dump(parts))
-			}
+	substitueBackReferences(group) {
+		pattern := Mack.option.output
+		while (RegExMatch(pattern, "\$(\d+)", argNo)) {
+			pattern := RegExReplace(pattern, "\Q" argNo "\E", group[argNo1])
 		}
-		PrintLineData.text := parts
+		return pattern
+	}
 
-		return _log.Exit(found)
+	saveColumnOfFirstHitInLine(columnNumber) {
+		PrintLineData.columnNumberInLine := columnNumber
+	}
+
+	textInFrontOfHit(text, from, foundAt) {
+		return SubStr(text, from, foundAt - from)
+	}
+
+	noMoreMatchesButTextAfterHit(text, at) {
+		return SubStr(text, at)
+	}
+
+	lineHasNoHit(text) {
+		return text
+	}
+
+	prepareHit(group) {
+		if (Mack.option.color) {
+			hit := Ansi.SetGraphic(Mack.option.color_match) group.value Ansi.Reset()
+		} else {
+			hit := group.value
+		}
+		return hit
 	}
 
 	processOutput() {
-		if (PrintLineData.hitNumber = 1 && (Mack.Option.g || Mack.Option.files_w_matches)) {
-			if (!Mack.Option.c) {
+		if (PrintLineData.hitNumber = 1 && (Mack.option.g || Mack.option.files_w_matches)) {
+			if (!Mack.option.c) {
 				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData.fileName))
 				return false
 			}
 		} else {
-			if (PrintLineData.hitNumber = 1 && Mack.Option.group) {
+			if (PrintLineData.hitNumber = 1 && Mack.option.group) {
 				if (!Mack.First_Call) {
 					Mack.processLine(" ")
 				} else {
@@ -424,12 +408,12 @@ class Mack {
 				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData.fileName))
 			}
 			Mack.printContextIfNecessary()
-			if (!Mack.Option.files_w_matches) {
+			if (!Mack.option.files_w_matches) {
 				Mack.printMatchLine(Mack.prepareFileNameForOutput(PrintLineData.fileName ":"))
 			}
 		}
 
-		if (Mack.Option.1) {
+		if (Mack.option.1) {
 			Ansi.Flush()
 			Ansi.FlushInput()
 			return -1
@@ -440,7 +424,7 @@ class Mack {
 
 	prepareFileNameForOutput(fileName) {
 		if (Mack.option.color) {
-			printFileName := Ansi.SetGraphic(Mack.Option.color_filename)
+			printFileName := Ansi.SetGraphic(Mack.option.color_filename)
 				. fileName
 				. Ansi.Reset()
 		} else {
@@ -452,7 +436,7 @@ class Mack {
 	printMatchLine(lineFileName) {
 		lineNumber := PrintLineData.lineNumberInFile
 		columnNumber := PrintLineData.columnNumberInLine
-		if (Mack.Option.color) {
+		if (Mack.option.color) {
 			coloredLineNumber := Ansi.SetGraphic(Mack.option.color_line_no) lineNumber Ansi.Reset()
 			coloredColumnNumber := Ansi.SetGraphic(Mack.option.color_line_no) columnNumber Ansi.Reset()
 			Mack.processLine((Mack.option.filename ? lineFileName : "")
@@ -483,7 +467,7 @@ class Mack {
 
 	processLine(line) {
 		Mack.printContextSeparatorIfNecessary(line)
-		return Pager.writeHardWrapped(Ansi.readable(line, Mack.Option.color))
+		return Pager.writeHardWrapped(Ansi.readable(line, Mack.option.color))
 	}
 
 	printContextSeparatorIfNecessary(line) {
@@ -506,16 +490,16 @@ class Mack {
 		return inputValue 
 	}
 
-	searchInFileForPattern(fileName, regex_opts = "") {
+	searchInFileForPattern(fileName) {
 		try {
 			fileObject := FileOpen(fileName, "r `n")
 			Mack.resetPrintLineData(fileName)
 			if (!fileObject) {
 				OutputDebug % "Could not open file " PrintLineData.fileName	; NOTEST: Difficult to test
 			} else {
-				cont := Mack.processFile(fileObject, regex_opts)
+				result := Mack.processFile(fileObject)
 			}
-			if (PrintLineData.hitNumber = 0 && Mack.Option.files_wo_matches) {
+			if (PrintLineData.hitNumber = 0 && Mack.option.files_wo_matches) {
 				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData.fileName))
 			}
 		} finally {
@@ -523,32 +507,33 @@ class Mack {
 				fileObject.Close()
 			Mack.printHitCountIfNecessary()
 		}
-		return cont
+		return result
 	}
 
-	processFile(fileObject, regex_opts) {
+	processFile(fileObject) {
 		tabStops := Mack.setTabStopsForFile(fileObject)
-		cont := true
+		continueProcessing := true
 
-		while (cont > 0 && !fileObject.AtEOF) {
+		while (continueProcessing > 0 && !fileObject.AtEOF) {
 			PrintLineData.lineNumberInFile := A_Index
-			line := RegExReplace(fileObject.ReadLine(), "\t", tabStops)
-			matchFound := Mack.test(line, regex_opts)
+			lineWithSubstitutedTabs := RegExReplace(fileObject.ReadLine(), "\t", tabStops)
+			lineWithoutNewLineAtEnd := RegExReplace(lineWithSubstitutedTabs, "`n$", "", 1)
+			matchesFound := Mack.searchPatternInText(lineWithoutNewLineAtEnd)
 
-			if (matchFound && Mack.Option.files_wo_matches) {
+			if (matchesFound && Mack.option.files_wo_matches) {
 				PrintLineData.hitNumber++
-				cont := false
-			} else if (Mack.Option.passthru
-					|| ( matchFound && !Mack.Option.v)
-					|| (!matchFound &&  Mack.Option.v)) {
+				continueProcessing := false
+			} else if (Mack.option.passthru
+					|| ( matchesFound && !Mack.option.v)
+					|| (!matchesFound &&  Mack.option.v)) {
 				PrintLineData.hitNumber++
-				cont := Mack.processOutput()
+				continueProcessing := Mack.processOutput()
 			} else {
-				if (Mack.Option.A > 0
-						&& PrintLineData.contextAfterHit.length() < Mack.Option.A
+				if (Mack.option.A > 0
+						&& PrintLineData.contextAfterHit.length() < Mack.option.A
 						&& PrintLineData.hitNumber) {
 					Mack.storeContextDataInQueue(PrintLineData.contextAfterHit)
-				} else if (Mack.Option.B > 0) {
+				} else if (Mack.option.B > 0) {
 					Mack.storeContextDataInQueue(PrintLineData.contextBeforeHit)
 				}
 			}
@@ -556,7 +541,7 @@ class Mack {
 		loop % PrintLineData.contextAfterHit.length()
 			Mack.processLine(PrintLineData.contextAfterHit.pop())
 
-		return cont
+		return continueProcessing
 	}
 
 	storeContextDataInQueue(contextQueue) {
@@ -603,7 +588,7 @@ class Mack {
 		PrintLineData.hitNumber := 0
 		PrintLineData.contextBeforeHit := new Queue(Mack.option.b)
 		PrintLineData.contextAfterHit := new Queue(Mack.option.a)
-		PrintLineData.text := ""
+		PrintLineData.text := []
 	}
 
 	cli() {
@@ -625,132 +610,132 @@ class Mack {
 	addSearchingOptionsToParser(op) {
 		op.Add(new OptParser.Group("Searching:"))
 		op.Add(new OptParser.Boolean("i", "ignore-case"
-			, Mack.Option, "i"
+			, Mack.option, "i"
 			, "Ignore case distinctions in pattern"))
 		op.Add(new OptParser.Boolean("v", "invert-match"
-			, Mack.Option, "v"
+			, Mack.option, "v"
 			, "Select non-matching lines"))
 		op.Add(new OptParser.Boolean("w", "word-regexp"
-			, Mack.Option, "w"
+			, Mack.option, "w"
 			, "Force pattern to match only whole words"))
 		op.Add(new OptParser.Boolean("Q", "literal"
-			, Mack.Option, "Q"
+			, Mack.option, "Q"
 			, "Quote all metacharacters; pattern is literal"))
 	}
 
 	addSearchOutputOptionsToParser(op) {
 		op.Add(new OptParser.Group("`nSearch output:"))
 		op.Add(new OptParser.Boolean("l", "files-with-matches"
-			, Mack.Option, "files_w_matches"
+			, Mack.option, "files_w_matches"
 			, "Only print filenames containing matches"))
 		op.Add(new OptParser.Boolean("L", "files-without-matches"
-			, Mack.Option, "files_wo_matches"
+			, Mack.option, "files_wo_matches"
 			, "Only print filenames with no matches"))
 		op.Add(new OptParser.String(0, "output"
-			, Mack.Option, "output"
+			, Mack.option, "output"
 			, "EXPR", "Output the evaluation of EXPR for each line "
 			. "(turns of text highlighting)"
 			, OptParser.OPT_ARG))
 		op.Add(new OptParser.Boolean("o", ""
-			, Mack.Option, "o"
+			, Mack.option, "o"
 			, "Show only the part of a line matching PATTERN. "
 			. "Same as --output $0"))
 		op.Add(new OptParser.Boolean(0, "passthru"
-			, Mack.Option, "passthru"
+			, Mack.option, "passthru"
 			, "Print all lines, whether matching or not"))
 		op.Add(new OptParser.Boolean("1", ""
-			, Mack.Option, "1"
+			, Mack.option, "1"
 			, "Stop searching after one match of any kind"))
 		op.Add(new OptParser.Boolean("c", "count"
-			, Mack.Option, "c"
+			, Mack.option, "c"
 			, "Show number of lines matching per file"))
 		op.Add(new OptParser.Boolean(0, "filename"
-			, Mack.Option, "filename"
+			, Mack.option, "filename"
 			, "Suppress prefixing filename on output (default)"
 			, OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
 		op.Add(new OptParser.Boolean(0, "line"
-			, Mack.Option, "line"
+			, Mack.option, "line"
 			, "Show the line number of the match"
-			, OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE, Mack.Option.line))
+			, OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE, Mack.option.line))
 		op.Add(new OptParser.Boolean(0, "column"
-			, Mack.Option, "column"
+			, Mack.option, "column"
 			, "Show the column number of the first match"
 			, OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
 		op.Add(new OptParser.String("A", "after-context"
-			, Mack.Option, "A"
+			, Mack.option, "A"
 			, "NUM", "Print NUM lines of trailing context after matching lines"
 			, OptParser.OPT_ARG))
 		op.Add(new OptParser.String("B", "before-context"
-			, Mack.Option, "B"
+			, Mack.option, "B"
 			, "NUM", "Print NUM lines of leading context before matching lines"
 			, OptParser.OPT_ARG))
 		op.Add(new OptParser.String("C", "context"
-			, Mack.Option, "context"
+			, Mack.option, "context"
 			, "NUM", "Print NUM (default 2) lines of output context"
-			, OptParser.OPT_OPTARG, Mack.Option.context))
+			, OptParser.OPT_OPTARG, Mack.option.context))
 		op.Add(new OptParser.String(0, "tabstop"
-			, Mack.Option, "tabstop"
+			, Mack.option, "tabstop"
 			, "size", "Calculate tabstops with width of size (default 8)"
-			,,, Mack.Option.tabstop))
+			,,, Mack.option.tabstop))
 		op.Add(new OptParser.String(0, "modelines"
-			, Mack.Option, "modelines"
+			, Mack.option, "modelines"
 			, "lines", "Search modelines (default 5) for tabstop info. "
 			. "Set to 0 to ignore modelines"
-			, OptParser.OPT_OPTARG,, 5, Mack.Option.modelines))
+			, OptParser.OPT_OPTARG,, 5, Mack.option.modelines))
 	}
 
 	addFilePresentationOptionsToParser(op) {
 		op.Add(new OptParser.Group("`nFile presentation:"))
 		op.Add(new OptParser.Boolean(0, "pager"
-			, Mack.Option, "pager"
+			, Mack.option, "pager"
 			, "Send output through a pager (default)"
-			, OptParser.OPT_NEG, Mack.Option.pager))
+			, OptParser.OPT_NEG, Mack.option.pager))
 		op.Add(new OptParser.Boolean(0, "group"
-			, Mack.Option, "group"
+			, Mack.option, "group"
 			, "Print a filename heading above each file's results "
 			. "(default: on when used interactively)"
 			, OptParser.OPT_NEG, true))
 		op.Add(new OptParser.Boolean(0, "color"
-			, Mack.Option, "color"
+			, Mack.option, "color"
 			, "Highlight the matching text (default: on)"
-			, OptParser.OPT_NEG, Mack.Option.color))
+			, OptParser.OPT_NEG, Mack.option.color))
 		op.Add(new OptParser.String(0, "color-filename"
-			, Mack.Option, "color_filename"
+			, Mack.option, "color_filename"
 			, "color", ""
 			, OptParser.OPT_ARG
-			, Mack.Option.color_filename, Mack.Option.color_filename))
+			, Mack.option.color_filename, Mack.option.color_filename))
 		op.Add(new OptParser.String(0, "color-match"
-			, Mack.Option, "color_match"
+			, Mack.option, "color_match"
 			, "color", ""
 			, OptParser.OPT_ARG
-			, Mack.Option.color_match, Mack.Option.color_match))
+			, Mack.option.color_match, Mack.option.color_match))
 		op.Add(new OptParser.String(0, "color-line-no"
-			, Mack.Option, "color_line_no"
+			, Mack.option, "color_line_no"
 			, "color", "Set the color for filenames, matches, and line numbers "
 			. "as ANSI color attributes (e.g. ""7;37"")"
 			, OptParser.OPT_ARG
-			, Mack.Option.color_line_no, Mack.Option.color_line_no))
+			, Mack.option.color_line_no, Mack.option.color_line_no))
 	}
 
 	addFileFindingOptionsToParser(op) {
 		op.Add(new OptParser.Group("`nFile finding:"))
 		op.Add(new OptParser.Boolean("f", ""
-			, Mack.Option, "f"
+			, Mack.option, "f"
 			, "Only print the files selected, without searching. "
 			. "The pattern must not be specified"))
 		op.Add(new OptParser.Boolean("g", ""
-			, Mack.Option, "g"
+			, Mack.option, "g"
 			, "Same as -f, but only select files matching pattern"))
 		op.Add(new OptParser.Boolean(0, "sort-files"
-			, Mack.Option, "sort_files"
+			, Mack.option, "sort_files"
 			, "Sort the found files lexically"))
 		op.Add(new OptParser.String(0, "files-from"
-			, Mack.Option, "files_from"
+			, Mack.option, "files_from"
 			, "FILE", "Read the list of files to search from FILE"
 			, OptParser.OPT_ARG)) ; TODO: Implement --files-from option
 		op.Add(new OptParser.Boolean("x", ""
-			, Mack.Option, "x"
-			, "Read the list of files to search from STDIN")) ; TODO Implement -x option
+			, Mack.option, "x"
+			, "Read the list of files to search from STDIN")) ; TODO: Implement -x option
 	}
 
 	addFileInclusionAndExclusionOptionsToParser(op) {
@@ -766,14 +751,14 @@ class Mack {
 			, "Add filter for ignoring files"
 			, OptParser.OPT_ARG | OptParser.OPT_NEG))
 		op.Add(new OptParser.Boolean("r", "recurse"
-			, Mack.Option, "r"
+			, Mack.option, "r"
 			, "Recurse into subdirectories (default: on)"
 			, OptParser.OPT_NEG, true))
 		op.Add(new OptParser.Boolean("k", "known-types"
-			, Mack.Option, "k"
+			, Mack.option, "k"
 			, "Include only files of types that are recognized"))
 		op.Add(new OptParser.Callback(0, "type"
-			, Mack.Option, "" ; CAVEAT: type_inex will never be set due to the callback function... that's a bit confusing!?!
+			, Mack.option, ""
 			, "maintainTypeFilter", "X"
 			, "Include/exclude X files"
 			, OptParser.OPT_ARG | OptParser.OPT_OPTARG
@@ -783,18 +768,18 @@ class Mack {
 	addFileTypeSecificationOptionsToParser(op) {
 		op.Add(new OptParser.Group("`nFile type specification:"))
 		op.Add(new OptParser.Callback(0, "type-set"
-			, Mack.Option, "type_set"
+			, Mack.option, "type_set"
 			, "addNewFileType", "X:FILTER[+FILTER...]"
 			, "Files with given FILTER are recognized of type X. "
 			. "This replaces an existing defintion."
 			, OptParser.OPT_ARG))
 		op.Add(new OptParser.Callback(0, "type-add"
-			, Mack.Option, "type_add"
+			, Mack.option, "type_add"
 			, "addFileTypePattern", "X:FILTER[+FILTER...]"
 			, "Files with given FILTER are recognized of type X"
 			, OptParser.OPT_ARG))
 		op.Add(new OptParser.Callback(0, "type-del"
-			, Mack.Option, "type_del"
+			, Mack.option, "type_del"
 			, "removeFileType", "X"
 			, "Remove all filters associated with X"
 			, OptParser.OPT_ARG))
@@ -803,11 +788,11 @@ class Mack {
 	addMiscOptionsToParser(op) {
 		op.Add(new OptParser.Group("`nMiscellaneous:"))
 		op.Add(new OptParser.Boolean(0, "env"
-			, Mack.Option, "__env_dummy"
+			, Mack.option, "__env_dummy"
 			, "Ignore environment variable MACK_OPTIONS"
 			, OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
 		op.Add(new OptParser.Boolean("h", "help"
-			, Mack.Option, "h"
+			, Mack.option, "h"
 			, "This help"
 			, OptParser.OPT_HIDDEN))
 		op.Add(new OptParser.Boolean(0, "version"
@@ -816,8 +801,8 @@ class Mack {
 		op.Add(new OptParser.Boolean(0, "help-types"
 			, Mack.option, "ht"
 			, "Display all known types"))
-		op.Add(Mack.Sel_Types_Option := new OptParser.Generic(Mack.Option.types_expr
-			, Mack.Option, "sel_types"
+		op.Add(Mack.Sel_Types_Option := new OptParser.Generic(Mack.option.types_expr
+			, Mack.option, "sel_types"
 			, OptParser.OPT_MULTIPLE|OptParser.OPT_NEG))
 	}
 
@@ -838,17 +823,17 @@ class Mack {
 			args := op.Parse(args)
 			if (_log.Logs(Logger.Finest)) {
 				_log.Finest("args:`n" LoggingHelper.Dump(args))
-				_log.All("Mack.Option:`n" LoggingHelper.Dump(Mack.Option))
+				_log.All("Mack.option:`n" LoggingHelper.Dump(Mack.option))
 			}
 
-			if (Mack.Option.k) {
-				for filetype, filter in Mack.Option.types {
+			if (Mack.option.k) {
+				for filetype, filter in Mack.option.types {
 					maintainTypeFilter(filetype)
 				}
 			}
 
-			if (Mack.Option.sel_types) {
-				for i, filetype in Mack.Option.sel_types {
+			if (Mack.option.sel_types) {
+				for i, filetype in Mack.option.sel_types {
 					if (SubStr(filetype, 1, 1) = "!") {
 						maintainTypeFilter(SubStr(filetype, 2), true)
 					} else {
@@ -857,68 +842,72 @@ class Mack {
 				}
 			}
 
-			Mack.Option.match_ignore_dirs := Mack.convertArrayToRegularExpression(Mack.Option.ignore_dirs)
-			Mack.Option.match_ignore_files := Mack.convertArrayToRegularExpression(Mack.Option.ignore_files)
-			Mack.Option.match_type := Mack.convertArrayToRegularExpression(Mack.Option.type)
-			Mack.Option.match_type_ignore := Mack.convertArrayToRegularExpression(Mack.Option.type_ignore)
+			Mack.option.match_ignore_dirs
+				:= Mack.convertArrayToRegularExpression(Mack.option.ignore_dirs)
+			Mack.option.match_ignore_files
+				:= Mack.convertArrayToRegularExpression(Mack.option.ignore_files)
+			Mack.option.match_type
+				:= Mack.convertArrayToRegularExpression(Mack.option.type)
+			Mack.option.match_type_ignore
+			:= Mack.convertArrayToRegularExpression(Mack.option.type_ignore)
 
-			if (Mack.Option.A = "") {
-				Mack.Option.A := 0
+			if (Mack.option.A = "") {
+				Mack.option.A := 0
 			}
 
-			if (Mack.Option.B = "") {
-				Mack.Option.B := 0
+			if (Mack.option.B = "") {
+				Mack.option.B := 0
 			}
 
-			if (Mack.Option.context > 0 && Mack.Option.A = 0) {
-				Mack.Option.A := Mack.Option.context
+			if (Mack.option.context > 0 && Mack.option.A = 0) {
+				Mack.option.A := Mack.option.context
 			}
 
-			if (Mack.Option.context > 0 && Mack.Option.B = 0) {
-				Mack.Option.B := Mack.Option.context
+			if (Mack.option.context > 0 && Mack.option.B = 0) {
+				Mack.option.B := Mack.option.context
 			}
 
-			Pager.enablePager := Mack.Option.pager
+			Pager.enablePager := Mack.option.pager
 
-			if (Mack.Option.o) {
-				Mack.Option.color_match := Ansi.Reset()
-				Mack.Option.output := "$0"
+			if (Mack.option.o) {
+				Mack.option.color_match := Ansi.Reset()
+				Mack.option.output := "$0"
 			}
 
 			if (_log.Logs(Logger.FINEST)) {
 				_log.Info("Options prepared")
-				_log.Finest("Mack.Option:`n" LoggingHelper.Dump(Mack.Option))
+				_log.Finest("Mack.option:`n" LoggingHelper.Dump(Mack.option))
 			}
-			if (Mack.Option.version) {
+			if (Mack.option.version) {
 				Ansi.WriteLine(Mack.getVersionInfo())
-			} else if (Mack.Option.h) {
+			} else if (Mack.option.h) {
 				Ansi.WriteLine(op.Usage())
 			} else if (Mack.option.ht) {
 				Ansi.Write(Mack.printKnownFileTypes())
 			} else {
-				if (!Mack.Option.f) {
-					Mack.Option.pattern := Arrays.Shift(args)
+				if (!Mack.option.f) {
+					Mack.option.pattern := Arrays.Shift(args)
 					if (_log.Logs(Logger.FINEST)) {
-						_log.Finest("Mack.Option.pattern", Mack.Option.pattern)
+						_log.Finest("Mack.option.pattern", Mack.option.pattern)
 					}
-					if (Mack.Option.pattern = "") {
+					if (Mack.option.pattern = "") {
 						throw Exception("Provide a search pattern")
 					}
-					if (Mack.Option.Q) {
-						Mack.Option.pattern := "\Q" Mack.Option.pattern "\E"
+					if (Mack.option.Q) {
+						Mack.option.pattern := "\Q" Mack.option.pattern "\E"
 					}
-					if (Mack.Option.w) {
-						Mack.Option.pattern := "\b" Mack.Option.pattern "\b"
+					if (Mack.option.w) {
+						Mack.option.pattern := "\b" Mack.option.pattern "\b"
 					}
-					if (Mack.Option.g) {
-						Mack.Option.file_pattern := Mack.Option.pattern
+					if (Mack.option.g) {
+						Mack.option.file_pattern := Mack.option.pattern
 					}
 					if (_log.Logs(Logger.FINEST)) {
-						_log.Finest("Mack.Option.file_pattern", Mack.Option.file_pattern)
+						_log.Finest("Mack.option.file_pattern", Mack.option.file_pattern)
 					}
 				}
 				file_list := Mack.determineFilesForSearch(args)
-				if (Mack.Option.f || Mack.Option.g) {
+				if (Mack.option.f || Mack.option.g) {
 					for _i, file_entry in file_list {
 						Pager.writeWordWrapped(file_entry)
 					}
@@ -926,7 +915,7 @@ class Mack {
 					Console.RefreshBufferInfo()
 					x := 0
 					for _i, file_entry in file_list {
-						x := Mack.searchInFileForPattern(file_entry, Mack.Option.i ? "i" : "")
+						x := Mack.searchInFileForPattern(file_entry)
 						if (x = -1) {
 							return _log.Exit(result)
 						}
@@ -991,8 +980,8 @@ removeFileType(fileType) {
 	if (currentValue = "")
 		throw Exception("InvalidFiletype:" fileType)
 
-	Mack.Option.regex_of_types := Mack.regularExpressionOfTypeList()
-	Mack.Sel_Types_Option.stExpr := Mack.Option.regex_of_types
+	Mack.option.regex_of_types := Mack.regularExpressionOfTypeList()
+	Mack.Sel_Types_Option.stExpr := Mack.option.regex_of_types
 
 	return currentValue
 }
@@ -1006,7 +995,7 @@ addFileTypePattern(fileTypeFilter) {
 		throw Exception("UnknownFiletype:" $1)
 	}
 
-	Mack.Option.types[$1] .= " " StrReplace($2, "+", " ")
+	Mack.option.types[$1] .= " " StrReplace($2, "+", " ")
 }
 
 addNewFileType(fileTypeFilter) {
@@ -1014,17 +1003,17 @@ addNewFileType(fileTypeFilter) {
 		throw Exception("InvalidFiletypeFilter:" fileTypeFilter)
 	}
 
-	if (Mack.Option.types[$1] <> "") {
+	if (Mack.option.types[$1] <> "") {
 		throw Exception("FiletypeAlreadyDefined:" $1)
 	}
 
-	Mack.Option.types[$1] := StrReplace($2, "+", " ")
-	Mack.Option.regex_of_types := Mack.regularExpressionOfTypeList()
-	Mack.Sel_Types_Option.stExpr := Mack.Option.regex_of_types
+	Mack.option.types[$1] := StrReplace($2, "+", " ")
+	Mack.option.regex_of_types := Mack.regularExpressionOfTypeList()
+	Mack.Sel_Types_Option.stExpr := Mack.option.regex_of_types
 }
 
 maintainTypeFilter(filetype, noOptGiven = "") {
-	if (Mack.Option.types[filetype] = "") {
+	if (Mack.option.types[filetype] = "") {
 		throw Exception("UnknownFiletype:" filetype)
 	}
 
