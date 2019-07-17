@@ -699,6 +699,23 @@ class MackTest extends TestCase {
 		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
 			, TestCase.fileContent(A_ScriptDir "\Figures\Search19.txt"))
     }
+
+	@Test_search20() {
+        if (FileExist("fizzbuzz_test.txt")) {
+            FileDelete fizzbuzz_test.txt
+        }
+		loop 100 {
+			FileAppend % (mod(A_Index, 15) == 0 ? "FizzBuzz"
+				: mod(A_Index, 3) == 0 ? "Fizz"
+				: mod(A_Index, 5) == 0 ? "Buzz"
+				: A_Index) "`n", fizzbuzz_test.txt
+		}
+        this.assertEquals(Mack.run(["--nopager",  "-C", "--nocolor", "\d2", "fizzbuzz_test.txt"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search20.txt"))
+		FileDelete fizzbuzz_test.txt
+	}
 }
 	
 exitapp MackTest.runTests()

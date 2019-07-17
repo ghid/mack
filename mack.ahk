@@ -513,8 +513,10 @@ class Mack {
 		continueProcessing := true
 		while (continueProcessing > 0 && !fileObject.AtEOF) {
 			PrintLineData.lineNumberInFile := A_Index
-			lineWithSubstitutedTabs := RegExReplace(fileObject.ReadLine(), "\t", tabStops)
-			lineWithoutNewLineAtEnd := RegExReplace(lineWithSubstitutedTabs, "`n$", "", 1)
+			lineWithSubstitutedTabs := RegExReplace(fileObject.ReadLine()
+				, "\t", tabStops)
+			lineWithoutNewLineAtEnd := RegExReplace(lineWithSubstitutedTabs
+				, "`n$", "", 1)
 			matchesFound := Mack.searchPatternInText(lineWithoutNewLineAtEnd)
 			if (matchesFound && Mack.option.files_wo_matches) {
 				PrintLineData.hitNumber++
@@ -528,9 +530,9 @@ class Mack {
 				if (Mack.option.A > 0
 						&& PrintLineData.contextAfterHit.length() < Mack.option.A
 						&& PrintLineData.hitNumber) {
-					Mack.storeContextDataInQueue(PrintLineData.contextAfterHit)
+					Mack.storeAfterContextDataInQueue(PrintLineData.contextAfterHit)
 				} else if (Mack.option.B > 0) {
-					Mack.storeContextDataInQueue(PrintLineData.contextBeforeHit)
+					Mack.storeBeforeContextDataInQueue(PrintLineData.contextBeforeHit)
 				}
 			}
 		}
@@ -540,7 +542,15 @@ class Mack {
 		return continueProcessing
 	}
 
-	storeContextDataInQueue(contextQueue) {
+	storeBeforeContextDataInQueue(contextQueue) {
+		Mack.storeContextDataInQueue(contextQueue, "-")
+	}
+
+	storeAfterContextDataInQueue(contextQueue) {
+		Mack.storeContextDataInQueue(contextQueue, "+")
+	}
+
+	storeContextDataInQueue(contextQueue, charForNotColoredOutput) {
 		if (Mack.option.color) {
 			contextQueue.push(Ansi.SetGraphic(Mack.option.color_context)
 				. (Mack.option.filename ? PrintLineData.fileName ":" : "")
@@ -551,7 +561,7 @@ class Mack {
 				. Mack.arrayOrStringToString(PrintLineData.text)
 				. Ansi.Reset())
 		} else {
-			contextQueue.push((PrintLineData.hitNumber ? "+" : "-")
+			contextQueue.push(charForNotColoredOutput
 				. (Mack.option.filename ? PrintLineData.fileName ":" : "")
 				. PrintLineData.lineNumberInFile ":"
 				. (PrintLineData.columnNumberInLine = 0
