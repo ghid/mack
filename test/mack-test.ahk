@@ -20,14 +20,13 @@ class MackTest extends TestCase {
 	; @Test_...
 	; @Depend_@Test_...
 
-	@BeforeClass_Setup() {
+	@BeforeClass_createTestData() {
 		if (!FileExist(A_Scriptdir "\Testdata")) {
             OutputDebug *** Create Testdata ***
 			FileCreateDir %A_ScriptDir%\Testdata
 			SetWorkingDir %A_ScriptDir%\Testdata
 			fd1 := new FlimsyData.simple(1428)
 			fd2 := new FlimsyData.lorem(2404)
-			; Create test folders & files
 			dir_list := []
 			loop 20 {
 				dir_name := ""
@@ -56,6 +55,7 @@ class MackTest extends TestCase {
 
     @Before_resetOptions() {
         Mack.setDefaults()
+		Mack.firstCall := true
 		EnvSet MACK_OPTIONS,
     }
 
