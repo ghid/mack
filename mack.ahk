@@ -123,6 +123,26 @@ class Mack {
 	}
 
 	determineFilesForSearch(args) {
+		if (Mack.option.x) {
+			filesToSearch := Mack.getFilesToSearchFromStdIn()
+		} else {
+			filesToSearch := Mack.getFilesToSearchFromFileStructure(args)
+		}
+		return filesToSearch
+	}
+
+	getFilesToSearchFromStdIn() {
+		fileList := []
+		loop {
+			fileName := Ansi.readLine()
+			if (fileName != "") {
+				fileList.push(fileName)
+			}
+		} until (fileName == "")
+		return fileList
+	}
+
+	getFilesToSearchFromFileStructure(args) {
 		if (args.maxIndex() == "") {
 			fileList := Mack.collectFileNames(".\*.*")
 		} else {
@@ -506,6 +526,9 @@ class Mack {
 				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData
 					.fileName))
 			}
+		} catch ex {
+			ex.Message .= " File name: " fileName
+			throw ex
 		} finally {
 			if (fileObject) {
 				fileObject.Close()
@@ -749,7 +772,7 @@ class Mack {
 			, OptParser.OPT_ARG)) ; TODO: Implement --files-from option
 		op.Add(new OptParser.Boolean("x", ""
 			, Mack.option, "x"
-			, "Read the list of files to search from STDIN")) ; TODO: Implement -x option
+			, "Read the list of files to search from STDIN"))
 	}
 
 	addFileInclusionAndExclusionOptionsToParser(op) {
