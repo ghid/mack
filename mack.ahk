@@ -107,7 +107,7 @@ class Mack {
 	getVersionInfo() {
 		global G_VERSION_INFO
 		return G_VERSION_INFO.NAME "/" G_VERSION_INFO.ARCH
-			. "-b" G_VERSION_INFO.BUILD
+			. "-" G_VERSION_INFO.BUILD
 			. " Copyright (C) 2014-2018 K.-P. Schreiner`n"
 	}
 
