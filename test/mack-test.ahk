@@ -716,6 +716,33 @@ class MackTest extends TestCase {
 			, TestCase.fileContent(A_ScriptDir "\Figures\Search20.txt"))
 		FileDelete fizzbuzz_test.txt
 	}
+
+	@Test_filesFromFile() {
+        SetWorkingDir %A_ScriptDir%\Testdata
+		if (FileExist(A_ScriptDir "\input_files.txt")) {
+			FileDelete %A_ScriptDir%\input_files.txt
+		}
+		FileAppend, 
+		( LTrim
+			.\Ammenmaerchen\Anlage.pdf
+			.\Ammenmaerchen\Auskunftsschalter\Aktienurkunde.rtf
+			.\Bekanntmachung\Informationsuebertragung\Basisinformationen\Anlage.mp3
+			.\Buecherei\Wissen\Archivale.rtf
+			.\Datenansammlung\Anlage.jpeg
+			.\Datenansammlung\Anlage.txt
+			.\Metainformationen\Archivale.md
+			.\Metainformationen\Archivale.pdf
+			.\Plan\Bekanntmachung\Archivale.mp3
+			.\Plan\Bericht\Anlage.mp3
+			.\Verkehrsdaten\Abstraktion\Archivale.rtf
+			.\Verkehrsdaten\Botschaft\Nachrichteninhalt\Datenuebertragung\Aktienurkunde.pdf
+		), %A_ScriptDir%\input_files.txt
+		this.assertEquals(Mack.run(["--files-from", A_ScriptDir "\input_files.txt", "-lc", "^Duis"]))
+		Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\FilesFromFile.txt"))
+		FileDelete %A_ScriptDir%\input_files.txt
+	}
 }
 	
 exitapp MackTest.runTests()

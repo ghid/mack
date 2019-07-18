@@ -123,8 +123,10 @@ class Mack {
 	}
 
 	determineFilesForSearch(args) {
-		if (Mack.option.x) {
+		if (Mack.option.x || Mack.option.files_from == "-") {
 			filesToSearch := Mack.getFilesToSearchFromStdIn()
+		} else if (Mack.option.files_from != "") {
+			filesToSearch := Mack.getFilesToSearchFromFile()
 		} else {
 			filesToSearch := Mack.getFilesToSearchFromFileStructure(args)
 		}
@@ -140,6 +142,25 @@ class Mack {
 			}
 		} until (fileName == "")
 		return fileList
+	}
+
+	getFilesToSearchFromFile() {
+		fileList := []
+		try {
+			fileWithFileList := FileOpen(Mack.option.files_from, "r `n")
+			while (!fileWithFileList.AtEOF) {
+				fileName := RTrim(fileWithFileList.readLine(), "`n")
+				if (fileName != "") {
+					fileList.push(fileName)
+				}
+			}
+			OutputDebug % "fl:`n" LoggingHelper.dump(fileList)
+			return fileList
+		} finally {
+			if (fileWithFileList) {
+				fileWithFileList.close()
+			}
+		}
 	}
 
 	getFilesToSearchFromFileStructure(args) {
@@ -769,7 +790,7 @@ class Mack {
 		op.Add(new OptParser.String(0, "files-from"
 			, Mack.option, "files_from"
 			, "FILE", "Read the list of files to search from FILE"
-			, OptParser.OPT_ARG)) ; TODO: Implement --files-from option
+			, OptParser.OPT_ARG))
 		op.Add(new OptParser.Boolean("x", ""
 			, Mack.option, "x"
 			, "Read the list of files to search from STDIN"))

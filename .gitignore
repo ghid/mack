@@ -11,4 +11,4 @@ trace.log
 *.ctest
 *.crun
 *.cstat
-
+.versioninfo
