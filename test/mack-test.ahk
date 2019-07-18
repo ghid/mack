@@ -116,20 +116,20 @@ class MackTest extends TestCase {
 	}
 
     @Test_regexOfTypeList() {
-        this.assertEquals(Mack.regularExpressionOfTypeList()
+        this.assertEquals(Mack.typeListAsRegularExpression()
 			, "(autohotkey|batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
     }
 
 	@Test_types() {
-		this.assertEquals(Mack.regularExpressionOfTypeList()
+		this.assertEquals(Mack.typeListAsRegularExpression()
 			, "(autohotkey|batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
 		OutputDebug % LoggingHelper.dump(Mack.option.types)
 		removeFileType("autohotkey")
-		this.assertEquals(Mack.regularExpressionOfTypeList()
+		this.assertEquals(Mack.typeListAsRegularExpression()
 			, "(batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
 		this.assertException("", "addFileTypePattern", "", "", "autohotkey:*.ahk+*.inc")
 		addNewFileType("autohotkey:*.ahk+*.inc")
-		this.assertEquals(Mack.regularExpressionOfTypeList()
+		this.assertEquals(Mack.typeListAsRegularExpression()
 		 	, "(autohotkey|batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
 		addFileTypePattern("autohotkey:*.ahi")
 		preDefTypeList = 
@@ -157,9 +157,9 @@ class MackTest extends TestCase {
 	}
 
     @Test_regexOfFileTypePattern() {
-        this.assertEquals(Mack.convertFileTypePatternToRegularExpression("*.*"), ".*?\..*?")
-        this.assertEquals(Mack.convertFileTypePatternToRegularExpression(".git"), "\.git")
-        this.assertEquals(Mack.convertFileTypePatternToRegularExpression("CVS"), "CVS")
+        this.assertEquals(Mack.convertFilePatternToRegularExpression("*.*"), ".*?\..*?")
+        this.assertEquals(Mack.convertFilePatternToRegularExpression(".git"), "\.git")
+        this.assertEquals(Mack.convertFilePatternToRegularExpression("CVS"), "CVS")
     }
 
     @Test_regexMatchList() {

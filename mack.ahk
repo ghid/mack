@@ -68,7 +68,7 @@ class Mack {
                     	 			      , "vim"       : "*.vim"
                     	 			      , "xml"       : "*.xml *.dtd *.xsl *.xslt *.ent"
                     	 			      , "yaml"      : "*.yaml *.yml" }
-				, types_expr			: Mack.regularExpressionOfTypeList()
+				, types_expr			: Mack.typeListAsRegularExpression()
 				, type					: []
 				, type_ignore			: []
 				, v				  		: false
@@ -124,18 +124,18 @@ class Mack {
 
 	determineFilesForSearch(args) {
 		if (args.maxIndex() == "") {
-			file_list := Mack.collectFileNames(".\*.*")
+			fileList := Mack.collectFileNames(".\*.*")
 		} else {
 			loop % args.maxIndex() {
-				file_pattern := Mack.refineFileOrPathPattern(args[A_Index])
-				file_list := Mack.collectFileNames(file_pattern
-					, (A_Index > 1 ? file_list : ""))
+				filePattern := Mack.refineFileOrPathPattern(args[A_Index])
+				fileList := Mack.collectFileNames(filePattern
+					, (A_Index > 1 ? fileList : ""))
 			}
 		}
-		if (Mack.option.sort_files && file_list.maxIndex() <> "") {
-			file_list := Mack.sortFileList(file_list)
+		if (Mack.option.sort_files && fileList.maxIndex() != "") {
+			fileList := Mack.sortFileList(fileList)
 		}
-		return file_list
+		return fileList
 	}
 
 	sortFileList(fileList) {
@@ -204,7 +204,7 @@ class Mack {
 	}
 
 	addOrReturnListEntry(listName, entryToAdd) {
-		pattern := Mack.convertFileTypePatternToRegularExpression(entryToAdd)
+		pattern := Mack.convertFilePatternToRegularExpression(entryToAdd)
 		try {
 			return Mack.positionInList(listName, pattern)
 		} catch {
@@ -213,7 +213,7 @@ class Mack {
 	}
 
 	removeListEntry(listName, entryToRemove) {
-		pattern := Mack.convertFileTypePatternToRegularExpression(entryToRemove)
+		pattern := Mack.convertFilePatternToRegularExpression(entryToRemove)
 		return Mack.option[listName].removeAt(Mack.positionInList(listName
 			, pattern))
 	}
@@ -228,7 +228,7 @@ class Mack {
 			, A_ThisFunc)
 	}
 
-	regularExpressionOfTypeList() {
+	typeListAsRegularExpression() {
 		typeListAsRegularExpression := "("
 		for fileType, filePattern in Mack.option.types {
 			typeListAsRegularExpression .= (A_Index = 1 ? "" : "|") fileType
@@ -237,7 +237,7 @@ class Mack {
 		return typeListAsRegularExpression
 	}
 
-	convertFileTypePatternToRegularExpression(filePattern) {
+	convertFilePatternToRegularExpression(filePattern) {
 		convertedEscapeChars := RegExReplace(filePattern, "[+.\\\[\]\{\}\(\)]"
 			, "\$0")
 		convertedQuestionMarks := StrReplace(convertedEscapeChars, "?", ".")
@@ -254,7 +254,7 @@ class Mack {
 		for i, item in inputArray {
 			regularExpression .= (i > 1 ? "|" : "") item
 		}
-		if (regularExpression <> "") {
+		if (regularExpression != "") {
 			regularExpression := "S)^(" regularExpression ")$"
 		}
 		return regularExpression
@@ -383,7 +383,8 @@ class Mack {
 
 	prepareHit(group) {
 		if (Mack.option.color) {
-			hit := Ansi.SetGraphic(Mack.option.color_match) group.value Ansi.Reset()
+			hit := Ansi.SetGraphic(Mack.option.color_match) group.value
+				. Ansi.Reset()
 		} else {
 			hit := group.value
 		}
@@ -394,7 +395,8 @@ class Mack {
 		if (PrintLineData.hitNumber == 1
 				&& (Mack.option.g || Mack.option.files_w_matches)) {
 			if (!Mack.option.c) {
-				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData.fileName))
+				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData
+					.fileName))
 				return false
 			}
 		} else {
@@ -404,11 +406,13 @@ class Mack {
 				} else {
 					Mack.firstCall := false
 				}
-				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData.fileName))
+				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData
+					.fileName))
 			}
 			Mack.printContextIfNecessary()
 			if (!Mack.option.files_w_matches) {
-				Mack.printMatchLine(Mack.prepareFileNameForOutput(PrintLineData.fileName ":"))
+				Mack.printMatchLine(Mack.prepareFileNameForOutput(PrintLineData
+					.fileName ":"))
 			}
 		}
 		if (Mack.option.1) {
@@ -434,8 +438,10 @@ class Mack {
 		lineNumber := PrintLineData.lineNumberInFile
 		columnNumber := PrintLineData.columnNumberInLine
 		if (Mack.option.color) {
-			coloredLineNumber := Ansi.SetGraphic(Mack.option.color_line_no) lineNumber Ansi.Reset()
-			coloredColumnNumber := Ansi.SetGraphic(Mack.option.color_line_no) columnNumber Ansi.Reset()
+			coloredLineNumber := Ansi.SetGraphic(Mack.option.color_line_no)
+				. lineNumber Ansi.Reset()
+			coloredColumnNumber := Ansi.SetGraphic(Mack.option.color_line_no)
+				. columnNumber Ansi.Reset()
 			Mack.processLine((Mack.option.filename ? lineFileName : "")
 				. (Mack.option.line ? coloredLineNumber ":"  : "")
 				. (columnNumber ? coloredColumnNumber ":" : "")
@@ -497,7 +503,8 @@ class Mack {
 				result := Mack.processFile(fileObject)
 			}
 			if (PrintLineData.hitNumber == 0 && Mack.option.files_wo_matches) {
-				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData.fileName))
+				Mack.processLine(Mack.prepareFileNameForOutput(PrintLineData
+					.fileName))
 			}
 		} finally {
 			if (fileObject) {
@@ -530,9 +537,11 @@ class Mack {
 				if (Mack.option.A > 0
 						&& PrintLineData.contextAfterHit.length() < Mack.option.A
 						&& PrintLineData.hitNumber) {
-					Mack.storeAfterContextDataInQueue(PrintLineData.contextAfterHit)
+					Mack.storeAfterContextDataInQueue(PrintLineData
+						.contextAfterHit)
 				} else if (Mack.option.B > 0) {
-					Mack.storeBeforeContextDataInQueue(PrintLineData.contextBeforeHit)
+					Mack.storeBeforeContextDataInQueue(PrintLineData
+						.contextBeforeHit)
 				}
 			}
 		}
@@ -582,7 +591,8 @@ class Mack {
 				}
 			} else {
 				Mack.processLine(Ansi.SetGraphic(Mack.option.color_filename)
-					. PrintLineData.fileName ":" PrintLineData.hitNumber Ansi.Reset())
+					. PrintLineData.fileName ":" PrintLineData.hitNumber
+					. Ansi.Reset())
 			}
 		}
 	}
@@ -833,10 +843,10 @@ class Mack {
 				fileList := Mack.determineFilesForSearch(args)
 				Mack.processFileList(fileList)
 			}
-		} catch _ex {
-			Ansi.WriteLine(_ex.Message)
+		} catch ex {
+			Ansi.WriteLine(ex.Message)
 			Ansi.WriteLine(op.Usage())
-			result := _ex.Extra
+			result := ex.Extra
 		}
 		return result
 	}
@@ -915,7 +925,7 @@ class Mack {
 	processFileList(fileList) {
 		if (Mack.option.f || Mack.option.g) {
 			loop % fileList.maxIndex() {
-				Pager.writeWordWrapped(fileList[A_Index])
+				Pager.writeHardWrapped(fileList[A_Index])
 			}
 		} else {
 			Console.RefreshBufferInfo()
@@ -975,7 +985,7 @@ removeFileType(fileType) {
 	if (currentValue == "") {
 		throw Exception("InvalidFiletype:" fileType)
 	}
-	Mack.option.regex_of_types := Mack.regularExpressionOfTypeList()
+	Mack.option.regex_of_types := Mack.typeListAsRegularExpression()
 	Mack.Sel_Types_Option.stExpr := Mack.option.regex_of_types
 	return currentValue
 }
@@ -994,11 +1004,11 @@ addNewFileType(fileTypeFilter) {
 	if (!RegExMatch(fileTypeFilter, "([a-z]+):(.+)", $)) {
 		throw Exception("InvalidFiletypeFilter:" fileTypeFilter)
 	}
-	if (Mack.option.types[$1] <> "") {
+	if (Mack.option.types[$1] != "") {
 		throw Exception("FiletypeAlreadyDefined:" $1)
 	}
 	Mack.option.types[$1] := StrReplace($2, "+", " ")
-	Mack.option.regex_of_types := Mack.regularExpressionOfTypeList()
+	Mack.option.regex_of_types := Mack.typeListAsRegularExpression()
 	Mack.Sel_Types_Option.stExpr := Mack.option.regex_of_types
 }
 
