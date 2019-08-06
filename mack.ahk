@@ -1,5 +1,6 @@
 ; ahk: console
-#Include <PrintLineData>
+#Include %A_LineFile%\..\modules
+#Include PrintLineData.ahk
 
 class Mack {
 
@@ -39,6 +40,7 @@ class Mack {
 				, match_ignore_files	: ""
 				, match_type			: ""
 				, match_type_ignore		: ""
+				, mackrc                : ""
 				, modelines				: 5
 				, modeline_pattern		: [ "^.*?\s+(vi:|vim:|ex:)\s*.*?((ts|tabstop)=(?P<tabstop>\d+))"
 										  , "^.*?:.*?tabSize=(?P<tabstop>\d+):.*?:" ]
@@ -68,7 +70,7 @@ class Mack {
                     	 			      , "vim"       : "*.vim"
                     	 			      , "xml"       : "*.xml *.dtd *.xsl *.xslt *.ent"
                     	 			      , "yaml"      : "*.yaml *.yml" }
-				, types_expr			: Mack.typeListAsRegularExpression()
+				, types_expr			: ""
 				, type					: []
 				, type_ignore			: []
 				, v				  		: false
@@ -78,6 +80,7 @@ class Mack {
 				, 1				  		: false }
 
 		Mack.option := dv
+		Mack.option.types_expr := Mack.typeListAsRegularExpression()
 		Mack.setDefaultIgnoreDirs()
 		Mack.setDefaultIgnoreFiles()
 		Mack.setDefaultModelineExpression()
@@ -154,7 +157,6 @@ class Mack {
 					fileList.push(fileName)
 				}
 			}
-			OutputDebug % "fl:`n" LoggingHelper.dump(fileList)
 			return fileList
 		} finally {
 			if (fileWithFileList) {
@@ -322,8 +324,8 @@ class Mack {
 					tabstop := $tabstop
 				}
 			} catch ex {
-				OutputDebug % ex.What ": " ex.Message		; NOTEST: Will not be tested, because the pattern is hardcoded.
-				throw ex									; NOTEST
+				OutputDebug % ex.What ": " ex.Message							; NOTEST: Will not be tested, because the pattern is hardcoded.
+				throw ex														; NOTEST
 			}
 		}
 		return tabstop
@@ -539,7 +541,7 @@ class Mack {
 			fileObject := FileOpen(fileName, "r `n")
 			Mack.resetPrintLineData(fileName)
 			if (!fileObject) {
-				OutputDebug % "Could not open file " PrintLineData.fileName	; NOTEST: Difficult to test
+				OutputDebug % "Could not open file " PrintLineData.fileName		; NOTEST: Difficult to test
 			} else {
 				result := Mack.processFile(fileObject)
 			}
@@ -559,6 +561,7 @@ class Mack {
 		return result
 	}
 
+	; TODO: Refactor?
 	processFile(fileObject) {
 		tabStops := Mack.setTabStopsForFile(fileObject)
 		continueProcessing := true
@@ -654,7 +657,7 @@ class Mack {
 	cli() {
 		op := new OptParser(["mack [options] [--] <pattern> [file | directory]..."
 			, "mack -f [options] [--] [directory]..."]
-			, OptParser.PARSER_ALLOW_DASHED_ARGS, "MACK_OPTIONS")
+			, OptParser.PARSER_ALLOW_DASHED_ARGS, "MACK_OPTIONS", ".mackrc")
 		Mack.addSearchingOptionsToParser(op)
 		Mack.addSearchOutputOptionsToParser(op)
 		Mack.addFilePresentationOptionsToParser(op)
@@ -849,6 +852,9 @@ class Mack {
 			, Mack.option, "__env_dummy"
 			, "Ignore environment variable MACK_OPTIONS"
 			, OptParser.OPT_NEG|OptParser.OPT_NEG_USAGE))
+		op.Add(new OptParser.RcFile(0, "mackrc"
+			, Mack.option, "mackrc"
+			, "FILE", "Specifies a mackrc file to load after all others"))
 		op.Add(new OptParser.Boolean("h", "help"
 			, Mack.option, "h"
 			, "This help"
@@ -864,12 +870,11 @@ class Mack {
 			, OptParser.OPT_MULTIPLE|OptParser.OPT_NEG))
 	}
 
-	run(args) {
-		Mack.firstCall := true
+	run(cmdLineArgs) {
 		Mack.setDefaults()
 		try {
 			op := Mack.cli()
-			args := op.Parse(args)
+			remainingArgs := op.Parse(cmdLineArgs)
 			Pager.enablePager := Mack.option.pager
 			Mack.useKnownFileTypesIfNecessary()
 			Mack.useSelectedFileTypesIfNecessary()
@@ -883,11 +888,12 @@ class Mack {
 			} else if (Mack.option.ht) {
 				Ansi.Write(Mack.printKnownFileTypes())
 			} else {
-				Mack.setupSearchPatternIfNecessary(args)
-				fileList := Mack.determineFilesForSearch(args)
+				Mack.setupSearchPatternIfNecessary(remainingArgs)
+				fileList := Mack.determineFilesForSearch(remainingArgs)
 				Mack.processFileList(fileList)
 			}
 		} catch ex {
+			OutputDebug % ex.File ":" ex.Line
 			Ansi.WriteLine(ex.Message)
 			Ansi.WriteLine(op.Usage())
 			result := ex.Extra
@@ -989,20 +995,19 @@ SetBatchLines -1
 
 #Include <logging>
 #Include <ansi>
-#Include c:\work\ahk\projects\lib2\optparser.ahk
-#Include <system>
 #Include <string>
 #Include <datatable>
 #Include <arrays>
 #Include <queue>
 #include <pager>
 #Include *i %A_ScriptDir%\.versioninfo
+#Include c:\work\ahk\projects\lib2\optparser\optparser.ahk
 
 main:
 	global G_wt
 
 	WinGetTitle G_wt, A
-	returnCode := Mack.run(System.vArgs)
+	returnCode := Mack.run(A_Args)
 	Ansi.FlushInput()
 exitapp returnCode				; NOTEST-END
 

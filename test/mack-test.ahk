@@ -7,7 +7,6 @@ SetBatchLines -1
 #Include <testcase>
 #Include <flimsydata>
 
-#Include <system>
 #Include <string>
 #Include <datatable>
 #Include <arrays>
@@ -55,7 +54,6 @@ class MackTest extends TestCase {
 
     @Before_resetOptions() {
         Mack.setDefaults()
-		Mack.firstCall := true
 		EnvSet MACK_OPTIONS,
     }
 
@@ -123,7 +121,6 @@ class MackTest extends TestCase {
 	@Test_types() {
 		this.assertEquals(Mack.typeListAsRegularExpression()
 			, "(autohotkey|batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
-		OutputDebug % LoggingHelper.dump(Mack.option.types)
 		removeFileType("autohotkey")
 		this.assertEquals(Mack.typeListAsRegularExpression()
 			, "(batch|css|html|java|js|json|log|md|python|ruby|shell|tex|text|vim|xml|yaml)")
@@ -439,11 +436,12 @@ class MackTest extends TestCase {
 			, TestCase.fileContent(A_ScriptDir "\Figures\Usage.txt"))
     }
 
-    @Test_BadUsage() {
+    @Test_badUsage() {
 		this.assertEquals(Mack.run(["--foo"]), "")
 		Ansi.flush()
 		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
-			, TestCase.fileContent(A_ScriptDir "\Figures\BadUsage.txt"))
+			, TestCase.fileContent(A_ScriptDir "\Figures\BadUsage.txt")
+			. TestCase.fileContent(A_ScriptDir "\Figures\usage.txt"))
     }
 
     @Test_fileList() {
@@ -454,7 +452,7 @@ class MackTest extends TestCase {
 			, TestCase.fileContent(A_ScriptDir "\Figures\Filelist.txt"))
     }
 
-    @Test_PatternFilelist() {
+    @Test_patternFilelist() {
         SetWorkingDir %A_ScriptDir%\Testdata
         this.assertEquals(Mack.run(["--nopager", "--sort-files", "-g"
 			, "i)^[abcklmstu].*\.txt$"]), "")
@@ -616,7 +614,8 @@ class MackTest extends TestCase {
 			, "^Duis\s", "Verkehrsdaten\"]), "")
         Ansi.flush()
 		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
-			, TestCase.fileContent(A_ScriptDir "\Figures\Search11.txt"))
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search11.txt")
+			. TestCase.fileContent(A_ScriptDir "\Figures\usage.txt"))
         f.close()
     }
 
@@ -625,7 +624,8 @@ class MackTest extends TestCase {
         this.assertEquals(Mack.run(["--nopager", "--autohotkey"]), "")
         Ansi.flush()
 		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
-			, TestCase.fileContent(A_ScriptDir "\Figures\NoSearchPattern.txt"))
+			, TestCase.fileContent(A_ScriptDir "\Figures\NoSearchPattern.txt")
+			. TestCase.fileContent(A_ScriptDir "\Figures\usage.txt"))
     }
 
     @Test_SearchNoHits() {
@@ -715,6 +715,33 @@ class MackTest extends TestCase {
 		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
 			, TestCase.fileContent(A_ScriptDir "\Figures\Search20.txt"))
 		FileDelete fizzbuzz_test.txt
+	}
+
+	@Test_search20With_mackrc() {
+        if (FileExist("fizzbuzz_test.txt")) {
+            FileDelete fizzbuzz_test.txt
+        }
+		if (FileExist("_mymackrc")) {
+			FileDelete _mymackrc
+		}
+		loop 100 {
+			FileAppend % (mod(A_Index, 15) == 0 ? "FizzBuzz"
+				: mod(A_Index, 3) == 0 ? "Fizz"
+				: mod(A_Index, 5) == 0 ? "Buzz"
+				: A_Index) "`n", fizzbuzz_test.txt
+		}
+		FileAppend,
+		( LTrim
+			--nopager
+			-C
+			--nocolor
+		), _mymackrc
+        this.assertEquals(Mack.run(["--mackrc", "_mymackrc", "\d2", "fizzbuzz_test.txt"]), "")
+        Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+			, TestCase.fileContent(A_ScriptDir "\Figures\Search20.txt"))
+		FileDelete fizzbuzz_test.txt
+		FileDelete _mymackrc
 	}
 
 	@Test_filesFromFile() {
