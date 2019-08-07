@@ -1001,7 +1001,7 @@ SetBatchLines -1
 #Include <queue>
 #include <pager>
 #Include *i %A_ScriptDir%\.versioninfo
-#Include c:\work\ahk\projects\lib2\optparser\optparser.ahk
+#Include <optparser\optparser>
 
 main:
 	global G_wt
