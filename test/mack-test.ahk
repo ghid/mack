@@ -7,11 +7,6 @@ SetBatchLines -1
 #Include <testcase>
 #Include <flimsydata>
 
-#Include <string>
-#Include <datatable>
-#Include <arrays>
-#Include <queue>
-
 class MackTest extends TestCase {
 	
 	; @BeforeClass_...
@@ -399,7 +394,7 @@ class MackTest extends TestCase {
 		Ansi.flush()
 		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
 			, TestCase.fileContent(A_ScriptDir "\Figures\Modeline.txt"))
-        ; FileDelete modeline_test.txt
+        FileDelete modeline_test.txt
     }
 
     @Test_Modeline2() {
