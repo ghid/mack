@@ -68,6 +68,7 @@ File type specification:
 
 Miscellaneous:
     --[no]env             Ignore environment variable MACK_OPTIONS
+    --mackrc <FILE>       Specifies a mackrc file to load after all others
     --version             Display version info
     --help-types          Display all known types
 
