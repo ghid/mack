@@ -1,10 +1,4 @@
 ; ahk: console
-ListLines Off
-SetBatchLines -1
-
-#Include %A_LineFile%\..\modules
-#Include PrintLineData.ahk
-
 class Mack {
 
 	requires() {
@@ -1009,16 +1003,20 @@ class Mack {
 #NoEnv						; NOTEST-BEGIN
 #NoTrayIcon
 #SingleInstance off
+ListLines Off
 SetBatchLines -1
 
-#Include <ansi\ansi>
-#Include <string\string>
-#Include <datatable\datatable>
-#Include <arrays\arrays>
-#Include <queue\queue>
-#include <pager\pager>
-#Include <optparser\optparser>
+#Include <ansi>
+#Include <string>
+#Include <datatable>
+#Include <arrays>
+#Include <queue>
+#include <pager>
+#Include <optparser>
 #Include *i %A_ScriptDir%\.versioninfo
+
+#Include %A_LineFile%\..\modules
+#Include PrintLineData.ahk
 
 main:
 	global G_wt

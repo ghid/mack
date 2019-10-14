@@ -4,9 +4,9 @@ SetBatchLines -1
 #Warn All, StdOut
 
 #Include <testcase-libs>
-#Include <flimsydata\FlimsyData>
-#Include <calendar\Calendar>
-#Include <random\Random>
+#Include <FlimsyData>
+#Include <Calendar>
+#Include <Random>
 
 #Include *i %A_ScriptDir%\..\.versioninfo
 
