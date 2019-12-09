@@ -815,6 +815,36 @@ class MackTest extends TestCase {
 				. "\Figures\FilesFromFile.txt"))
 		FileDelete %A_ScriptDir%\input_files.txt
 	}
+
+	@Test_includeCustomType() {
+		SetWorkingDir %A_ScriptDir%\Testdata
+		this.assertEquals(Mack.run(["--nopager", "--nocolor"
+				, "--type-set", "image:*.png+*.jpg+*.jpeg+*.gif+*.bpm"
+				, "--image", "-l", "molestie"]), "")
+		Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+				, TestCase.fileContent(A_ScriptDir "\Figures\CustomType.txt"))
+	}
+
+	@Test_includeCustomTypeAsAdditionalArgument() {
+		SetWorkingDir %A_ScriptDir%\Testdata
+		this.assertEquals(Mack.run(["--nopager", "--nocolor"
+				, "--type-set", "image:*.png+*.jpg+*.jpeg+*.gif+*.bpm"
+				, "--type", "image", "-l", "molestie"]), "")
+		Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+				, TestCase.fileContent(A_ScriptDir "\Figures\CustomType.txt"))
+	}
+
+	@Test_includeCustomTypeWithEqualSign() {
+		SetWorkingDir %A_ScriptDir%\Testdata
+		this.assertEquals(Mack.run(["--nopager", "--nocolor"
+				, "--type-set", "image:*.png+*.jpg+*.jpeg+*.gif+*.bpm"
+				, "--type=image", "-l", "molestie"]), "")
+		Ansi.flush()
+		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
+				, TestCase.fileContent(A_ScriptDir "\Figures\CustomType.txt"))
+	}
 }
 
 exitapp MackTest.runTests()

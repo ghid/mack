@@ -1047,7 +1047,7 @@ removeFileType(fileType) {
 		throw Exception("InvalidFiletype:" fileType)
 	}
 	Mack.option.regex_of_types := Mack.typeListAsRegularExpression()
-	Mack.sel_Types_Option.stExpr := Mack.option.regex_of_types
+	Mack.sel_Types_Option.regularExpression := Mack.option.regex_of_types
 	return currentValue
 }
 
@@ -1070,7 +1070,7 @@ addNewFileType(fileTypeFilter) {
 	}
 	Mack.option.types[$1] := StrReplace($2, "+", " ")
 	Mack.option.regex_of_types := Mack.typeListAsRegularExpression()
-	Mack.sel_Types_Option.stExpr := Mack.option.regex_of_types
+	Mack.sel_Types_Option.regularExpression := Mack.option.regex_of_types
 }
 
 maintainTypeFilter(filetype, noOptGiven="") {
