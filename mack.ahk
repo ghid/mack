@@ -2,7 +2,8 @@
 class Mack {
 
 	requires() {
-		return [Ansi, String, Datatable, Arrays, Queue, Pager, Optparser]
+		return [Ansi, App, Arrays, Datatable, Optparser
+				, Pager, Queue, String, Structure]
 	}
 
 	static option
@@ -1000,19 +1001,16 @@ class Mack {
 	}
 }
 
-#NoEnv						; NOTEST-BEGIN
+#NoEnv ; notest-begin
+#Warn All, StdOut
 #NoTrayIcon
 #SingleInstance off
 ListLines Off
 SetBatchLines -1
 
-#Include <ansi>
-#Include <string>
-#Include <datatable>
-#Include <arrays>
-#Include <queue>
-#include <pager>
-#Include <optparser>
+#Include <app>
+#Include <lib2>
+#Include <console-structs>
 #Include *i %A_ScriptDir%\.versioninfo
 
 #Include %A_LineFile%\..\modules
@@ -1022,9 +1020,9 @@ main:
 	global G_wt
 	WinGetTitle G_wt, A
 	Ansi.NO_BUFFER := true
-	returnCode := Mack.run(A_Args)
+	returnCode := App.checkRequiredClasses(Mack).run(A_Args)
 	Ansi.flushInput()
-exitapp returnCode				; NOTEST-END
+exitapp returnCode ; notest-end
 
 maintainDirectoriesToIgnore(directoryName, noOptGiven="") {
 	if (noOptGiven) {

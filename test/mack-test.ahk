@@ -7,6 +7,11 @@ SetBatchLines -1
 #Include <FlimsyData>
 #Include <Calendar>
 #Include <Random>
+#Include <Structure>
+
+#Include <modules\structure\TIME_ZONE_INFORMATION>
+#Include <modules\structure\DYNAMIC_TIME_ZONE_INFORMATION>
+#Include <modules\structure\SYSTEMTIME>
 
 #Include *i %A_ScriptDir%\..\.versioninfo
 
@@ -766,7 +771,7 @@ class MackTest extends TestCase {
 					: A_Index) "`n", fizzbuzz_test.txt
 		}
 		FileAppend,
-		( LTrim ; ahklint-ignore-begin: W010,W003
+		( LTrim ; ahklint-ignore-begin: I001,W003
 			--nopager
 			-C
 			--nocolor
