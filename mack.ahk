@@ -1,4 +1,4 @@
-; ahk: console
+﻿; ahk: console
 class Mack {
 
 	requires() {
@@ -15,30 +15,30 @@ class Mack {
 		Mack.sel_Types_Option := ""
 		; ahklint-ignore-begin: W002,W003
 		dv :=  {  A						: 0
-				, B				  		: 0
-				, c				  		: false
-				, column		  		: false
-				, color			  		: true
-				, color_filename  		: Ansi.FOREGROUND_GREEN ";" Ansi.ATTR_BOLD
-				, color_match	  		: Ansi.FOREGROUND_YELLOW ";" Ansi.ATTR_BOLD ";" Ansi.ATTR_REVERSE
-				, color_line_no	  		: Ansi.FOREGROUND_YELLOW ";" Ansi.ATTR_BOLD
-				, color_context	  		: Ansi.FOREGROUND_BLUE ";" Ansi.ATTR_BOLD
-				, context		  		: 2
-				, f				  		: false
-				, file_pattern    		: ""
-				, filename		  		: true
-				, files_from	  		: ""
-				, files_w_matches 		: false
+				, B						: 0
+				, c						: false
+				, column				: false
+				, color					: true
+				, color_filename		: Ansi.FOREGROUND_GREEN ";" Ansi.ATTR_BOLD
+				, color_match			: Ansi.FOREGROUND_YELLOW ";" Ansi.ATTR_BOLD ";" Ansi.ATTR_REVERSE
+				, color_line_no			: Ansi.FOREGROUND_YELLOW ";" Ansi.ATTR_BOLD
+				, color_context			: Ansi.FOREGROUND_BLUE ";" Ansi.ATTR_BOLD
+				, context				: 2
+				, f						: false
+				, file_pattern			: ""
+				, filename				: true
+				, files_from			: ""
+				, files_w_matches		: false
 				, files_wo_matches		: false
-				, g               		: false
-				, group			  		: true
-				, h				  		: false
-				, ht			  		: false
-				, i				  		: false
-				, ignore_dirs	  		: []
-				, ignore_files	  		: []
-				, k				  		: false
-				, line			  		: true
+				, g						: false
+				, group					: true
+				, h						: false
+				, ht					: false
+				, i						: false
+				, ignore_dirs			: []
+				, ignore_files			: []
+				, k						: false
+				, line					: true
 				, match_ignore_dirs		: ""
 				, match_ignore_files	: ""
 				, match_type			: ""
@@ -49,38 +49,38 @@ class Mack {
 										  , "^.*?:.*?tabSize=(?P<tabstop>\d+):.*?:" ]
 				, modeline_expr			: ""
 				, o						: false
-				, output		  		: ""
-				, pager			  		: true
-				, passthru		  		: false
-				, Q				  		: false
-				, r               		: true
-				, sort_files	  		: false
-				, tabstop		  		: 4
+				, output				: ""
+				, pager					: true
+				, passthru				: false
+				, Q						: false
+				, r						: true
+				, sort_files			: false
+				, tabstop				: 4
 				, types					: { "autohotkey": "*.ahk"
 										  , "batch"     : "*.bat *.cmd"
-                    	 			      , "css"       : "*.css"
-                    	 			      , "html"      : "*.htm *.html"
-                    	 			      , "java"      : "*.java *.properties"
-                    	 			      , "js"        : "*.js"
-                    	 			      , "json"      : "*.json"
-                    	 			      , "log"       : "*.log"
-                    	 			      , "md"        : "*.md *.mkd *.markdown"
-                    	 			      , "python"    : "*.py"
-                    	 			      , "ruby"      : "*.rb *.rhtml *.rjs *.rxml *.erb *.rake *.spec"
-                    	 			      , "shell"     : "*.sh"
-                    	 			      , "tex"       : "*.tex *.latex *.cls *.sty"
-                    	 			      , "text"      : "*.txt *.rtf *.readme"
-                    	 			      , "vim"       : "*.vim"
-                    	 			      , "xml"       : "*.xml *.dtd *.xsl *.xslt *.ent"
-                    	 			      , "yaml"      : "*.yaml *.yml" }
+										  , "css"       : "*.css"
+										  , "html"      : "*.htm *.html"
+										  , "java"      : "*.java *.properties"
+										  , "js"        : "*.js"
+										  , "json"      : "*.json"
+										  , "log"       : "*.log"
+										  , "md"        : "*.md *.mkd *.markdown"
+										  , "python"    : "*.py"
+										  , "ruby"      : "*.rb *.rhtml *.rjs *.rxml *.erb *.rake *.spec"
+										  , "shell"     : "*.sh"
+										  , "tex"       : "*.tex *.latex *.cls *.sty"
+										  , "text"      : "*.txt *.rtf *.readme"
+										  , "vim"       : "*.vim"
+										  , "xml"       : "*.xml *.dtd *.xsl *.xslt *.ent"
+										  , "yaml"      : "*.yaml *.yml" }
 				, types_expr			: ""
 				, type					: []
 				, type_ignore			: []
-				, v				  		: false
-				, version		  		: false
-				, w				  		: false
-				, x				  		: false
-				, 1				  		: false }
+				, v						: false
+				, version				: false
+				, w						: false
+				, x						: false
+				, 1						: false }
 		; ahklint-ignore-end
 
 		Mack.option := dv
@@ -311,9 +311,9 @@ class Mack {
 		tabstop := 0
 		if (Mack.option.modelines) {
 			tabstop := Mack.fromModelineAtTopOfFile(fileObject)
-			 if (!tabstop) {
+			if (!tabstop) {
 				tabstop := Mack.fromModelineAtBottomOfFile(fileObject)
-			 }
+			}
 			fileObject.seek(0)
 		}
 		return " ".repeat(tabstop ? tabstop : Mack.option.tabstop)
@@ -572,11 +572,8 @@ class Mack {
 		continueProcessing := true
 		while (continueProcessing > 0 && !fileObject.atEOF) {
 			PrintLineData.lineNumberInFile := A_Index
-			lineWithSubstitutedTabs := RegExReplace(fileObject.readLine()
-					, "\t", tabStops)
-			lineWithoutNewLineAtEnd := RegExReplace(lineWithSubstitutedTabs
-					, "`n$", "", 1)
-			matchesFound := Mack.searchPatternInText(lineWithoutNewLineAtEnd)
+			preparedLine := Mack.prepareLine(fileObject.readLine(), tabStops)
+			matchesFound := Mack.searchPatternInText(preparedLine)
 			if (matchesFound && Mack.option.files_wo_matches) {
 				PrintLineData.hitNumber++
 				continueProcessing := false
@@ -602,6 +599,11 @@ class Mack {
 			Mack.processLine(PrintLineData.contextAfterHit.pop())
 		}
 		return continueProcessing
+	}
+
+	prepareLine(currentLine, tabStops) {
+		lineWithSubstitutedTabs := RegExReplace(currentLine, "\t", tabStops)
+		return RegExReplace(lineWithSubstitutedTabs, "`n$", "", 1)
 	}
 
 	storeBeforeContextDataInQueue(contextQueue) {
