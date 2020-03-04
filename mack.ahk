@@ -1004,6 +1004,7 @@ class Mack {
 					return
 				}
 			}
+			Pager.end()
 		}
 	}
 }

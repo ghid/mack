@@ -52,10 +52,12 @@ class MackTest extends TestCase {
 	@BeforeClass_disablePager() {
 		Pager.runInTestMode := true
 		Pager.breakMessage := "--break--"
+		Pager.endMessage := "--end--"
 	}
 
 	@BeforeResetLineCounter() {
 		Pager.lineCounter := 0
+		Pager.pageCounter := 0
 	}
 
 	@Before_resetOptions() {
