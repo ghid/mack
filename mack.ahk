@@ -889,7 +889,7 @@ class Mack {
 				, OptParser.OPT_MULTIPLE|OptParser.OPT_NEG))
 	}
 
-	run(cmdLineArgs) {
+	main(cmdLineArgs) {
 		Mack.setDefaults()
 		result := ""
 		try {
@@ -1027,7 +1027,7 @@ main:
 	global G_wt
 	WinGetTitle G_wt, A
 	Ansi.NO_BUFFER := true
-	returnCode := App.checkRequiredClasses(Mack).run(A_Args)
+	returnCode := App.checkRequiredClasses(Mack).main(A_Args)
 	Ansi.flushInput()
 exitapp returnCode ; notest-end
 
