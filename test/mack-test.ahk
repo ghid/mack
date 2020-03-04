@@ -773,7 +773,7 @@ class MackTest extends TestCase {
 					: A_Index) "`n", fizzbuzz_test.txt
 		}
 		FileAppend,
-		( LTrim ; ahklint-ignore-begin: I001,W003
+		( LTrim ; ahklint-ignore-begin: I001,W004
 			--nopager
 			-C
 			--nocolor
@@ -794,7 +794,7 @@ class MackTest extends TestCase {
 			FileDelete %A_ScriptDir%\input_files.txt
 		}
 		FileAppend,
-		( LTrim ; ahklint-ignore-begin: W002,W003
+		( LTrim ; ahklint-ignore-begin: I001,W002,W004
 			.\Ammenmaerchen\Anlage.pdf
 			.\Ammenmaerchen\Auskunftsschalter\Aktienurkunde.rtf
 			.\Bekanntmachung\Informationsuebertragung\Basisinformationen\Anlage.mp3
