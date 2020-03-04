@@ -566,7 +566,6 @@ class Mack {
 		return result
 	}
 
-	; TODO: Refactor?
 	processFile(fileObject) {
 		tabStops := Mack.setTabStopsForFile(fileObject)
 		continueProcessing := true
@@ -574,26 +573,8 @@ class Mack {
 			PrintLineData.lineNumberInFile := A_Index
 			preparedLine := Mack.prepareLine(fileObject.readLine(), tabStops)
 			matchesFound := Mack.searchPatternInText(preparedLine)
-			if (matchesFound && Mack.option.files_wo_matches) {
-				PrintLineData.hitNumber++
-				continueProcessing := false
-			} else if (Mack.option.passthru
-					|| ( matchesFound && !Mack.option.v)
-					|| (!matchesFound &&  Mack.option.v)) {
-				PrintLineData.hitNumber++
-				continueProcessing := Mack.processOutput()
-			} else {
-				if (Mack.option.A > 0
-						&& PrintLineData.contextAfterHit.length()
-						< Mack.option.A
-						&& PrintLineData.hitNumber) {
-					Mack.storeAfterContextDataInQueue(PrintLineData
-							.contextAfterHit)
-				} else if (Mack.option.B > 0) {
-					Mack.storeBeforeContextDataInQueue(PrintLineData
-							.contextBeforeHit)
-				}
-			}
+			continueProcessing := Mack.processMatches(matchesFound
+					, continueProcessing)
 		}
 		loop % PrintLineData.contextAfterHit.length() {
 			Mack.processLine(PrintLineData.contextAfterHit.pop())
@@ -604,6 +585,30 @@ class Mack {
 	prepareLine(currentLine, tabStops) {
 		lineWithSubstitutedTabs := RegExReplace(currentLine, "\t", tabStops)
 		return RegExReplace(lineWithSubstitutedTabs, "`n$", "", 1)
+	}
+
+	processMatches(matchesFound, continueProcessing) {
+		if (matchesFound && Mack.option.files_wo_matches) {
+			PrintLineData.hitNumber++
+			continueProcessing := false
+		} else if (Mack.option.passthru
+				|| ( matchesFound && !Mack.option.v)
+				|| (!matchesFound &&  Mack.option.v)) {
+			PrintLineData.hitNumber++
+			continueProcessing := Mack.processOutput()
+		} else {
+			if (Mack.option.A > 0
+					&& PrintLineData.contextAfterHit.length()
+					< Mack.option.A
+					&& PrintLineData.hitNumber) {
+				Mack.storeAfterContextDataInQueue(PrintLineData
+						.contextAfterHit)
+			} else if (Mack.option.B > 0) {
+				Mack.storeBeforeContextDataInQueue(PrintLineData
+						.contextBeforeHit)
+			}
+		}
+		return continueProcessing
 	}
 
 	storeBeforeContextDataInQueue(contextQueue) {
