@@ -13,7 +13,7 @@ class Mack {
 	setDefaults() {
 		Mack.firstCall := true
 		Mack.sel_Types_Option := ""
-		; ahklint-ignore-begin: W002,W003
+		; ahklint-ignore-begin: W002,W003,W004
 		dv :=  {  A						: 0
 				, B						: 0
 				, c						: false
@@ -46,7 +46,7 @@ class Mack {
 				, mackrc                : ""
 				, modelines				: 5
 				, modeline_pattern		: [ "^.*?\s+(vi:|vim:|ex:)\s*.*?((ts|tabstop)=(?P<tabstop>\d+))"
-										  , "^.*?:.*?tabSize=(?P<tabstop>\d+):.*?:" ]
+										, "^.*?:.*?tabSize=(?P<tabstop>\d+):.*?:" ]
 				, modeline_expr			: ""
 				, o						: false
 				, output				: ""
@@ -218,7 +218,7 @@ class Mack {
 			listOfFileNames := []
 		}
 		directoryName := Mack.refineFileOrPathPattern(directoryName)
-		loop Files, %directoryName%, DF	; NOWARN
+		loop Files, %directoryName%, DF	; NOWARN ahklint-ignore: I001
 		{
 			if (Mack.isMatchingDirectory(A_LoopFileName, A_LoopFileAttrib)) {
 				listOfFileNames := Mack.collectFileNames(A_LoopFileFullPath
@@ -1088,8 +1088,7 @@ maintainTypeFilter(filetype, noOptGiven="") {
 		index := Mack.addOrReturnListEntry("type_ignore"
 				, Mack.option.types[filetype])
 	} else {
-		index := Mack.addOrReturnListEntry("type"
-				, Mack.option.types[filetype])
+		index := Mack.addOrReturnListEntry("type", Mack.option.types[filetype])
 	}
 	return index
 }
