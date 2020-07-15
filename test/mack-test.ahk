@@ -1,4 +1,4 @@
-﻿; ahk: con
+﻿;@Ahk2Exe-ConsoleApp
 #NoEnv
 SetBatchLines -1
 #Warn All, StdOut
@@ -426,7 +426,7 @@ class MackTest extends TestCase {
 		if (FileExist("modeline_test.txt")) {
 			FileDelete modeline_test.txt
 		}
-		FileAppend `; `tvim:ts=07, modeline_test.txt
+		FileAppend `; `tvim:ts=07, modeline_test.txt, UTF-8-RAW
 		this.assertEquals(Mack.main([".", "modeline_test.txt"]), "")
 		Ansi.flush()
 		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
@@ -434,12 +434,12 @@ class MackTest extends TestCase {
 		FileDelete modeline_test.txt
 	}
 
-	@Test_Modeline2() {
+	@Test_modeline2() {
 		SetWorkingDir %A_ScriptDir%\Testdata
 		if (FileExist("modeline_test.txt")) {
 			FileDelete modeline_test.txt
 		}
-		FileAppend `n`n`n`n`n`n; `tvim:ts=03, modeline_test.txt
+		FileAppend `n`n`n`n`n`n; `tvim:ts=03, modeline_test.txt, UTF-8-RAW
 		this.assertEquals(Mack.main([".", "modeline_test.txt"]), "")
 		Ansi.flush()
 		this.assertEquals(TestCase.fileContent(A_Temp "\mack-test.txt")
