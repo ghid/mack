@@ -1017,8 +1017,11 @@ ListLines Off
 SetBatchLines -1
 
 #Include <app>
-#Include <lib2>
-#Include <console-structs>
+; #Include <lib2>
+#Include <cui-libs>
+#Include <datatable>
+#Include <pager>
+#Include <queue>
 #Include *i %A_ScriptDir%\.versioninfo
 
 #Include %A_LineFile%\..\modules
