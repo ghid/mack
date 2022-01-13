@@ -105,7 +105,7 @@ class MackTest extends TestCase {
 
 	@Test_getVersionInfo() {
 		this.assertTrue(IsFunc("Mack.getVersionInfo"))
-		this.assertTrue(InStr(Mack.getVersionInfo(), " Copyright (C) "))
+		this.assertTrue(InStr(Mack.getVersionInfo(), " mack "))
 	}
 
 	@Test_checkDefaultModeLineExpression() {

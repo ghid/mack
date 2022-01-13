@@ -112,10 +112,7 @@ class Mack {
 	}
 
 	getVersionInfo() {
-		global G_VERSION_INFO
-		return G_VERSION_INFO.NAME "/" G_VERSION_INFO.ARCH
-				. "-" G_VERSION_INFO.BUILD
-				. " Copyright (C) 2014-2018 K.-P. Schreiner`n"
+		return Version.Info
 	}
 
 	printKnownFileTypes() {
@@ -1022,10 +1019,9 @@ SetBatchLines -1
 #Include <datatable>
 #Include <pager>
 #Include <queue>
-#Include *i %A_ScriptDir%\.versioninfo
-
 #Include %A_LineFile%\..\modules
 #Include PrintLineData.ahk
+#Include *i %A_ScriptDir%\.versioninfo
 
 main:
 	global G_wt
