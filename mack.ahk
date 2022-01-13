@@ -1,4 +1,4 @@
-﻿; ahk: console
+﻿;@Ahk2Exe-ConsoleApp
 class Mack {
 
 	requires() {
