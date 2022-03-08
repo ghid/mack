@@ -41,6 +41,7 @@ File presentation:
     --color-line-no <color>
                           Set the color for filenames, matches, and line numbers as
                           ANSI color attributes (e.g. "7;37")
+    --ascii               Print non-ascii chars as hex code
 
 File finding:
     -f                    Only print the files selected, without searching. The

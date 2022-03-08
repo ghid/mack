@@ -16,6 +16,7 @@ class Mack {
 		; ahklint-ignore-begin: W002,W003,W004
 		dv :=  {  A						: 0
 				, B						: 0
+				, ascii                 : false
 				, c						: false
 				, column				: false
 				, color					: true
@@ -514,7 +515,8 @@ class Mack {
 
 	processLine(line) {
 		Mack.printContextSeparatorIfNecessary(line)
-		return Pager.writeHardWrapped(Ansi.readable(line, Mack.option.color))
+		return Pager.writeHardWrapped(Mack.option.ascii
+				? Ansi.readable(line, Mack.option.color) : line)
 	}
 
 	printContextSeparatorIfNecessary(line) {
@@ -791,6 +793,9 @@ class Mack {
 				. "as ANSI color attributes (e.g. ""7;37"")"
 				, OptParser.OPT_ARG
 				, Mack.option.color_line_no, Mack.option.color_line_no))
+		op.add(new OptParser.Boolean(0, "ascii"
+				, Mack.option, "ascii"
+				, "Print non-ascii chars as hex code"))
 	}
 
 	addFileFindingOptionsToParser(op) {
